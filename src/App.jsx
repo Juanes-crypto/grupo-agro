@@ -1,126 +1,154 @@
-import React, { useState, useEffect } from 'react';
+// AGROAPP-UI/src/App.jsx
+
+import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 
-// Importa los componentes de página que existen en tu carpeta src/pages/
-import BarterDetailsPage from './pages/BarterDetailsPage';
+// ======================================================
+// ⭐ IMPORTACIONES DE CONTEXTOS ⭐
+// ======================================================
+import { AuthProvider } from './context/AuthContext';
+
+
+// ======================================================
+// ⭐ IMPORTACIONES DE COMPONENTES DE LAYOUT / RUTA EXISTENTES ⭐
+// ======================================================
+import Navbar from './components/Navbar';
+// No tienes Footer.jsx en tus componentes según las capturas.
+// Si lo creas, descomenta la siguiente línea:
+// import Footer from './components/Footer';
+import PrivateRoute from './components/PrivateRoute';
+import PremiumRoute from './components/PremiumRoute'; // Asumiendo que este sí existe ahora
+// Si tienes un componente AdminRoute, impórtalo también
+// import AdminRoute from './components/AdminRoute';
+
+
+// ======================================================
+// ⭐ IMPORTACIONES DE TODAS LAS PÁGINAS EXISTENTES ⭐
+// ======================================================
+import HomePage from './pages/HomePage';
+import RegisterPage from './pages/RegisterPage';
+import LoginPage from './pages/LoginPage';
+import ProductListPage from './pages/ProductListPage';
+import ProductDetailsPage from './pages/ProductDetailsPage';
 import CartPage from './pages/CartPage';
 import CheckoutPage from './pages/CheckoutPage';
-import CreateBarterProposalPage from './pages/CreateBarterProposalPage';
-import CreateCounterProposalPage from './pages/CreateCounterProposalPage';
 import CreateProductPage from './pages/CreateProductPage';
-import CreateServicePage from './pages/CreateServicePage';
-// import DashboardPage from './pages/DashboardPage'; // <--- ELIMINAR/COMENTAR ESTA LÍNEA
+import DashboardPage from './pages/DashboardPage';
 import EditProductPage from './pages/EditProductPage';
-import HomePage from './pages/HomePage';
-import LoginPage from './pages/LoginPage';
-import MyBarterProposalsPage from './pages/MyBarterProposalsPage';
 import MyOrdersPage from './pages/MyOrdersPage';
 import NotificationsPage from './pages/NotificationsPage';
-import OrderDetailsPage from './pages/OrderDetailsPage';
+import OrderDetailsPage from './pages/OrderDetailsPage'; // ⭐ ASEGÚRATE DE QUE ESTÉ IMPORTADO ⭐
 import PremiumInventoryPage from './pages/PremiumInventoryPage';
 import PremiumUpsellPage from './pages/PremiumUpsellPage';
-import ProductDetailsPage from './pages/ProductDetailsPage';
-import ProductListPage from './pages/ProductListPage';
-import RegisterPage from './pages/RegisterPage';
 import WelcomePage from './pages/WelcomePage';
+import BarterDetailsPage from './pages/BarterDetailsPage';
+import CreateBarterProposalPage from './pages/CreateBarterProposalPage';
+import CreateCounterProposalPage from './pages/CreateCounterProposalPage';
+import MyBarterProposalsPage from './pages/MyBarterProposalsPage';
+import CreateRentalPage from './pages/CreateRentalPage';
+import RentalPage from './pages/RentalPage';
+import CreateServicePage from './pages/CreateServicePage';
+import ServiceListPage from './pages/ServiceListPage';
 
-// ⭐ NUEVOS COMPONENTES QUE ACABAS DE CREAR ⭐
-import ServiceListPage from './pages/ServiceListPage'; // <--- DESCOMENTAR/AGREGAR ESTA LÍNEA
-import RentalPage from './pages/RentalPage';         // <--- DESCOMENTAR/AGREGAR ESTA LÍNEA
 
-// Importa el componente Navbar
-import Navbar from './components/Navbar';
+// ⭐ Componente para páginas no encontradas (404) ⭐
+// Si NO lo tienes creado, la ruta con '*' lanzará un error.
+// Puedes crear un simple NotFoundPage.jsx en src/pages/ o eliminar esta ruta si no lo vas a implementar.
+// import NotFoundPage from './pages/NotFoundPage';
 
-// Definir categorías de productos (se mantiene la lista que ya tenías)
-export const CATEGORIES = [
-    'Frutas', 'Verduras', 'Granos', 'Lácteos', 'Carnes', 'Semillas',
-    'Fertilizantes', 'Herramientas', 'Maquinaria', 'Servicios Agrícolas', 'Otros'
-];
 
 function App() {
-    const [user, setUser] = useState(null);
-    const [userId, setUserId] = useState('user-example-id'); // Valor de ejemplo, cambiarás esto con tu lógica de autenticación real
-
-    const authContextValue = {
-        isAuthenticated: !!user,
-        user: user,
-        userId: userId,
-        isPremium: true, // ⭐ Establecido en true para probar Premium Inventory y formularios por ahora ⭐
-        login: (userData) => {
-            console.log("Simulando login:", userData);
-            setUser({ email: userData.email, /* otras propiedades del usuario */ });
-            setUserId('some-real-user-id');
-        },
-        logout: () => {
-            console.log("Simulando logout.");
-            setUser(null);
-            setUserId(null);
-        },
-        register: (userData) => {
-            console.log("Simulando registro:", userData);
-        }
-    };
-
     return (
-        // El Router se mantiene aquí, ya que lo quitamos de main.jsx
-        <Router>
-            <div className="min-h-screen bg-gray-100 font-inter">
-                {/* Navbar se renderiza aquí para que esté en todas las páginas */}
-                <Navbar />
-
-                <main className="container mx-auto p-4 py-8">
+        <AuthProvider>
+            <Router>
+                <Navbar /> {/* Tu barra de navegación */}
+                <main className="container mx-auto px-4 py-8">
                     <Routes>
-                        {/* Rutas principales y de autenticación */}
-                        <Route path="/" element={<HomePage userId={userId} />} />
-                        <Route path="/welcome" element={<WelcomePage userId={userId} />} />
-                        <Route path="/register" element={<RegisterPage userId={userId} />} />
-                        <Route path="/login" element={<LoginPage userId={userId} />} />
+                        {/* ====================================================== */}
+                        {/* ⭐ RUTAS PÚBLICAS (accesibles sin autenticación) ⭐ */}
+                        {/* ====================================================== */}
+                        <Route path="/" element={<HomePage />} />
+                        <Route path="/register" element={<RegisterPage />} />
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/welcome" element={<WelcomePage />} />
 
-                        {/* Rutas de Productos */}
-                        <Route path="/products" element={<ProductListPage userId={userId} />} />
-                        <Route path="/products/:id" element={<ProductDetailsPage userId={userId} />} />
-                        <Route path="/create-product" element={<CreateProductPage userId={userId} />} />
-                        <Route path="/edit-product/:id" element={<EditProductPage userId={userId} />} />
-
-                        {/* ⭐ Rutas de Servicios (ahora con ServiceListPage.jsx) ⭐ */}
-                        <Route path="/create-service" element={<CreateServicePage userId={userId} />} />
-                        <Route path="/services" element={<ServiceListPage userId={userId} />} /> {/* <--- AÑADIR/DESCOMENTAR ESTA LÍNEA */}
-
-                        {/* ⭐ Rutas de Rentas (ahora con RentalPage.jsx) ⭐ */}
-                        <Route path="/rentals" element={<RentalPage userId={userId} />} /> {/* <--- AÑADIR/DESCOMENTAR ESTA LÍNEA */}
-
-                        {/* Rutas de Trueques y Órdenes */}
-                        <Route path="/barter-details/:id" element={<BarterDetailsPage userId={userId} />} />
-                        <Route path="/create-barter" element={<CreateBarterProposalPage userId={userId} />} />
-                        <Route path="/create-counter-proposal/:id" element={<CreateCounterProposalPage userId={userId} />} />
-                        <Route path="/my-barter-proposals" element={<MyBarterProposalsPage userId={userId} />} />
-                        <Route path="/my-orders" element={<MyOrdersPage userId={userId} />} />
-                        <Route path="/notifications" element={<NotificationsPage userId={userId} />} />
-                        <Route path="/order/:id" element={<OrderDetailsPage userId={userId} />} />
-                        <Route path="/cart" element={<CartPage userId={userId} />} />
-                        <Route path="/checkout" element={<CheckoutPage userId={userId} />} />
-
-                        {/* Rutas de Dashboard y Notificaciones */}
-                        {/* <Route path="/dashboard" element={<DashboardPage userId={userId} />} /> */} {/* <--- ELIMINAR/COMENTAR ESTA LÍNEA */}
+                        {/* Rutas para listar y ver detalles de productos (públicas) */}
+                        <Route path="/products" element={<ProductListPage />} />
+                        <Route path="/products/:id" element={<ProductDetailsPage />} />
+                        <Route path="/services" element={<ServiceListPage />} />
+                        <Route path="/rentals" element={<RentalPage />} /> {/* Ya la habíamos añadido */}
 
 
-                        {/* Rutas Premium */}
-                        <Route path="/premium-inventory" element={<PremiumInventoryPage userId={userId} />} />
-                        <Route path="/premium-upsell" element={<PremiumUpsellPage userId={userId} />} />
-                        {/* Asumiendo que PremiumPage.jsx es para /premium */}
-                        {/* <Route path="/premium" element={<PremiumPage userId={userId} />} /> */}
+                        {/* ====================================================== */}
+                        {/* ⭐ RUTAS PROTEGIDAS (requieren autenticación) ⭐ */}
+                        {/* ====================================================== */}
+                        <Route element={<PrivateRoute />}>
+                            {/* Rutas de carrito y compra */}
+                            <Route path="/cart" element={<CartPage />} />
+                            <Route path="/checkout" element={<CheckoutPage />} />
+                            <Route path="/my-orders" element={<MyOrdersPage />} />
+                            <Route path="/order-details/:id" element={<OrderDetailsPage />} /> {/* ⭐ RUTA PARA VER DETALLES DE UN PEDIDO ⭐ */}
+                            {/* La ruta que estaba generando el error era '/order/:id', ahora la corregimos a '/order-details/:id' para coincidir con la navegación del CheckoutPage */}
 
 
-                        {/* Ruta para cualquier otra URL no definida */}
-                        <Route path="*" element={<h2 className="text-3xl font-bold text-red-600 text-center">Página no encontrada o en construcción</h2>} />
+                            {/* Rutas relacionadas con el usuario y sus propios productos/negocios */}
+                            <Route path="/dashboard" element={<DashboardPage />} />
+                            <Route path="/notifications" element={<NotificationsPage />} />
+                            <Route path="/edit-product/:id" element={<EditProductPage />} />
+                            {/* Usamos ProductListPage para mostrar los productos del usuario actual */}
+                            <Route path="/my-products" element={<ProductListPage />} />
+
+                            {/* Rutas de Trueque */}
+                            <Route path="/barter-details/:id" element={<BarterDetailsPage />} />
+                            <Route path="/create-barter-proposal/:productId" element={<CreateBarterProposalPage />} />
+                            <Route path="/create-counter-proposal/:proposalId" element={<CreateCounterProposalPage />} />
+                            <Route path="/my-barter-proposals" element={<MyBarterProposalsPage />} />
+
+                            {/* Rutas de Alquiler */}
+                            <Route path="/create-rental" element={<CreateRentalPage />} />
+                            {/* <Route path="/rentals/:id" element={<RentalPage />} />  Si tienes una página de detalles de alquiler, no la principal*/}
+
+                            {/* Rutas de Servicios */}
+                            <Route path="/create-service" element={<CreateServicePage />} />
+                        </Route>
+
+
+                        {/* ====================================================== */}
+                        {/* ⭐ RUTAS PREMIUM (requieren autenticación Y ser premium) ⭐ */}
+                        {/* ====================================================== */}
+                        <Route element={<PrivateRoute />}>
+                            <Route element={<PremiumRoute />}>
+                                <Route path="/create-product" element={<CreateProductPage />} />
+                                <Route path="/premium-inventory" element={<PremiumInventoryPage />} />
+                                <Route path="/premium-upsell" element={<PremiumUpsellPage />} />
+                            </Route>
+                        </Route>
+
+                        {/* ====================================================== */}
+                        {/* ⭐ RUTAS DE ADMINISTRADOR (requieren autenticación Y rol de admin) ⭐ */}
+                        {/* ====================================================== */}
+                        {/* Si tienes un AdminRoute y páginas de admin:
+                        <Route element={<PrivateRoute />}>
+                            <Route element={<AdminRoute />}>
+                                <Route path="/admin/users" element={<AdminUsersPage />} />
+                                <Route path="/admin/products" element={<AdminProductsPage />} />
+                            </Route>
+                        </Route>
+                        */}
+
+                        {/* ====================================================== */}
+                        {/* ⭐ RUTA DE PÁGINA NO ENCONTRADA (404) ⭐ */}
+                        {/* ====================================================== */}
+                        {/* Si NO tienes el componente NotFoundPage.jsx, esta línea te dará un error.
+                            Coméntala o elimínala si no lo vas a implementar.
+                        <Route path="*" element={<NotFoundPage />} />
+                        */}
                     </Routes>
                 </main>
-
-                <footer className="bg-green-700 text-white text-center p-4 mt-8 shadow-inner">
-                    <p>&copy; {new Date().getFullYear()} AgroApp. Todos los derechos reservados.</p>
-                </footer>
-            </div>
-        </Router>
+                {/* Si tienes un componente Footer.jsx, descomenta la siguiente línea: */}
+                {/* <Footer /> */}
+            </Router>
+        </AuthProvider>
     );
 }
 

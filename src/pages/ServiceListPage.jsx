@@ -1,28 +1,25 @@
 // src/pages/ServiceListPage.jsx
 import React, { useState, useEffect } from 'react';
 
-function ServiceListPage({ userId }) {
+function ServiceListPage() {
     const [services, setServices] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Simular la carga de servicios
         const fetchServices = async () => {
             setLoading(true);
             setError(null);
             try {
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Simula un retraso de red
-                // Datos de servicios de ejemplo
-                const dummyServices = [
-                    { id: 's1', name: 'Asesoría Agronómica', description: 'Expertos en cultivos y suelos.', price: 150000, providerId: 'user1', imageUrl: 'https://placehold.co/600x400/D0D0D0/333333?text=Asesoria+Agro' },
-                    { id: 's2', name: 'Alquiler de Maquinaria', description: 'Tractores, sembradoras, cosechadoras.', price: 500000, providerId: 'user2', imageUrl: 'https://placehold.co/600x400/D0D0D0/333333?text=Maquinaria+Agro' },
-                    { id: 's3', name: 'Control de Plagas', description: 'Soluciones ecológicas para tus cultivos.', price: 200000, providerId: 'user1', imageUrl: 'https://placehold.co/600x400/D0D0D0/333333?text=Control+Plagas' },
-                ];
-                setServices(dummyServices);
+                const response = await fetch('http://localhost:5000/api/services'); // ⭐ URL REAL DE TU BACKEND ⭐
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                setServices(data);
             } catch (err) {
-                setError('Error al cargar los servicios.');
-                console.error("Error fetching dummy services:", err);
+                setError('Error al cargar los servicios desde el servidor.');
+                console.error("Error fetching services from backend:", err);
             } finally {
                 setLoading(false);
             }
@@ -41,13 +38,13 @@ function ServiceListPage({ userId }) {
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {services.map(service => (
-                    <div key={service.id} className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+                    // ⭐ Usar service._id de MongoDB como key ⭐
+                    <div key={service._id} className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
                         <img src={service.imageUrl} alt={service.name} className="w-full h-48 object-cover"/>
                         <div className="p-4">
                             <h3 className="text-xl font-semibold text-gray-900 mb-2">{service.name}</h3>
                             <p className="text-gray-700 text-sm mb-3">{service.description}</p>
                             <p className="text-lg font-bold text-green-700">COP {service.price.toLocaleString('es-CO')}</p>
-                            {/* Aquí puedes agregar un botón para ver detalles o contactar */}
                         </div>
                     </div>
                 ))}

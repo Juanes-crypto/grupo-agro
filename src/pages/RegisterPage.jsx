@@ -1,130 +1,121 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import React, { useState, useContext } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 
 function RegisterPage() {
-  console.log('RegisterPage: Componente renderizado.');
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
-  const { login, isAuthenticated } = useContext(AuthContext);
-  const navigate = useNavigate();
+    const [name, setName] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
+    const [confirmPassword, setConfirmPassword] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
 
-  useEffect(() => {
-    console.log('RegisterPage: useEffect de autenticación. isAuthenticated:', isAuthenticated);
-    if (isAuthenticated) {
-      console.log('RegisterPage: Usuario autenticado, redirigiendo a /premium.');
-      navigate('/bienvenido'); // en lugar de '/premium'
-    }
-  }, [isAuthenticated, navigate]);
+    const navigate = useNavigate();
+    const { register } = useContext(AuthContext); // Obtiene la función de registro del contexto
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError('');
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
 
-    if (password !== confirmPassword) {
-      setError('Las contraseñas no coinciden.');
-      setLoading(false);
-      return;
-    }
+        if (password !== confirmPassword) {
+            setError('Las contraseñas no coinciden.');
+            setLoading(false);
+            return;
+        }
 
-    try {
-      const response = await api.post('/users/register', { username, email, password });
-      login(response.data);
-      console.log('Registro exitoso:', response.data);
-    } catch (err) {
-      console.error('Error de registro:', err);
-      if (err.response?.data?.message) {
-        setError(err.response.data.message);
-      } else {
-        setError('Error desconocido al registrar usuario. Inténtalo de nuevo.');
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+        try {
+            // ⭐ LLAMADA A TU API DE REGISTRO DEL BACKEND ⭐
+            const response = await fetch('http://localhost:5000/api/users/register', { // ⭐ VERIFICA TU URL Y PUERTO DEL BACKEND ⭐
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name, email, password }),
+            });
 
-  console.log('RegisterPage: Retornando JSX del formulario.');
+            const data = await response.json();
 
-  return (
-    <div className="max-w-md mx-auto mt-20 p-8 bg-white rounded-xl shadow-lg border font-inter">
-      <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">Registrarse</h2>
+            if (!response.ok) {
+                throw new Error(data.message || 'Error al registrar usuario.');
+            }
 
-      {error && <p className="bg-red-100 text-red-700 p-3 rounded mb-4 text-center font-semibold">{error}</p>}
+            // En un registro exitoso, almacena los datos del usuario y el token en AuthContext
+            // Asumiendo que el backend devuelve { user: { _id, name, email, isPremium }, token: '...' }
+            register(data.user, data.token);
+            console.log('Registro exitoso:', data);
+            navigate('/welcome'); // Redirige a la página de bienvenida o dashboard
 
-      <form onSubmit={handleSubmit} className="space-y-5">
-        <div>
-          <label htmlFor="username" className="block mb-2 font-medium text-gray-700">Nombre de Usuario:</label>
-          <input
-            type="text"
-            id="username"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-          />
+        } catch (err) {
+            setError(err.message || 'Error al registrar usuario. Inténtalo de nuevo.');
+            console.error("Error de registro:", err);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    return (
+        <div className="max-w-md mx-auto mt-10 p-8 bg-white rounded-lg shadow-lg">
+            <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Registrarse</h2>
+            <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre</label>
+                    <input
+                        type="text"
+                        id="name"
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        value={name}
+                        onChange={(e) => setName(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
+                    <input
+                        type="email"
+                        id="email"
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700">Contraseña</label>
+                    <input
+                        type="password"
+                        id="password"
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                    />
+                </div>
+                <div>
+                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700">Confirmar Contraseña</label>
+                    <input
+                        type="password"
+                        id="confirmPassword"
+                        className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        required
+                    />
+                </div>
+                {error && <p className="text-red-600 text-sm text-center">{error}</p>}
+                <button
+                    type="submit"
+                    className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-300 disabled:bg-green-400"
+                    disabled={loading}
+                >
+                    {loading ? 'Registrando...' : 'Registrarse'}
+                </button>
+            </form>
+            <p className="mt-4 text-center text-gray-600">
+                ¿Ya tienes una cuenta? <Link to="/login" className="text-blue-600 hover:underline">Inicia sesión aquí</Link>
+            </p>
         </div>
-
-        <div>
-          <label htmlFor="email" className="block mb-2 font-medium text-gray-700">Correo Electrónico:</label>
-          <input
-            type="email"
-            id="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="password" className="block mb-2 font-medium text-gray-700">Contraseña:</label>
-          <input
-            type="password"
-            id="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-          />
-        </div>
-
-        <div>
-          <label htmlFor="confirmPassword" className="block mb-2 font-medium text-gray-700">Confirmar Contraseña:</label>
-          <input
-            type="password"
-            id="confirmPassword"
-            value={confirmPassword}
-            onChange={(e) => setConfirmPassword(e.target.value)}
-            required
-            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
-          />
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className={`w-full py-3 px-4 rounded-lg font-bold text-white transition duration-300 ${
-            loading ? 'bg-green-300 cursor-not-allowed' : 'bg-green-600 hover:bg-green-700'
-          }`}
-        >
-          {loading ? 'Registrando...' : 'Registrarse'}
-        </button>
-      </form>
-
-      <p className="text-center mt-6 text-sm text-gray-600">
-        ¿Ya tienes una cuenta?{' '}
-        <Link to="/login" className="text-green-600 font-semibold hover:underline">
-          Inicia sesión aquí
-        </Link>
-      </p>
-    </div>
-  );
+    );
 }
 
 export default RegisterPage;

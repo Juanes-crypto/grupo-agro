@@ -1,181 +1,206 @@
-import React, { useState, useEffect } from 'react';
+// frontend/src/pages/CreateProductPage.jsx
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-// ELIMINA ESTAS LÍNEAS DE FIREBASE
-// import { getFirestore, collection, addDoc, serverTimestamp } from 'firebase/firestore';
-// import { getAuth } from 'firebase/auth';
-// import { initializeApp } from 'firebase/app';
-import { CATEGORIES } from '../App'; // Importa las categorías desde App.jsx
+import { AuthContext } from '../context/AuthContext';
 
-// ELIMINA ESTAS VARIABLES GLOBALES Y LA INICIALIZACIÓN DE FIREBASE
-// const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {};
-// const appId = typeof __app_id !== 'undefined' ? __app_id : 'default-app-id';
-
-// ELIMINA LA INICIALIZACIÓN DE FIREBASE
-// const app = initializeApp(firebaseConfig);
-// const db = getFirestore(app);
-// const auth = getAuth(app);
-
-function CreateProductPage({ userId }) {
-    const [name, setName] = useState('');
-    const [description, setDescription] = useState('');
-    const [price, setPrice] = useState('');
-    const [category, setCategory] = useState(CATEGORIES[0] || ''); // Establece la primera categoría como valor predeterminado
-    const [isTradable, setIsTradable] = useState(false);
-    const [imageUrl, setImageUrl] = useState(''); // Para la URL de la imagen (placeholder)
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState('');
+function CreateProductPage() {
+    const { token, isAuthenticated, isPremium } = useContext(AuthContext);
     const navigate = useNavigate();
 
-    useEffect(() => {
-        if (!userId) {
-            setMessage('Debes iniciar sesión para ofrecer un producto.');
-            // Opcional: Redirigir al login si no hay userId
-            // navigate('/login');
+    const [productData, setProductData] = useState({
+        name: '',        // ⭐ REVERTIDO: Vuelve a 'name'
+        description: '',
+        price: '',
+        unit: 'kg',      // Para almacenar la unidad seleccionada
+        stock: '',       // ⭐ REVERTIDO: Vuelve a 'stock' para el input numérico
+        category: '',
+    });
+    const [image, setImage] = useState(null);
+    const [previewUrl, setPreviewUrl] = useState('');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState(null);
+    const [success, setSuccess] = useState(null);
+
+    const categories = [
+        'Frutas', 'Verduras', 'Granos', 'Lácteos', 'Carnes',
+        'Cereales', 'Legumbres', 'Pescados', 'Huevos', 'Miel',
+        'Plantas', 'Semillas', 'Fitosanitarios', 'Fertilizantes', 'Maquinaria', 'Otros'
+    ];
+    const units = ['kg', 'litro', 'unidad', 'docena', 'bulto', 'gr'];
+
+    const handleChange = (e) => {
+        const { name, value } = e.target;
+        setProductData(prevData => ({
+            ...prevData,
+            [name]: value
+        }));
+    };
+
+    const handleImageChange = (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            setImage(file);
+            setPreviewUrl(URL.createObjectURL(file));
+        } else {
+            setImage(null);
+            setPreviewUrl('');
         }
-    }, [userId, navigate]);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!userId) {
-            setMessage('Error: No se pudo obtener el ID de usuario. Por favor, inicia sesión.');
+        setLoading(true);
+        setError(null);
+        setSuccess(null);
+
+        if (!isAuthenticated) {
+            setError('Debes iniciar sesión para publicar un producto.');
+            setLoading(false);
             return;
         }
 
-        setLoading(true);
-        setMessage('');
+        if (!isPremium) {
+            setError('Solo usuarios premium pueden publicar productos.');
+            setLoading(false);
+            return;
+        }
+
+        // Validación adicional en el frontend por si acaso
+        if (!productData.name || !productData.description || !productData.price || !productData.category || !productData.stock || !image) {
+            setError('Por favor, completa todos los campos (nombre, descripción, precio, categoría, cantidad, imagen).');
+            setLoading(false);
+            return;
+        }
+
+        // Crear FormData para enviar datos mixtos (texto + archivo)
+        const formData = new FormData();
+        // Asegúrate de que los nombres de los campos aquí coincidan con los del backend
+        formData.append('name', productData.name); // ⭐ REVERTIDO
+        formData.append('description', productData.description);
+        formData.append('price', productData.price);
+        // ⭐ IMPORTANTE: Combinar stock y unit en un solo campo 'quantity' para el backend
+        formData.append('quantity', `${productData.stock} ${productData.unit}`); // ⭐ CAMBIO CRÍTICO
+        formData.append('category', productData.category);
+
+        if (image) {
+            formData.append('image', image);
+        } else {
+            setError('Por favor, selecciona una imagen para el producto.');
+            setLoading(false);
+            return;
+        }
 
         try {
-            // ELIMINA O REEMPLAZA ESTA LÓGICA DE FIREBASE
-            // const productsCollectionRef = collection(db, `artifacts/${appId}/products`);
-            // await addDoc(productsCollectionRef, {
-            //     name,
-            //     description,
-            //     price: parseFloat(price), // Asegúrate de que el precio sea un número
-            //     category,
-            //     isTradable,
-            //     imageUrl: imageUrl || `https://placehold.co/600x400/E0E0E0/333333?text=Producto+Agro`, // Placeholder si no hay URL
-            //     userId, // ID del usuario que crea el producto
-            //     createdAt: serverTimestamp(),
-            //     updatedAt: serverTimestamp()
-            // });
-
-            // ⭐ INICIO DE LA SIMULACIÓN TEMPORAL (REEMPLAZA CON TU LÓGICA DE BACKEND REAL) ⭐
-            await new Promise(resolve => setTimeout(resolve, 1500)); // Simula un envío de red (1.5 segundos)
-            console.log('🎉 Simulación: Producto enviado con éxito:', {
-                name,
-                description,
-                price: parseFloat(price),
-                category,
-                isTradable,
-                imageUrl: imageUrl || `https://placehold.co/600x400/E0E0E0/333333?text=Producto+Agro`,
-                userId
+            const response = await fetch('http://localhost:5000/api/products', {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: formData,
             });
-            // ⭐ FIN DE LA SIMULACIÓN TEMPORAL ⭐
 
-            setMessage('Producto creado con éxito!');
-            setName('');
-            setDescription('');
-            setPrice('');
-            setCategory(CATEGORIES[0] || '');
-            setIsTradable(false);
-            setImageUrl('');
-            // Opcional: Redirigir a la lista de productos
-            navigate('/products');
-        } catch (error) {
-            console.error("Error al crear el producto:", error);
-            setMessage(`Error al crear el producto: ${error.message}`);
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Error al publicar el producto.');
+            }
+
+            setSuccess('Producto publicado con éxito!');
+            setProductData({
+                name: '', description: '', price: '', unit: 'kg', stock: '', category: '' // ⭐ REVERTIDO
+            });
+            setImage(null);
+            setPreviewUrl('');
+            console.log('Producto creado:', data);
+            navigate('/my-products');
+
+        } catch (err) {
+            setError(err.message || 'No se pudo publicar el producto. Inténtalo de nuevo.');
+            console.error("Error creating product:", err);
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <div className="max-w-2xl mx-auto bg-white p-8 rounded-lg shadow-md">
-            <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Ofrecer Nuevo Producto</h2>
-            {message && (
-                <div className={`p-3 mb-4 rounded-md ${message.includes('Error') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
-                    {message}
-                </div>
+        <div className="max-w-2xl mx-auto mt-10 p-8 bg-white rounded-lg shadow-lg">
+            <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Publicar Nuevo Producto</h2>
+
+            {!isAuthenticated ? (
+                <p className="text-red-600 text-center mb-4">Debes iniciar sesión para publicar productos.</p>
+            ) : !isPremium ? (
+                <p className="text-red-600 text-center mb-4">Solo los usuarios premium pueden publicar productos. ¡Considera mejorar tu cuenta!</p>
+            ) : (
+                <form onSubmit={handleSubmit} className="space-y-5">
+                    <div>
+                        <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre del Producto</label> {/* ⭐ REVERTIDO */}
+                        <input type="text" id="name" name="name" // ⭐ REVERTIDO
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                            value={productData.name} onChange={handleChange} required /> {/* ⭐ REVERTIDO */}
+                    </div>
+                    <div>
+                        <label htmlFor="description" className="block text-sm font-medium text-gray-700">Descripción</label>
+                        <textarea id="description" name="description" rows="3"
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                            value={productData.description} onChange={handleChange} required></textarea>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label htmlFor="price" className="block text-sm font-medium text-gray-700">Precio (COP)</label>
+                            <input type="number" id="price" name="price"
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                value={productData.price} onChange={handleChange} required min="0" />
+                        </div>
+                        <div>
+                            <label htmlFor="unit" className="block text-sm font-medium text-gray-700">Unidad</label>
+                            <select id="unit" name="unit"
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                value={productData.unit} onChange={handleChange} required>
+                                {units.map(unit => (
+                                    <option key={unit} value={unit}>{unit}</option>
+                                ))}
+                            </select>
+                        </div>
+                        <div>
+                            <label htmlFor="stock" className="block text-sm font-medium text-gray-700">Cantidad en Stock</label> {/* ⭐ REVERTIDO */}
+                            <input type="number" id="stock" name="stock" // ⭐ REVERTIDO
+                                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                                value={productData.stock} onChange={handleChange} required min="0" /> {/* ⭐ REVERTIDO */}
+                        </div>
+                    </div>
+                    <div>
+                        <label htmlFor="category" className="block text-sm font-medium text-gray-700">Categoría</label>
+                        <select id="category" name="category"
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                            value={productData.category} onChange={handleChange} required>
+                            <option value="">Selecciona una categoría</option>
+                            {categories.map(cat => (
+                                <option key={cat} value={cat}>{cat}</option>
+                            ))}
+                        </select>
+                    </div>
+                    <div>
+                        <label htmlFor="image" className="block text-sm font-medium text-gray-700">Imagen del Producto</label>
+                        <input type="file" id="image" name="image" accept="image/*"
+                            className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                            onChange={handleImageChange} required />
+                        {previewUrl && (
+                            <div className="mt-4 w-48 h-auto">
+                                <img src={previewUrl} alt="Vista previa" className="rounded-md object-cover max-w-full h-auto" />
+                            </div>
+                        )}
+                    </div>
+
+                    {error && <p className="text-red-600 text-sm text-center mt-4">{error}</p>}
+                    {success && <p className="text-green-600 text-sm text-center mt-4">{success}</p>}
+
+                    <button type="submit"
+                        className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-300 disabled:bg-green-400"
+                        disabled={loading}>
+                        {loading ? 'Publicando...' : 'Publicar Producto'}
+                    </button>
+                </form>
             )}
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">Nombre del Producto</label>
-                    <input
-                        type="text"
-                        id="name"
-                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                        value={name}
-                        onChange={(e) => setName(e.target.value)}
-                        required
-                    />
-                </div>
-                <div>
-                    <label htmlFor="description" className="block text-sm font-medium text-gray-700 mb-1">Descripción</label>
-                    <textarea
-                        id="description"
-                        rows="4"
-                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                        value={description}
-                        onChange={(e) => setDescription(e.target.value)}
-                        required
-                    ></textarea>
-                </div>
-                <div>
-                    <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">Precio (COP)</label>
-                    <input
-                        type="number"
-                        id="price"
-                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                        value={price}
-                        onChange={(e) => setPrice(e.target.value)}
-                        required
-                        min="0"
-                        step="0.01"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Categoría</label>
-                    <select
-                        id="category"
-                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                        value={category}
-                        onChange={(e) => setCategory(e.target.value)}
-                        required
-                    >
-                        {CATEGORIES.map((cat) => (
-                            <option key={cat} value={cat}>{cat}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="flex items-center">
-                    <input
-                        type="checkbox"
-                        id="isTradable"
-                        className="h-5 w-5 text-green-600 border-gray-300 rounded focus:ring-green-500"
-                        checked={isTradable}
-                        onChange={(e) => setIsTradable(e.target.checked)}
-                    />
-                    <label htmlFor="isTradable" className="ml-2 block text-sm font-medium text-gray-700">Ofrecer para Trueque 🤝</label>
-                </div>
-                <div>
-                    <label htmlFor="imageUrl" className="block text-sm font-medium text-gray-700 mb-1">URL de la Imagen (Opcional)</label>
-                    <input
-                        type="url"
-                        id="imageUrl"
-                        className="w-full p-3 border border-gray-300 rounded-md focus:ring-green-500 focus:border-green-500"
-                        value={imageUrl}
-                        onChange={(e) => setImageUrl(e.target.value)}
-                        placeholder="Ej: https://ejemplo.com/mi-imagen.jpg"
-                    />
-                </div>
-                <button
-                    type="submit"
-                    className="w-full bg-green-600 text-white p-3 rounded-md hover:bg-green-700 transition duration-300 font-semibold text-lg"
-                    disabled={loading}
-                >
-                    {loading ? 'Creando Producto...' : 'Crear Producto'}
-                </button>
-            </form>
         </div>
     );
 }

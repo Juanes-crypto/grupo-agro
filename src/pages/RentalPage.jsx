@@ -1,28 +1,25 @@
 // src/pages/RentalPage.jsx
 import React, { useState, useEffect } from 'react';
 
-function RentalPage({ userId }) {
+function RentalPage() {
     const [rentals, setRentals] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
     useEffect(() => {
-        // Simular la carga de rentas
         const fetchRentals = async () => {
             setLoading(true);
             setError(null);
             try {
-                await new Promise(resolve => setTimeout(resolve, 1000)); // Simula un retraso de red
-                // Datos de rentas de ejemplo
-                const dummyRentals = [
-                    { id: 'r1', name: 'Alquiler de Tractor (Diario)', description: 'Tractor John Deere 5075E, incluye operador.', pricePerDay: 800000, ownerId: 'userA', imageUrl: 'https://placehold.co/600x400/C0C0C0/333333?text=Tractor+Renta' },
-                    { id: 'r2', name: 'Alquiler de Sembradora', description: 'Sembradora de precisión para pequeños cultivos.', pricePerDay: 250000, ownerId: 'userB', imageUrl: 'https://placehold.co/600x400/C0C0C0/333333?text=Sembradora+Renta' },
-                    { id: 'r3', name: 'Drone para Fumigación', description: 'Drone agrícola con capacidad de 10L, por hectárea.', pricePerDay: 400000, ownerId: 'userA', imageUrl: 'https://placehold.co/600x400/C0C0C0/333333?text=Drone+Renta' },
-                ];
-                setRentals(dummyRentals);
+                const response = await fetch('http://localhost:5000/api/rentals'); // ⭐ URL REAL DE TU BACKEND ⭐
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const data = await response.json();
+                setRentals(data);
             } catch (err) {
-                setError('Error al cargar las rentas.');
-                console.error("Error fetching dummy rentals:", err);
+                setError('Error al cargar las rentas desde el servidor.');
+                console.error("Error fetching rentals from backend:", err);
             } finally {
                 setLoading(false);
             }
@@ -41,13 +38,13 @@ function RentalPage({ userId }) {
             )}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {rentals.map(rental => (
-                    <div key={rental.id} className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
+                    // ⭐ Usar rental._id de MongoDB como key ⭐
+                    <div key={rental._id} className="border border-gray-200 rounded-lg overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300">
                         <img src={rental.imageUrl} alt={rental.name} className="w-full h-48 object-cover"/>
                         <div className="p-4">
                             <h3 className="text-xl font-semibold text-gray-900 mb-2">{rental.name}</h3>
                             <p className="text-gray-700 text-sm mb-3">{rental.description}</p>
                             <p className="text-lg font-bold text-blue-700">COP {rental.pricePerDay.toLocaleString('es-CO')} / día</p>
-                            {/* Aquí puedes agregar un botón para ver detalles o solicitar */}
                         </div>
                     </div>
                 ))}
