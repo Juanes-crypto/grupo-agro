@@ -18,13 +18,25 @@ function PremiumInventoryPage() {
     const [productName, setProductName] = useState('');
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
+    // Mantenemos 'quantity' como string para simplificar, el backend debe manejar la división si es necesario.
     const [quantity, setQuantity] = useState('');
-    const [category, setCategory] = useState('');
+    const [category, setCategory] = useState(''); // Ahora será la categoría seleccionada
     const [isTradable, setIsTradable] = useState(false);
     const [image, setImage] = useState(null);
     const [formMessage, setFormMessage] = useState('');
     const [formError, setFormError] = useState('');
     const [formLoading, setFormLoading] = useState(false);
+
+    // ⭐⭐⭐ NUEVO: Lista de categorías y unidades (igual que en CreateProductPage) ⭐⭐⭐
+    const categories = [
+        'Frutas', 'Verduras', 'Granos', 'Lácteos', 'Carnes',
+        'Cereales', 'Legumbres', 'Pescados', 'Huevos', 'Miel',
+        'Plantas', 'Semillas', 'Fitosanitarios', 'Fertilizantes', 'Maquinaria', 'Otros'
+    ];
+    // Si tu campo 'quantity' en el backend espera un formato específico (e.g., "10 kg"),
+    // podrías necesitar dividirlo en 'stock' y 'unit' aquí también, como en CreateProductPage.
+    // Por ahora, lo mantenemos como un solo campo 'quantity' para simplificar el cambio en este archivo.
+    // Si tu campo de backend `quantity` espera un número y una unidad, dime para ajustarlo.
 
     // Redirección si no es premium o no está autenticado
     useEffect(() => {
@@ -61,7 +73,7 @@ function PremiumInventoryPage() {
         setDescription('');
         setPrice('');
         setQuantity('');
-        setCategory('');
+        setCategory(''); // Limpiar la categoría para un nuevo producto
         setIsTradable(false);
         setImage(null);
         setFormMessage('');
@@ -76,9 +88,9 @@ function PremiumInventoryPage() {
         setDescription(product.description);
         setPrice(product.price);
         setQuantity(product.quantity);
-        setCategory(product.category);
+        setCategory(product.category || ''); // ⭐ Asegúrate de que si la categoría es null, se inicialice a cadena vacía ⭐
         setIsTradable(product.isTradable);
-        setImage(null);
+        setImage(null); // No pre-cargar la imagen en el input file por seguridad
         setFormMessage('');
         setFormError('');
         setIsModalOpen(true);
@@ -107,10 +119,8 @@ function PremiumInventoryPage() {
 
         if (window.confirm(confirmAction)) {
             try {
-                // Enviamos solo el campo isPublished para actualizarlo
                 const res = await api.put(`/products/${product._id}`, { isPublished: newPublishedStatus });
                 
-                // Actualizar el estado local de los productos
                 setProducts(products.map(p => 
                     p._id === product._id ? { ...p, isPublished: res.data.isPublished } : p
                 ));
@@ -122,7 +132,6 @@ function PremiumInventoryPage() {
         }
     };
 
-
     // Enviar formulario (Crear o Actualizar)
     const handleFormSubmit = async (e) => {
         e.preventDefault();
@@ -130,11 +139,24 @@ function PremiumInventoryPage() {
         setFormMessage('');
         setFormError('');
 
+        // Validación básica
+        if (!productName || !description || !price || !quantity || !category) {
+            setFormError('Por favor, completa todos los campos requeridos (nombre, descripción, precio, cantidad, categoría).');
+            setFormLoading(false);
+            return;
+        }
+        if (!editingProduct && !image) {
+            setFormError('Por favor, selecciona una imagen para el nuevo producto.');
+            setFormLoading(false);
+            return;
+        }
+
         const formData = new FormData();
         formData.append('name', productName);
         formData.append('description', description);
         formData.append('price', price);
-        formData.append('quantity', quantity);
+        // ⭐ La cantidad se envía tal cual, si tu backend necesita "stock" y "unit", dime. ⭐
+        formData.append('quantity', quantity); 
         formData.append('category', category);
         formData.append('isTradable', isTradable);
         if (image) {
@@ -143,22 +165,18 @@ function PremiumInventoryPage() {
 
         try {
             if (editingProduct) {
-                // Al actualizar un producto, no queremos cambiar el isPublished a menos que el usuario lo haga explícitamente.
-                // Sin embargo, si el backend está configurado para que `updateProduct` use lo que se envía,
-                // y no le enviamos `isPublished`, mantendrá su valor. Esto es lo que queremos.
                 await api.put(`/products/${editingProduct._id}`, formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
                 setFormMessage('Producto actualizado exitosamente.');
             } else {
-                // Al crear un producto, el backend ya lo marca como isPublished: false para premium users.
                 await api.post('/products', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
-                setFormMessage('Producto creado exitosamente y en estado "Borrador".'); // Mensaje más específico
+                setFormMessage('Producto creado exitosamente y en estado "Borrador".');
             }
             setIsModalOpen(false);
-            fetchUserProducts();
+            fetchUserProducts(); // Recargar la lista de productos
         } catch (err) {
             console.error('Error al guardar el producto:', err);
             const msg = err.response?.data?.message || 'Error desconocido al guardar el producto.';
@@ -368,25 +386,31 @@ function PremiumInventoryPage() {
                             <div>
                                 <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">Cantidad</label>
                                 <input
-                                    type="number"
+                                    type="text" // Mantener como 'text' para permitir "10 kg", "5 unidades", etc.
                                     id="quantity"
                                     value={quantity}
                                     onChange={(e) => setQuantity(e.target.value)}
                                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                                     required
-                                    min="0"
                                 />
                             </div>
+                            {/* ⭐⭐⭐ CAMBIO CLAVE: Campo de Categoría de input a select ⭐⭐⭐ */}
                             <div>
                                 <label htmlFor="category" className="block text-sm font-medium text-gray-700">Categoría</label>
-                                <input
-                                    type="text"
+                                <select
                                     id="category"
                                     value={category}
                                     onChange={(e) => setCategory(e.target.value)}
                                     className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
-                                />
+                                    required
+                                >
+                                    <option value="">Selecciona una categoría</option>
+                                    {categories.map(cat => (
+                                        <option key={cat} value={cat}>{cat}</option>
+                                    ))}
+                                </select>
                             </div>
+                            {/* ⭐⭐⭐ FIN CAMBIO CLAVE ⭐⭐⭐ */}
                             <div className="flex items-center">
                                 <input
                                     type="checkbox"
@@ -404,6 +428,8 @@ function PremiumInventoryPage() {
                                     id="image"
                                     onChange={(e) => setImage(e.target.files[0])}
                                     className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                                    // No requerido si se está editando y no se selecciona una nueva imagen
+                                    required={!editingProduct} 
                                 />
                                 {editingProduct && !image && (
                                     <p className="text-xs text-gray-500 mt-1">
