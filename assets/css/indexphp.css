@@ -1,0 +1,96 @@
+/* Reset básico */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, #8e44ad, #3498db); /* Fondo con degradado */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    padding: 20px;
+}
+
+.card {
+    background: #1e1e2f;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    padding: 30px;
+    max-width: 400px;
+    width: 100%;
+    transition: transform 0.3s ease;
+}
+
+.card:hover {
+    transform: scale(1.02);
+}
+
+.card-header .logo {
+    width: 80px;
+    margin-bottom: 10px;
+}
+
+.card-title {
+    font-size: 24px;
+    color: #e6e6ff;
+    margin-bottom: 10px;
+}
+
+.form-floating input {
+    border: 2px solid #dfe6e9;
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 15px;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-floating input:focus {
+    border-color: #74b9ff;
+    box-shadow: 0 0 8px rgba(116, 185, 255, 0.5);
+    outline: none;
+}
+
+.btn {
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    margin-top: 15px;
+}
+
+.btn-primary {
+    background-color: #ffae00;
+    color: #fff;
+}
+
+.btn-primary:hover {
+    background-color: #ffca66;
+    transform: scale(1.05);
+}
+
+.btn-danger {
+    background-color: #d63031;
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background-color: #e74c3c;
+    transform: scale(1.05);
+}
+
+.create-account {
+    color: #00192c;
+    font-weight: bold;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.create-account:hover {
+    color: #ffae00;
+    text-decoration: underline;
+}

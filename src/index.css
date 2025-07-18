@@ -1,0 +1,16 @@
+@import "tailwindcss";
+.btn-green {
+  @apply bg-green-600 hover:bg-green-700 text-white py-4 px-6 rounded-lg font-bold transition shadow text-lg;
+}
+.btn-yellow {
+  @apply bg-yellow-500 hover:bg-yellow-600 text-white py-4 px-6 rounded-lg font-bold transition shadow text-lg;
+}
+.btn-blue {
+  @apply bg-blue-500 hover:bg-blue-600 text-white py-4 px-6 rounded-lg font-bold transition shadow text-lg;
+}
+.btn-gray {
+  @apply bg-gray-700 hover:bg-gray-800 text-white py-4 px-6 rounded-lg font-bold transition shadow text-lg;
+}
+.btn-purple {
+  @apply bg-purple-600 hover:bg-purple-700 text-white py-3 px-5 rounded-lg font-semibold transition;
+}

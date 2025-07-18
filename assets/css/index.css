@@ -1,0 +1,177 @@
+/* Reseteo de estilos básicos */
+* {
+    margin: 0; /* Elimina el margen por defecto de todos los elementos */
+    padding: 0; /* Elimina el padding por defecto de todos los elementos */
+    box-sizing: border-box; /* Incluye padding y borde en el ancho y alto total del elemento */
+}
+
+/* Estilos para el cuerpo de la página */
+body {
+    font-family: 'Share Tech', sans-serif; /* Define la fuente principal de la página */
+    background-color: #e0e0e0; /* Color de fondo de la página */
+    color: #333; /* Color del texto */
+    display: flex; /* Usa flexbox para el diseño */
+    flex-direction: column; /* Orienta los elementos en una columna */
+    align-items: center; /* Centra los elementos horizontalmente */
+    justify-content: center; /* Centra los elementos verticalmente */
+    height: 100vh; /* Altura del cuerpo igual a la altura de la ventana del navegador */
+    padding: 20px; /* Espacio interno alrededor del contenido del cuerpo */
+}
+
+/* Estilos para el contenedor principal */
+.container {
+    max-width: 1200px; /* Ancho máximo del contenedor */
+    width: 100%; /* El contenedor ocupará el 100% del ancho disponible */
+    background-color: #fff; /* Color de fondo del contenedor */
+    padding: 50px; /* Espacio interno alrededor del contenido del contenedor */
+    border-radius: 10px; /* Bordes redondeados del contenedor */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1); /* Sombra suave alrededor del contenedor */
+    display: flex; /* Usa flexbox para el contenido interno */
+    justify-content: space-between; /* Espacio entre los elementos dentro del contenedor */
+    align-items: center; /* Centra los elementos verticalmente */
+}
+
+/* Sección de texto dentro del contenedor */
+.text-section {
+    max-width: 50%; /* Limita el ancho máximo de la sección de texto al 50% del contenedor */
+}
+
+/* Estilos para el encabezado principal */
+h1 {
+    font-size: 48px; /* Tamaño de fuente del encabezado principal */
+    color: #333; /* Color del texto del encabezado */
+    margin-bottom: 10px; /* Espacio debajo del encabezado */
+}
+
+/* Estilos para el segundo encabezado */
+h2 {
+    font-size: 28px; /* Tamaño de fuente del segundo encabezado */
+    color: #555; /* Color del texto del segundo encabezado */
+    margin-bottom: 20px; /* Espacio debajo del encabezado */
+}
+
+/* Estilos para párrafos */
+p {
+    font-size: 18px; /* Tamaño de fuente del párrafo */
+    color: #666; /* Color del texto del párrafo */
+    margin-bottom: 20px; /* Espacio debajo del párrafo */
+    line-height: 1.5; /* Altura de línea para mejor legibilidad */
+}
+
+/* Estilos para botones */
+.btn {
+    display: inline-block; /* Hace que el botón se comporte como un bloque en línea */
+    padding: 10px 30px; /* Espacio interno del botón */
+    background-color: blueviolet; /* Color de fondo del botón */
+    color: white; /* Color del texto del botón */
+    text-decoration: none; /* Elimina el subrayado del texto */
+    border-radius: 5px; /* Bordes redondeados del botón */
+    transition: background-color 0.3s ease; /* Transición suave del color de fondo */
+}
+
+/* Efecto hover para botones */
+.btn:hover {
+    background-color: rgb(184, 219, 29); /* Color de fondo del botón al pasar el ratón */
+}
+
+/* Sección de imágenes */
+.image-section {
+    position: relative; /* Posiciona elementos hijos en relación a este contenedor */
+}
+
+/* Estilos para imágenes en la sección de imágenes */
+.image-section img {
+    max-width: 300px; /* Ancho máximo de la imagen */
+    border-radius: 50%; /* Bordes redondeados para hacer la imagen circular */
+    object-fit: cover; /* Asegura que la imagen cubra el área sin deformarse */
+}
+
+/* Forma destacada en la sección de imágenes */
+.highlight-shape {
+    position: absolute; /* Posiciona este elemento en relación a su contenedor padre */
+    top: -20px; /* Posición desde la parte superior */
+    right: -20px; /* Posición desde la derecha */
+    width: 350px; /* Ancho de la forma */
+    height: 350px; /* Alto de la forma */
+    background-color: blueviolet; /* Color de fondo de la forma */
+    clip-path: ellipse(50% 40% at 50% 50%); /* Forma elíptica recortada */
+    z-index: -1; /* Envía este elemento detrás de otros */
+}
+
+/* Estilos para iconos de redes sociales */
+.social-icons {
+    margin-top: 30px; /* Espacio encima de la sección de iconos */
+    display: flex; /* Usa flexbox para el diseño */
+    gap: 15px; /* Espacio entre los iconos */
+}
+
+/* Estilos para enlaces de iconos de redes sociales */
+.social-icons a {
+    text-decoration: none; /* Elimina el subrayado de los enlaces */
+    color: #333; /* Color del texto de los enlaces */
+    font-size: 24px; /* Tamaño de fuente de los enlaces */
+}
+
+/* Efecto hover para enlaces de redes sociales */
+.social-icons a:hover {
+    color: rgb(184, 219, 29); /* Cambia el color al pasar el ratón */
+}
+
+/* Estilos para el menú de navegación */
+nav {
+    margin-top: 20px; /* Espacio encima del menú de navegación */
+    display: flex; /* Usa flexbox para el diseño */
+    justify-content: space-around; /* Espacio entre los elementos del menú */
+    width: 100%; /* Ancho completo del menú */
+}
+
+/* Estilos para enlaces de navegación */
+nav a {
+    text-decoration: none; /* Elimina el subrayado de los enlaces */
+    color: #333; /* Color del texto de los enlaces */
+    font-size: 18px; /* Tamaño de fuente de los enlaces */
+    text-transform: uppercase; /* Convierte el texto a mayúsculas */
+}
+
+/* Efecto hover para enlaces de navegación */
+nav a:hover {
+    color: rgb(184, 219, 29); /* Cambia el color al pasar el ratón */
+}
+
+/* Estilos para el modal */
+.modal {
+    display: none; /* Oculta el modal por defecto */
+    position: fixed; /* Fija el modal en la ventana del navegador */
+    z-index: 1; /* Asegura que el modal esté por encima de otros elementos */
+    left: 0; /* Alinea el modal a la izquierda */
+    top: 0; /* Alinea el modal a la parte superior */
+    width: 100%; /* Ancho completo del modal */
+    height: 100%; /* Alto completo del modal */
+    overflow: auto; /* Habilita el desplazamiento si es necesario */
+    background-color: rgba(0, 0, 0, 0.7); /* Fondo semi-transparente del modal */
+}
+
+/* Estilos para el contenido del modal */
+.modal-content {
+    background-color: #fff; /* Color de fondo del contenido del modal */
+    margin: 15% auto; /* Centra el contenido con margen superior e inferior */
+    padding: 20px; /* Espacio interno del contenido del modal */
+    border: 1px solid #888; /* Borde del contenido del modal */
+    width: 80%; /* Ancho del contenido del modal */
+}
+
+/* Estilos para el botón de cerrar el modal */
+.close {
+    color: #666; /* Color del texto del botón de cerrar */
+    float: right; /* Alinea el botón a la derecha */
+    font-size: 28px; /* Tamaño de fuente del botón de cerrar */
+    font-weight: bold; /* Negrita para el botón de cerrar */
+}
+
+/* Efectos para el botón de cerrar */
+.close:hover,
+.close:focus {
+    color: black; /* Cambia el color al pasar el ratón o enfocar */
+    text-decoration: none; /* Elimina el subrayado */
+    cursor: pointer; /* Cambia el cursor al pasar el ratón */
+}

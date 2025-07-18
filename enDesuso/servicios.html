@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="cache-control" content="no-cache" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title id="titulo">Servicios</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="proyecto.css" />
+    <!-- Si tienes estilos extra para servicios, puedes agregar aquí otro link -->
+    <!-- <link rel="stylesheet" href="servicios.css"> -->
+  </head>
+  <body>
+    <!-- Navbar moderno y responsivo -->
+    <header class="navbar" id="inicio">
+      <div class="navbar-logo">
+        <img src="assets/img/logo.png" width="50px" alt="Logo AgroApp" />
+        <span class="navbar-title">AgroApp</span>
+      </div>
+      <nav class="navbar-links" id="navbarLinks">
+        <a href="index.html">Inicio</a>
+        <a href="Servicios.html">Servicios</a>
+        <a href="foro.html">Foro Comercial</a>
+      </nav>
+      <button class="navbar-toggle" id="navbarToggle" aria-label="Menú">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </header>
+
+    <main class="grid-container">
+      <section class="hero">
+        <h2>¿Qué puedes hacer con nosotros?</h2>
+      </section>
+
+      <article class="articulo-servicios">
+        <h2>Conecta con tu comunidad:</h2>
+        <p>AgroApp apoya al campesinado Colombiano, por lo que funciona
+          como una red social, donde puedes hablar con otros campesinos,
+          conocerlos y hacer todo tipo de cosas siempre desde el respeto.</p>
+        <strong>Por eso, puedes hacer campañas, movimientos sociales y 
+          más a través de esta mecánica.</strong>
+      </article>
+      <br><br><br><br><br><br><br><br><br><br><br><br><br>
+      <article class="articulo-servicios">
+        <h2>Una nueva forma de ECONOMÍA:</h2>
+        <p>Hace mucho tiempo, la economía se basaba en cambios (trueques). 
+          Ahora AgroApp quiere devolver esa modalidad, poniéndote en contacto
+          con otro campesino para que puedan ponerse de acuerdo y hacer un trueque justo.
+          Ejemplo:
+        </p>
+        <h4>Don Juan tiene 4 kilos de papa, pero necesita una pala para poder
+          arreglar la zona de sus cultivos. Por otro lado, Don Ernesto quiere un kilo de papa.
+          Como Don Ernesto sabe de AgroApp, se comunica con Don Juan y hacen un acuerdo,
+          así Don Ernesto no tiene que gastar de su plata para comprar en un mercado tradicional
+          y así Don Juan no necesita comprar una pala nueva.
+        </h4>
+        <strong>¿Qué hicieron? Don Juan le dio un kilo de papas a Don Ernesto, 
+          y Don Ernesto le prestó su pala a Don Juan.</strong>
+        <p>¿No es esta una gran forma de economía y de soluciones prácticas?</p>
+      </article>
+      <br><br><br><br><br><br><br><br><br><br><br><br><br>
+      <article class="articulo-servicios">
+        <h2>Abre puertas a la comercialización de tus productos, servicios o bienes</h2>
+        <p>En AgroApp puedes comercializar varias cosas:</p>
+        <ul>
+          <li>Productos: Serían tus cosechas, productos animales, etc.</li>
+          <li>Servicios: Un servicio que ofrezcas TÚ como campesino.</li>
+          <li>Bienes: Préstamos o alquileres de herramientas, maquinaria y otros.</li>
+        </ul>
+        <strong>¡Es la manera más amigable y beneficiosa para hacer NEGOCIOS!</strong>
+      </article>
+    </main>
+    <section class="section">
+      <article class="informacion">
+        <h3>Contactos del Desarrollador</h3>
+        <ul>
+          <li class="redes">Email: juanesgarciaarboleda06@gmail.com</li>
+          <li class="redes">Instagram: juanes_00.2</li>
+          <li class="redes">Facebook: Juanes Garcia</li>
+        </ul>
+      </article>
+      <article class="hipervinculos-footer">
+        <a href="#inicio" class="vinculos">Volver al inicio</a>
+        <a href="Servicios.html" class="vinculos">Ver los servicios</a>
+        <a href="foro.html" class="vinculos">Visitar el foro</a>
+      </article>
+    </section>
+    <footer>
+      <p class="p">2024 AgroApp.</p>
+      <p class="p2">&copy; Todos los derechos reservados.</p>
+    </footer>
+    <script>
+      const toggle = document.getElementById('navbarToggle');
+      const links = document.getElementById('navbarLinks');
+      toggle.addEventListener('click', () => {
+        links.classList.toggle('active');
+        toggle.classList.toggle('active');
+      });
+    </script>
+  </body>
+</html>

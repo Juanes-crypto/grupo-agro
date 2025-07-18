@@ -1,0 +1,71 @@
+<!--Datatables Scripts-->
+<script type="text/javascript" src="../assets/datatables/js/jquery-3.5.1.min.js"></script>
+<script type="text/javascript" src="../assets/datatables/js/jquery.dataTables.min.js"></script>
+
+<!--Datatables responsive script-->
+<script type="text/javascript" src="../assets/datatables/js/dataTables.responsive.min.js"></script>
+
+<!--Datatables Buttons Prints Script-->
+<script type="text/javascript" src="../assets/datatables/js/dataTables.buttons.min.js"></script>
+<script type="text/javascript" src="../assets/datatables/js/dataTables.bootstrap5.min.js"></script>
+<script type="text/javascript" src="../assets/datatables/js/jszip.min.js"></script>
+<script type="text/javascript" src="../assets/datatables/js/pdfmake.min.js"></script>
+<script type="text/javascript" src="../assets/datatables/js/vfs_fonts.min.js"></script>
+<script type="text/javascript" src="../assets/datatables/js/buttons.html5.js"></script>
+<script type="text/javascript" src="../assets/datatables/js/buttons.print.js"></script>
+
+<script type="text/javascript">
+    //Table Files
+    $(document).ready(function () {
+        $('#tablefiles').DataTable({
+            dom: 'Bflrtip',
+            buttons: [
+                {//Botón Copy
+                    extend: 'copyHtml5',
+                    footer: true,
+                    titleAttr: 'Copiar',
+                    className: 'btn btn-outline-primary btn-md',
+                    text: '<i class="bi bi-clipboard"></i>',
+                    exportOptions: {
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7]
+                    }
+                },
+                {//Botón Excel
+                    extend: 'excelHtml5',
+                    footer: true,
+                    titleAttr: 'Excel',
+                    className: 'btn btn-outline-success btn-md',
+                    text: '<i class="bi bi-file-excel"></i>',
+                    exportOptions: {
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7]
+                    }
+                },
+                {//Botón Pdf
+                    extend: 'pdfHtml5',
+                    footer: true,
+                    titleAttr: 'PDF',
+                    className: 'btn btn-outline-danger btn-md',
+                    text: '<i class="bi bi-filetype-pdf"></i>',
+                    exportOptions: {
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7]
+                    }
+                },
+                {//Botón print
+                    extend: 'print',
+                    footer: true,
+                    titleAttr: 'Imprimir',
+                    className: 'btn btn-outline-info btn-md',
+                    text: '<i class="bi bi-printer"></i>',
+                    exportOptions: {
+                        columns: [0, 1, 2, 3, 4, 5, 6, 7, 8]
+                    }
+                },
+            ],
+            responsive: true,
+            language: {
+                url: '../assets/datatables/es-ES.json'
+            },
+        });
+    });
+</script>
+<!--Datatables-->

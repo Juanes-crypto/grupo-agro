@@ -1,0 +1,143 @@
+.sidebar {
+        min-width: 250px;
+        background-color: rgba(52, 58, 64, 0.8);
+        color: #fff;
+        transition: width 0.3s;
+    }
+    .sidebar a {
+        color: #fff;
+        padding: 15px;
+        text-decoration: none;
+        display: block;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+    .sidebar a:hover {
+        background-color: rgba(255, 255, 255, 0.1);
+    }
+    .content {
+        flex: 1;
+        padding: 30px;
+        overflow-y: auto;
+        background-color: rgba(248, 249, 250, 0.9);
+        border-radius: 10px;
+    }
+    .btn-enter {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        transition: background-color 0.3s;
+    }
+    .btn-enter:hover {
+        background-color: #0056b3;
+    }
+    .paragraph {
+        background-color: rgba(255, 255, 255, 0.8);
+        color: #333;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 30px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    }
+    .team-images {
+        display: flex;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+    .team-member {
+        margin: 15px;
+        text-align: center;
+    }
+    .team-member img {
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-bottom: 10px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+/* Estilos existentes */
+body {
+    display: flex;
+    height: 100vh;
+    margin: 0;
+    overflow: hidden;
+    background-image: url('assets/img/fondo.jpg');
+    background-size: cover;
+    background-position: center;
+    font-family: 'Roboto', sans-serif;
+}
+.sidebar {
+    min-width: 250px;
+    background-color: rgba(52, 58, 64, 0.8);
+    color: #fff;
+    transition: width 0.3s;
+}
+.sidebar a {
+    color: #fff;
+    padding: 15px;
+    text-decoration: none;
+    display: block;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.sidebar a:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+.content {
+    flex: 1;
+    padding: 30px;
+    overflow-y: auto;
+    background-color: rgba(248, 249, 250, 0.9);
+    border-radius: 10px;
+}
+.btn-enter {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    z-index: 1000;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: background-color 0.3s;
+}
+.btn-enter:hover {
+    background-color: #0056b3;
+}
+.paragraph {
+    background-color: rgba(255, 255, 255, 0.8);
+    color: #333;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Aquí puedes agregar los nuevos estilos */
+.team-images {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* Tres columnas */
+    grid-gap: 20px; /* Espacio entre los elementos */
+    justify-items: center; /* Centrar los elementos */
+    margin-top: 20px;
+}
+.team-member {
+    text-align: center;
+}
+.team-member img {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}

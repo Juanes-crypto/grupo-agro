@@ -1,0 +1,133 @@
+                                    /* Reseteo básico para asegurar consistencia entre navegadores */
+            * {
+                margin: 0;
+                padding: 0;
+                box-sizing: border-box;
+            }
+
+            body {
+                font-family: 'Poppins', sans-serif;
+                background-color: blueviolet; /* aca puedo editar el fondo del formulario */
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                height: 100vh;
+                padding: 20px;
+            }
+
+            .card {
+                background: #000330; /* aca puedo definir el color del cuerpo del formulario (tarjeta) */
+                border-radius: 12px; /* Bordes más redondeados */
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2); /* Sombra más pronunciada */
+                padding: 30px;
+                max-width: 400px; /* aca puedo ajustar el ancho(me gusta delgado) */
+                width: 100%;
+                transition: all 0.3s ease-in-out;
+            }
+
+            .card:hover {
+                transform: scale(1.02); /* Efecto de "hover" en la tarjeta */
+            }
+
+            .card-header {
+                text-align: center;
+                margin-bottom: 20px;
+            }
+
+            .card-title {
+                font-size: 26px;
+                color: #2d3436;
+                font-weight: 600;
+            }
+
+            .form-floating {
+                margin-bottom: 1.5rem;
+            }
+
+            .form-floating input {
+                border: 2px solid #dfe6e9; /* Borde suave */
+                border-radius: 8px;
+                padding: 14px;
+                font-size: 15px;
+                transition: border-color 0.3s ease, box-shadow 0.3s ease;
+            }
+
+            .form-floating input:focus {
+                border-color: #74b9ff; /* Color de borde en foco */
+                box-shadow: 0 0 8px rgba(116, 185, 255, 0.5); /* Sombra al enfocarse */
+                outline: none;
+            }
+
+            .form-floating label {
+                font-size: 14px;
+                color: #636e72;
+                display: block;
+                margin-bottom: 6px;
+            }
+
+            .btn-group {
+                display: flex;
+                justify-content: space-between;
+            }
+
+            .btn {
+                border-radius: 8px;
+                padding: 14px;
+                font-size: 16px;
+                cursor: pointer;
+                transition: background-color 0.3s ease, transform 0.3s ease;
+                margin-top: 20px;
+            }
+
+            .btn-primary {
+                background-color: #ffae00; /* aca puedo editar el color del boton (inica sesion o registrar) */
+                color: wheat; /* Texto blanco */
+                border-style:initial;
+            }
+
+            .btn-primary:hover {
+                background-color: #ffca66; /* Efecto "hover" más suave */
+                transform: scale(1.05); /* Pequeño efecto de zoom */
+            }
+
+            .btn-danger {
+                background-color: #d63031; /* este es el color del boton "cancelar" (lo dejare en rojo) */
+                color: wheat; /* Texto blanco */
+                border: none;
+            }
+
+            .btn-danger:hover {
+                background-color: #e74c3c ; /* Efecto "hover" más intenso */
+                transform: scale(1.05); /* Pequeño efecto de zoom */
+            }
+
+            .error {
+                color: #d63031;
+                font-size: 14px;
+                text-align: center;
+                margin: 12px 0px;
+
+            }
+
+            .create-account {
+                display: block;
+                text-align: center;
+                margin-top: 16px;
+                color: #00192c;
+                text-decoration: none;
+                font-weight: bold;
+                transition: color 0.3s ease;
+            }
+
+            .create-account:hover {
+                color: #ffae00; /* Cambio de color en "hover" */
+                text-decoration: underline;
+            }
+
+
+                            
+                                .form-register {
+                    max-width: 530px;
+                    padding: 1rem;
+                }
+                
