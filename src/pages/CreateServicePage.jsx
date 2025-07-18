@@ -1,15 +1,18 @@
+// frontend/src/pages/CreateServicePage.jsx
 import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext'; // Para obtener el token
 
 function CreateServicePage() {
-    const { token, isAuthenticated, isPremium } = useContext(AuthContext); // Obtener token y estado de autenticación
+    const { token, isAuthenticated, isPremium } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const [serviceData, setServiceData] = useState({
         name: '',
         description: '',
-        price: '', // Precio por el servicio completo, por hora, etc.
+        // ⭐ AÑADIDO: Campo experience ⭐
+        experience: '', 
+        price: '',
         category: '',
     });
     const [image, setImage] = useState(null);
@@ -61,6 +64,14 @@ function CreateServicePage() {
             return;
         }
 
+        // ⭐ NUEVA VALIDACIÓN EN EL FRONTEND ⭐
+        const { name, description, experience, price, category } = serviceData;
+        if (!name || !description || !experience || price === '' || !category) {
+            setError('Por favor, ingresa todos los campos obligatorios: Nombre, Descripción, Experiencia, Precio y Categoría.');
+            setLoading(false);
+            return;
+        }
+
         const formData = new FormData();
         for (const key in serviceData) {
             formData.append(key, serviceData[key]);
@@ -70,11 +81,10 @@ function CreateServicePage() {
         }
 
         try {
-            // ⭐ LLAMADA A TU API DE CREACIÓN DE SERVICIOS DEL BACKEND ⭐
-            const response = await fetch('http://localhost:5000/api/services', { // ⭐ VERIFICA TU URL Y PUERTO ⭐
+            const response = await fetch('http://localhost:5000/api/services', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Bearer ${token}` // Incluir el token JWT
+                    'Authorization': `Bearer ${token}`
                 },
                 body: formData,
             });
@@ -82,18 +92,18 @@ function CreateServicePage() {
             const data = await response.json();
 
             if (!response.ok) {
+                // El backend devuelve un mensaje de error si los campos están incompletos
                 throw new Error(data.message || 'Error al publicar el servicio.');
             }
 
             setSuccess('Servicio publicado con éxito!');
             setServiceData({
-                name: '', description: '', price: '', category: ''
+                name: '', description: '', experience: '', price: '', category: '' // ⭐ Limpiar experience también ⭐
             });
             setImage(null);
             setPreviewUrl('');
             console.log('Servicio creado:', data);
-            // navigate('/my-services'); // Puedes redirigir a una página de "mis servicios" si la creas
-            navigate('/services'); // O simplemente a la lista de servicios
+            navigate('/services');
 
         } catch (err) {
             setError(err.message || 'No se pudo publicar el servicio. Inténtalo de nuevo.');
@@ -125,6 +135,13 @@ function CreateServicePage() {
                         <textarea id="description" name="description" rows="3"
                             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
                             value={serviceData.description} onChange={handleChange} required></textarea>
+                    </div>
+                    {/* ⭐ AÑADIDO: Campo de entrada para experience ⭐ */}
+                    <div>
+                        <label htmlFor="experience" className="block text-sm font-medium text-gray-700">Experiencia / Calificaciones</label>
+                        <input type="text" id="experience" name="experience"
+                            className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2"
+                            value={serviceData.experience} onChange={handleChange} required />
                     </div>
                     <div>
                         <label htmlFor="price" className="block text-sm font-medium text-gray-700">Precio (COP)</label>
