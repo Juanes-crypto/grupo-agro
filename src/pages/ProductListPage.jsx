@@ -1,23 +1,20 @@
 // frontend/src/pages/ProductListPage.jsx
 
 import React, { useState, useEffect, useContext } from 'react';
-import { useLocation, Link } from 'react-router-dom'; // Importa Link para los detalles del producto
-import { AuthContext } from '../context/AuthContext'; // Asegúrate de que esta ruta sea correcta
+import { useLocation, Link } from 'react-router-dom';
+import { AuthContext } from '../context/AuthContext';
 
 function ProductListPage() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
 
-    // ⭐ NUEVOS ESTADOS PARA BÚSQUEDA Y FILTROS ⭐
     const [searchTerm, setSearchTerm] = useState('');
     const [selectedCategory, setSelectedCategory] = useState('');
-    const [isTradableFilter, setIsTradableFilter] = useState(false); // false: ambos, true: solo truequeables
+    const [isTradableFilter, setIsTradableFilter] = useState(false);
 
-    // Obtener información del contexto de autenticación
-    const { user, token, isAuthenticated, addToCart } = useContext(AuthContext); // Ahora también obtenemos 'user'
+    const { user, token, isAuthenticated, addToCart } = useContext(AuthContext);
 
-    // Determinar si estamos en la página "Mis Productos"
     const location = useLocation();
     const isMyProductsPage = location.pathname === '/my-products';
 
@@ -36,7 +33,7 @@ function ProductListPage() {
                     setLoading(false);
                     return;
                 }
-            } else { // Solo aplica filtros y búsqueda si no es "Mis Productos"
+            } else {
                 if (searchTerm) {
                     params.append('search', searchTerm);
                 }
@@ -48,7 +45,6 @@ function ProductListPage() {
                 }
             }
 
-            // Construir la URL final con parámetros
             const queryString = params.toString();
             if (queryString) {
                 url = `${url}?${queryString}`;
@@ -98,8 +94,7 @@ function ProductListPage() {
                 {isMyProductsPage ? "Mis Productos Publicados" : "Explorar Productos"}
             </h1>
 
-            {/* ⭐ SECCIÓN DE BÚSQUEDA Y FILTROS ⭐ */}
-            {!isMyProductsPage && ( // Estos filtros no aplican para "Mis Productos"
+            {!isMyProductsPage && (
                 <div className="mb-6 p-4 bg-gray-100 rounded-lg shadow-md">
                     <div className="mb-4">
                         <input
@@ -120,7 +115,6 @@ function ProductListPage() {
                             <option value="Fertilizantes">Fertilizantes</option>
                             <option value="Semillas">Semillas</option>
                             <option value="Herramientas">Herramientas</option>
-                            {/* Agrega más categorías según tu modelo Product.js */}
                             <option value="Maquinaria">Maquinaria</option>
                             <option value="Animales">Animales</option>
                             <option value="Cultivos">Cultivos</option>
@@ -142,7 +136,17 @@ function ProductListPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {products.map((product) => (
-                    <div key={product._id} className="bg-white rounded-lg shadow-md p-4 flex flex-col items-center text-center">
+                    // ⭐ CAMBIO AQUÍ: Aplicación de estilos condicionales para usuarios premium ⭐
+                    <div
+                        key={product._id}
+                        className={`bg-white rounded-lg shadow-md p-4 flex flex-col items-center text-center relative
+                            ${product.user && product.user.isPremium ? 'border-2 border-yellow-500 shadow-lg' : 'border border-gray-200'}`}
+                    >
+                        {product.user && product.user.isPremium && (
+                            <span className="absolute top-2 right-2 bg-yellow-500 text-white text-xs font-bold px-2 py-1 rounded-full">
+                                Vendedor Premium
+                            </span>
+                        )}
                         {product.imageUrl && (
                             <img
                                 src={product.imageUrl}
@@ -157,7 +161,6 @@ function ProductListPage() {
                         </p>
 
                         <div className="mt-auto flex flex-col space-y-2 w-full">
-                            {/* Enlace para ver detalles del producto */}
                             <Link
                                 to={`/products/${product._id}`}
                                 className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded w-full"
@@ -165,10 +168,8 @@ function ProductListPage() {
                                 Ver Detalles
                             </Link>
 
-                            {/* Lógica condicional para botones */}
-                            {isAuthenticated && user && ( // Asegura que 'user' no sea nulo
+                            {isAuthenticated && user && (
                                 <>
-                                    {/* Botones de Editar/Eliminar para "Mis Productos" */}
                                     {isMyProductsPage && (
                                         <>
                                             <Link
@@ -179,11 +180,8 @@ function ProductListPage() {
                                             </Link>
                                             <button
                                                 onClick={() => {
-                                                    // Implementar lógica de eliminación aquí
                                                     if (window.confirm(`¿Estás seguro de que quieres eliminar "${product.name}"?`)) {
                                                         console.log(`Eliminar producto con ID: ${product._id}`);
-                                                        // Aquí llamarías a una función para hacer el DELETE a tu API
-                                                        // Por ejemplo: deleteProduct(product._id);
                                                     }
                                                 }}
                                                 className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded w-full"
@@ -193,7 +191,6 @@ function ProductListPage() {
                                         </>
                                     )}
 
-                                    {/* Botones para otros usuarios (cuando no es mi producto) */}
                                     {!isMyProductsPage && product.user !== user._id && (
                                         <>
                                             {!product.isTradable && (
@@ -214,13 +211,11 @@ function ProductListPage() {
                                             )}
                                         </>
                                     )}
-                                    {/* Si es mi propio producto en la vista general y no estoy en "mis productos" */}
                                     {!isMyProductsPage && product.user === user._id && (
                                         <p className="text-gray-500 text-sm">Este es tu producto.</p>
                                     )}
                                 </>
                             )}
-                            {/* Si no está autenticado, solo puede ver detalles */}
                             {!isAuthenticated && !isMyProductsPage && (
                                 <p className="text-gray-500 text-sm">Inicia sesión para comprar o proponer trueque.</p>
                             )}
