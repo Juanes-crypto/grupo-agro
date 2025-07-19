@@ -12,8 +12,8 @@ function CreateProductPage() {
         name: '',
         description: '',
         price: '',
-        unit: 'kg',
-        stock: '',
+        unit: 'kg', // Valor por defecto
+        stock: '',  // Valor por defecto
         category: '',
     });
     const [image, setImage] = useState(null);
@@ -60,8 +60,10 @@ function CreateProductPage() {
             return;
         }
 
-        if (!productData.name || !productData.description || !productData.price || !productData.category || !productData.stock || !image) {
-            setError('Por favor, completa todos los campos (nombre, descripción, precio, categoría, cantidad, imagen).');
+        // ⭐ VALIDACIÓN ACTUALIZADA: Asegurarse que stock y unit no estén vacíos ⭐
+        if (!productData.name || !productData.description || !productData.price || 
+            !productData.category || !productData.stock || !productData.unit || !image) {
+            setError('Por favor, completa todos los campos (nombre, descripción, precio, categoría, stock, unidad, imagen).');
             setLoading(false);
             return;
         }
@@ -70,9 +72,13 @@ function CreateProductPage() {
         formData.append('name', productData.name);
         formData.append('description', productData.description);
         formData.append('price', productData.price);
-        formData.append('quantity', `${productData.stock} ${productData.unit}`);
+        // ⭐ CAMBIO CLAVE AQUÍ: Enviar 'stock' y 'unit' por separado ⭐
+        formData.append('stock', productData.stock); 
+        formData.append('unit', productData.unit); 
+        // ⬆️ Eliminamos: formData.append('quantity', `${productData.stock} ${productData.unit}`);
+
         formData.append('category', productData.category);
-        formData.append('isPublished', true); // ⭐ Añadir explícitamente para publicación automática ⭐
+        formData.append('isPublished', true); // Se mantiene para publicación automática
 
         if (image) {
             formData.append('image', image);
@@ -99,7 +105,7 @@ function CreateProductPage() {
             setImage(null);
             setPreviewUrl('');
             console.log('Producto creado:', data);
-            navigate('/products'); // ⭐ CAMBIO DE REDIRECCIÓN: a la lista pública ⭐
+            navigate('/products'); 
 
         } catch (err) {
             console.error("Error creating product:", err);
