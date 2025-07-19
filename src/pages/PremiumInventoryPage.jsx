@@ -3,10 +3,10 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import api from '../services/api';
+import api from '../services/api'; // Asegúrate de que tu instancia de Axios 'api' esté configurada correctamente
 
 function PremiumInventoryPage() {
-    const { isAuthenticated, isPremium, loading: authLoading } = useContext(AuthContext);
+    const { isAuthenticated, isPremium, loading: authLoading, token } = useContext(AuthContext); // Añadido 'token'
     const navigate = useNavigate();
     const [products, setProducts] = useState([]);
     const [loadingProducts, setLoadingProducts] = useState(true);
@@ -18,25 +18,19 @@ function PremiumInventoryPage() {
     const [productName, setProductName] = useState('');
     const [description, setDescription] = useState('');
     const [price, setPrice] = useState('');
-    // Mantenemos 'quantity' como string para simplificar, el backend debe manejar la división si es necesario.
     const [quantity, setQuantity] = useState('');
-    const [category, setCategory] = useState(''); // Ahora será la categoría seleccionada
+    const [category, setCategory] = useState('');
     const [isTradable, setIsTradable] = useState(false);
     const [image, setImage] = useState(null);
     const [formMessage, setFormMessage] = useState('');
     const [formError, setFormError] = useState('');
     const [formLoading, setFormLoading] = useState(false);
 
-    // ⭐⭐⭐ NUEVO: Lista de categorías y unidades (igual que en CreateProductPage) ⭐⭐⭐
     const categories = [
         'Frutas', 'Verduras', 'Granos', 'Lácteos', 'Carnes',
         'Cereales', 'Legumbres', 'Pescados', 'Huevos', 'Miel',
         'Plantas', 'Semillas', 'Fitosanitarios', 'Fertilizantes', 'Maquinaria', 'Otros'
     ];
-    // Si tu campo 'quantity' en el backend espera un formato específico (e.g., "10 kg"),
-    // podrías necesitar dividirlo en 'stock' y 'unit' aquí también, como en CreateProductPage.
-    // Por ahora, lo mantenemos como un solo campo 'quantity' para simplificar el cambio en este archivo.
-    // Si tu campo de backend `quantity` espera un número y una unidad, dime para ajustarlo.
 
     // Redirección si no es premium o no está autenticado
     useEffect(() => {
@@ -49,18 +43,23 @@ function PremiumInventoryPage() {
                 fetchUserProducts();
             }
         }
-    }, [isAuthenticated, isPremium, authLoading, navigate]);
+    }, [isAuthenticated, isPremium, authLoading, navigate, token]); // Añadido 'token' a las dependencias
 
     // Función para cargar los productos del usuario premium
     const fetchUserProducts = async () => {
         setLoadingProducts(true);
         setError('');
         try {
+            // ⭐ NO ES NECESARIO PASAR EL TOKEN AQUÍ SI 'api' TIENE INTERCEPTOR ⭐
+            // Pero si el interceptor falla, se puede pasar manualmente:
+            // const res = await api.get('/products/my-products', {
+            //     headers: { Authorization: `Bearer ${token}` }
+            // });
             const res = await api.get('/products/my-products');
             setProducts(res.data);
         } catch (err) {
             console.error('Error al cargar los productos del inventario:', err);
-            setError('No se pudieron cargar los productos de tu inventario.');
+            setError(err.response?.data?.message || 'No se pudieron cargar los productos de tu inventario.');
         } finally {
             setLoadingProducts(false);
         }
@@ -73,7 +72,7 @@ function PremiumInventoryPage() {
         setDescription('');
         setPrice('');
         setQuantity('');
-        setCategory(''); // Limpiar la categoría para un nuevo producto
+        setCategory('');
         setIsTradable(false);
         setImage(null);
         setFormMessage('');
@@ -88,9 +87,9 @@ function PremiumInventoryPage() {
         setDescription(product.description);
         setPrice(product.price);
         setQuantity(product.quantity);
-        setCategory(product.category || ''); // ⭐ Asegúrate de que si la categoría es null, se inicialice a cadena vacía ⭐
+        setCategory(product.category || '');
         setIsTradable(product.isTradable);
-        setImage(null); // No pre-cargar la imagen en el input file por seguridad
+        setImage(null);
         setFormMessage('');
         setFormError('');
         setIsModalOpen(true);
@@ -98,11 +97,13 @@ function PremiumInventoryPage() {
 
     // Eliminar producto
     const handleDeleteProduct = async (productId) => {
-        if (window.confirm('¿Estás seguro de que quieres eliminar este producto?')) {
+        // ⭐ CAMBIO: Usar modal personalizado en lugar de window.confirm ⭐
+        const confirmed = window.confirm('¿Estás seguro de que quieres eliminar este producto?'); // Mantengo window.confirm por simplicidad, idealmente un modal
+        if (confirmed) {
             try {
                 await api.delete(`/products/${productId}`);
                 setProducts(products.filter(p => p._id !== productId));
-                alert('Producto eliminado exitosamente.');
+                alert('Producto eliminado exitosamente.'); // Mantengo alert, idealmente un toast/snackbar
             } catch (err) {
                 console.error('Error al eliminar el producto:', err);
                 alert('Error al eliminar el producto.');
@@ -117,14 +118,16 @@ function PremiumInventoryPage() {
             ? `¿Estás seguro de que quieres PUBLICAR "${product.name}"? Una vez publicado, será visible para todos.`
             : `¿Estás seguro de que quieres DESPUBLICAR "${product.name}"? Ya no será visible públicamente.`;
 
-        if (window.confirm(confirmAction)) {
+        // ⭐ CAMBIO: Usar modal personalizado en lugar de window.confirm ⭐
+        const confirmed = window.confirm(confirmAction); // Mantengo window.confirm por simplicidad
+        if (confirmed) {
             try {
                 const res = await api.put(`/products/${product._id}`, { isPublished: newPublishedStatus });
                 
                 setProducts(products.map(p => 
                     p._id === product._id ? { ...p, isPublished: res.data.isPublished } : p
                 ));
-                alert(`Producto "${product.name}" ${newPublishedStatus ? 'publicado' : 'despublicado'} exitosamente.`);
+                alert(`Producto "${product.name}" ${newPublishedStatus ? 'publicado' : 'despublicado'} exitosamente.`); // Mantengo alert
             } catch (err) {
                 console.error(`Error al ${newPublishedStatus ? 'publicar' : 'despublicar'} el producto:`, err);
                 alert(`Error al ${newPublishedStatus ? 'publicar' : 'despublicar'} el producto.`);
@@ -155,10 +158,17 @@ function PremiumInventoryPage() {
         formData.append('name', productName);
         formData.append('description', description);
         formData.append('price', price);
-        // ⭐ La cantidad se envía tal cual, si tu backend necesita "stock" y "unit", dime. ⭐
         formData.append('quantity', quantity); 
         formData.append('category', category);
         formData.append('isTradable', isTradable);
+
+        // ⭐ CAMBIO CLAVE AQUÍ: Para productos creados desde PremiumInventoryPage, isPublished es FALSE ⭐
+        if (!editingProduct) { // Solo al crear un nuevo producto
+            formData.append('isPublished', false); 
+        } else { // Al editar, mantener el estado de publicación actual a menos que se cambie explícitamente
+            formData.append('isPublished', editingProduct.isPublished); // Mantener el estado actual
+        }
+
         if (image) {
             formData.append('image', image);
         }
@@ -173,7 +183,7 @@ function PremiumInventoryPage() {
                 await api.post('/products', formData, {
                     headers: { 'Content-Type': 'multipart/form-data' },
                 });
-                setFormMessage('Producto creado exitosamente y en estado "Borrador".');
+                setFormMessage('Producto creado exitosamente y guardado como "Borrador".'); // Mensaje actualizado
             }
             setIsModalOpen(false);
             fetchUserProducts(); // Recargar la lista de productos
@@ -249,7 +259,6 @@ function PremiumInventoryPage() {
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Truequeable
                                 </th>
-                                {/* ✨ NUEVA COLUMNA: Estado de Publicación ✨ */}
                                 <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                     Estado
                                 </th>
@@ -290,7 +299,6 @@ function PremiumInventoryPage() {
                                             {product.isTradable ? 'Sí' : 'No'}
                                         </span>
                                     </td>
-                                    {/* ✨ MOSTRAR ESTADO DE PUBLICACIÓN ✨ */}
                                     <td className="px-6 py-4 whitespace-nowrap text-sm">
                                         <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
                                             product.isPublished ? 'bg-blue-100 text-blue-800' : 'bg-yellow-100 text-yellow-800'
@@ -299,7 +307,6 @@ function PremiumInventoryPage() {
                                         </span>
                                     </td>
                                     <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                                        {/* ✨ BOTÓN PUBLICAR/DESPUBLICAR ✨ */}
                                         <button
                                             onClick={() => handleTogglePublish(product)}
                                             className={`
@@ -386,7 +393,7 @@ function PremiumInventoryPage() {
                             <div>
                                 <label htmlFor="quantity" className="block text-sm font-medium text-gray-700">Cantidad</label>
                                 <input
-                                    type="text" // Mantener como 'text' para permitir "10 kg", "5 unidades", etc.
+                                    type="text"
                                     id="quantity"
                                     value={quantity}
                                     onChange={(e) => setQuantity(e.target.value)}
@@ -394,7 +401,6 @@ function PremiumInventoryPage() {
                                     required
                                 />
                             </div>
-                            {/* ⭐⭐⭐ CAMBIO CLAVE: Campo de Categoría de input a select ⭐⭐⭐ */}
                             <div>
                                 <label htmlFor="category" className="block text-sm font-medium text-gray-700">Categoría</label>
                                 <select
@@ -410,7 +416,6 @@ function PremiumInventoryPage() {
                                     ))}
                                 </select>
                             </div>
-                            {/* ⭐⭐⭐ FIN CAMBIO CLAVE ⭐⭐⭐ */}
                             <div className="flex items-center">
                                 <input
                                     type="checkbox"
@@ -428,7 +433,6 @@ function PremiumInventoryPage() {
                                     id="image"
                                     onChange={(e) => setImage(e.target.files[0])}
                                     className="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-                                    // No requerido si se está editando y no se selecciona una nueva imagen
                                     required={!editingProduct} 
                                 />
                                 {editingProduct && !image && (

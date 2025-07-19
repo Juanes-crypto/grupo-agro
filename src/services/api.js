@@ -1,4 +1,4 @@
-// src/services/api.js
+// frontend/src/services/api.js
 import axios from 'axios';
 
 const API_URL = 'http://localhost:5000/api/';
@@ -13,10 +13,11 @@ const api = axios.create({
 // Interceptor para añadir el token a cada petición si está disponible
 api.interceptors.request.use(
   (config) => {
-    // ¡CAMBIA ESTA LÍNEA! Leer de 'user' para que coincida con AuthContext
-    const user = JSON.parse(localStorage.getItem('user'));
-    if (user && user.token) {
-      config.headers.Authorization = `Bearer ${user.token}`;
+    // ⭐ CAMBIO CLAVE AQUÍ: Leer el token de la clave correcta 'agroapp_token' ⭐
+    const token = localStorage.getItem('agroapp_token'); 
+    
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
   },

@@ -1,0 +1,41 @@
+[33mcommit f5ed412276840a511a4431f1380703305322d79f[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m)[m
+Author: juan.garcia <juangarciaa@ieatanasio.edu.co>
+Date:   Sat Jul 19 10:30:23 2025 -0500
+
+    tarjeta de productos actualizada visualmente
+
+[33mcommit dc255ed1de7ca7c5c28f57bd5b370cfb64f8f129[m
+Author: juan.garcia <juangarciaa@ieatanasio.edu.co>
+Date:   Sat Jul 19 10:23:01 2025 -0500
+
+    renderizado para usuarios premium
+
+[33mcommit 9191a1488d8fe8fb2377453d02cb98a74fb7c113[m
+Author: juan.garcia <juangarciaa@ieatanasio.edu.co>
+Date:   Fri Jul 18 18:37:35 2025 -0500
+
+    publicar servicios y renderizado listo
+
+[33mcommit 3a6233a27527af7089e754f74192fec8577d9f49[m
+Author: juan.garcia <juangarciaa@ieatanasio.edu.co>
+Date:   Fri Jul 18 18:20:37 2025 -0500
+
+    select para catefgorias en inventario premium
+
+[33mcommit 8204ed38d029ab3353f33c78428a9958736da870[m
+Author: juan.garcia <juangarciaa@ieatanasio.edu.co>
+Date:   Fri Jul 18 17:59:12 2025 -0500
+
+    pedidos y carrito listo
+
+[33mcommit d82285102bb54b13253a7f68a690c70fd05afecd[m
+Author: juan.garcia <juangarciaa@ieatanasio.edu.co>
+Date:   Fri Jul 18 15:22:58 2025 -0500
+
+    mero poco de camvbios
+
+[33mcommit 01bc7b6410bfe4d6be6970e3e7246e23134ca412[m
+Author: juan.garcia <juangarciaa@ieatanasio.edu.co>
+Date:   Wed Jul 16 11:15:16 2025 -0500
+
+    first commit

@@ -37,7 +37,7 @@ import DashboardPage from './pages/DashboardPage';
 import EditProductPage from './pages/EditProductPage';
 import MyOrdersPage from './pages/MyOrdersPage';
 import NotificationsPage from './pages/NotificationsPage';
-import OrderDetailsPage from './pages/OrderDetailsPage'; // ⭐ ASEGÚRATE DE QUE ESTÉ IMPORTADO ⭐
+import OrderDetailsPage from './pages/OrderDetailsPage';
 import PremiumInventoryPage from './pages/PremiumInventoryPage';
 import PremiumUpsellPage from './pages/PremiumUpsellPage';
 import WelcomePage from './pages/WelcomePage';
@@ -76,7 +76,7 @@ function App() {
                         <Route path="/products" element={<ProductListPage />} />
                         <Route path="/products/:id" element={<ProductDetailsPage />} />
                         <Route path="/services" element={<ServiceListPage />} />
-                        <Route path="/rentals" element={<RentalPage />} /> {/* Ya la habíamos añadido */}
+                        <Route path="/rentals" element={<RentalPage />} />
 
 
                         {/* ====================================================== */}
@@ -87,7 +87,7 @@ function App() {
                             <Route path="/cart" element={<CartPage />} />
                             <Route path="/checkout" element={<CheckoutPage />} />
                             <Route path="/my-orders" element={<MyOrdersPage />} />
-                            <Route path="/order-details/:id" element={<OrderDetailsPage />} /> {/* ⭐ RUTA PARA VER DETALLES DE UN PEDIDO ⭐ */}
+                            <Route path="/order-details/:id" element={<OrderDetailsPage />} />
                             {/* La ruta que estaba generando el error era '/order/:id', ahora la corregimos a '/order-details/:id' para coincidir con la navegación del CheckoutPage */}
 
 
@@ -106,10 +106,13 @@ function App() {
 
                             {/* Rutas de Alquiler */}
                             <Route path="/create-rental" element={<CreateRentalPage />} />
-                            {/* <Route path="/rentals/:id" element={<RentalPage />} />  Si tienes una página de detalles de alquiler, no la principal*/}
 
                             {/* Rutas de Servicios */}
                             <Route path="/create-service" element={<CreateServicePage />} />
+
+                            {/* ⭐ CAMBIO CRÍTICO AQUÍ: Mover /create-product fuera de PremiumRoute ⭐ */}
+                            <Route path="/create-product" element={<CreateProductPage />} />
+
                         </Route>
 
 
@@ -118,7 +121,7 @@ function App() {
                         {/* ====================================================== */}
                         <Route element={<PrivateRoute />}>
                             <Route element={<PremiumRoute />}>
-                                <Route path="/create-product" element={<CreateProductPage />} />
+                                {/* SOLO RUTAS QUE REQUIERAN EXCLUSIVAMENTE SER PREMIUM VAN AQUÍ */}
                                 <Route path="/premium-inventory" element={<PremiumInventoryPage />} />
                                 <Route path="/premium-upsell" element={<PremiumUpsellPage />} />
                             </Route>
