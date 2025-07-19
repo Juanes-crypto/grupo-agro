@@ -1,8 +1,8 @@
 // frontend/src/pages/ProductListPage.jsx
 
 import React, { useState, useEffect, useContext } from 'react';
-import { useLocation, Link } from 'react-router-dom';
-import { AuthContext } from '../context/AuthContext';
+import { useLocation, Link, useNavigate } from 'react-router-dom'; // Importa useNavigate
+import { AuthContext } from '../context/AuthContext'; // Asegúrate de que esta ruta sea correcta
 
 function ProductListPage() {
     const [products, setProducts] = useState([]);
@@ -13,7 +13,12 @@ function ProductListPage() {
     const [selectedCategory, setSelectedCategory] = useState('');
     const [isTradableFilter, setIsTradableFilter] = useState(false);
 
-    const { user, token, isAuthenticated, addToCart } = useContext(AuthContext);
+    // Obtenemos user, token, isAuthenticated y addToCart del AuthContext
+    const { user, token, isAuthenticated, addToCart } = useContext(AuthContext); 
+    const navigate = useNavigate(); // Hook para la navegación programática
+
+    // ⭐ Nuevo estado para gestionar mensajes de "Añadido al carrito" por producto ⭐
+    const [addedToCartMessages, setAddedToCartMessages] = useState({});
 
     const location = useLocation();
     const isMyProductsPage = location.pathname === '/my-products';
@@ -74,6 +79,46 @@ function ProductListPage() {
 
         fetchProducts();
     }, [isMyProductsPage, isAuthenticated, token, searchTerm, selectedCategory, isTradableFilter]);
+
+    // ⭐ Nueva función handleAddToCart para las tarjetas ⭐
+    const handleAddToCart = (product) => {
+        if (!isAuthenticated) {
+            alert('Debes iniciar sesión para añadir productos al carrito.');
+            navigate('/login'); // Redirige al login si no está autenticado
+            return;
+        }
+
+        if (product.stock === 0) {
+            // Muestra un mensaje de agotado si el producto no tiene stock
+            setAddedToCartMessages(prevMessages => ({
+                ...prevMessages,
+                [product._id]: '❌ ¡Producto agotado!'
+            }));
+            setTimeout(() => {
+                setAddedToCartMessages(prevMessages => ({
+                    ...prevMessages,
+                    [product._id]: ''
+                }));
+            }, 2000);
+            return;
+        }
+
+        addToCart(product); // Llama a la función addToCart del contexto
+
+        // Muestra el mensaje de "Añadido al carrito" para este producto
+        setAddedToCartMessages(prevMessages => ({
+            ...prevMessages,
+            [product._id]: '✔️ ¡Añadido al carrito!'
+        }));
+
+        // Oculta el mensaje después de unos segundos
+        setTimeout(() => {
+            setAddedToCartMessages(prevMessages => ({
+                ...prevMessages,
+                [product._id]: ''
+            }));
+        }, 2000); // El mensaje desaparecerá después de 2 segundos
+    };
 
 
     if (loading) {
@@ -173,6 +218,7 @@ function ProductListPage() {
                             {isAuthenticated && user && (
                                 <>
                                     {isMyProductsPage ? (
+                                        // Botones de Editar/Eliminar para "Mis Productos"
                                         <>
                                             <Link
                                                 to={`/edit-product/${product._id}`}
@@ -182,8 +228,11 @@ function ProductListPage() {
                                             </Link>
                                             <button
                                                 onClick={() => {
+                                                    // Implementar lógica de eliminación aquí
                                                     if (window.confirm(`¿Estás seguro de que quieres eliminar "${product.name}"?`)) {
                                                         console.log(`Eliminar producto con ID: ${product._id}`);
+                                                        // Aquí llamarías a una función para hacer el DELETE a tu API
+                                                        // Por ejemplo: deleteProduct(product._id);
                                                     }
                                                 }}
                                                 className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded w-full"
@@ -192,15 +241,33 @@ function ProductListPage() {
                                             </button>
                                         </>
                                     ) : (
-                                        product.user._id !== user._id && (
+                                        // Botones para otros usuarios (cuando no es mi producto)
+                                        product.user._id !== user._id && ( // Asegurarse de comparar _id de los objetos de usuario
                                             <>
-                                                {/* ⭐ CAMBIO AQUÍ: El botón Añadir al Carrito siempre aparece si no es mi producto ⭐ */}
-                                                <button
-                                                    onClick={() => addToCart(product)}
-                                                    className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded w-full"
-                                                >
-                                                    Añadir al Carrito
-                                                </button>
+                                                {product.stock > 0 ? ( // Solo mostrar "Añadir al Carrito" si hay stock
+                                                    <button
+                                                        onClick={() => handleAddToCart(product)} // Llama a la nueva función
+                                                        className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded w-full"
+                                                    >
+                                                        Añadir al Carrito
+                                                    </button>
+                                                ) : (
+                                                    <button
+                                                        className="bg-gray-400 text-white font-bold py-2 px-4 rounded w-full cursor-not-allowed"
+                                                        disabled
+                                                    >
+                                                        Agotado
+                                                    </button>
+                                                )}
+                                                
+                                                {/* ⭐ Mensaje de "Añadido al carrito" ⭐ */}
+                                                {addedToCartMessages[product._id] && (
+                                                    <p className={`text-center text-sm font-medium mt-1 
+                                                        ${addedToCartMessages[product._id].includes('❌') ? 'text-red-600' : 'text-green-600'}`}>
+                                                        {addedToCartMessages[product._id]}
+                                                    </p>
+                                                )}
+
                                                 {/* ⭐ El botón Proponer Trueque solo si es truequeable ⭐ */}
                                                 {product.isTradable && (
                                                     <Link
@@ -213,11 +280,13 @@ function ProductListPage() {
                                             </>
                                         )
                                     )}
+                                    {/* Si es mi propio producto en la vista general y no estoy en "mis productos" */}
                                     {!isMyProductsPage && product.user._id === user._id && (
                                         <p className="text-gray-500 text-sm">Este es tu producto.</p>
                                     )}
                                 </>
                             )}
+                            {/* Si no está autenticado, solo puede ver detalles */}
                             {!isAuthenticated && !isMyProductsPage && (
                                 <p className="text-gray-500 text-sm">Inicia sesión para comprar o proponer trueque.</p>
                             )}

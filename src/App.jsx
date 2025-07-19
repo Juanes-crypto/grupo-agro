@@ -49,6 +49,8 @@ import CreateRentalPage from './pages/CreateRentalPage';
 import RentalPage from './pages/RentalPage';
 import CreateServicePage from './pages/CreateServicePage';
 import ServiceListPage from './pages/ServiceListPage';
+import ServiceDetailsPage from './pages/ServiceDetailsPage'; 
+import RentalDetailsPage from './pages/RentalDetailsPage'; 
 
 
 // ⭐ Componente para páginas no encontradas (404) ⭐
@@ -77,7 +79,8 @@ function App() {
                         <Route path="/products/:id" element={<ProductDetailsPage />} />
                         <Route path="/services" element={<ServiceListPage />} />
                         <Route path="/rentals" element={<RentalPage />} />
-
+                        <Route path="/services/:id" element={<ServiceDetailsPage />} />
+                        <Route path="/rentals/:id" element={<RentalDetailsPage />} />
 
                         {/* ====================================================== */}
                         {/* ⭐ RUTAS PROTEGIDAS (requieren autenticación) ⭐ */}
