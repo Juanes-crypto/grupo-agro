@@ -136,7 +136,6 @@ function ProductListPage() {
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                 {products.map((product) => (
-                    // ⭐ CAMBIO AQUÍ: Aplicación de estilos condicionales para usuarios premium ⭐
                     <div
                         key={product._id}
                         className={`bg-white rounded-lg shadow-md p-4 flex flex-col items-center text-center relative
@@ -154,8 +153,11 @@ function ProductListPage() {
                                 className="w-full h-48 object-cover rounded-md mb-4"
                             />
                         )}
-                        <h2 className="text-xl font-semibold mb-2">{product.name}</h2>
-                        <p className="text-gray-600 text-sm mb-2">{product.description.substring(0, 100)}...</p>
+                        <h2 className="text-xl font-semibold mb-2 text-gray-800">{product.name}</h2>
+                        <p className="text-gray-600 text-sm mb-2 text-justify">{product.description.substring(0, 100)}{product.description.length > 100 ? '...' : ''}</p>
+                        <p className="text-md font-medium text-gray-700 mb-1">
+                            <span className="font-bold">Categoría:</span> {product.category}
+                        </p>
                         <p className="text-lg font-bold text-green-700 mb-2">
                             {product.isTradable ? 'Truequeable' : `$${product.price.toFixed(2)}`}
                         </p>
@@ -170,7 +172,7 @@ function ProductListPage() {
 
                             {isAuthenticated && user && (
                                 <>
-                                    {isMyProductsPage && (
+                                    {isMyProductsPage ? (
                                         <>
                                             <Link
                                                 to={`/edit-product/${product._id}`}
@@ -189,29 +191,29 @@ function ProductListPage() {
                                                 Eliminar
                                             </button>
                                         </>
-                                    )}
-
-                                    {!isMyProductsPage && product.user !== user._id && (
-                                        <>
-                                            {!product.isTradable && (
+                                    ) : (
+                                        product.user._id !== user._id && (
+                                            <>
+                                                {/* ⭐ CAMBIO AQUÍ: El botón Añadir al Carrito siempre aparece si no es mi producto ⭐ */}
                                                 <button
                                                     onClick={() => addToCart(product)}
                                                     className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded w-full"
                                                 >
                                                     Añadir al Carrito
                                                 </button>
-                                            )}
-                                            {product.isTradable && (
-                                                <Link
-                                                    to={`/create-barter-proposal/${product._id}`}
-                                                    className="bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded w-full"
-                                                >
-                                                    Proponer Trueque
-                                                </Link>
-                                            )}
-                                        </>
+                                                {/* ⭐ El botón Proponer Trueque solo si es truequeable ⭐ */}
+                                                {product.isTradable && (
+                                                    <Link
+                                                        to={`/create-barter-proposal/${product._id}`}
+                                                        className="bg-purple-500 hover:bg-purple-600 text-white font-bold py-2 px-4 rounded w-full"
+                                                    >
+                                                        Proponer Trueque
+                                                    </Link>
+                                                )}
+                                            </>
+                                        )
                                     )}
-                                    {!isMyProductsPage && product.user === user._id && (
+                                    {!isMyProductsPage && product.user._id === user._id && (
                                         <p className="text-gray-500 text-sm">Este es tu producto.</p>
                                     )}
                                 </>
