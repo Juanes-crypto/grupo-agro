@@ -1,9 +1,9 @@
 // src/components/ProductCard.jsx
 
-import React, { useState } from 'react'; // Importa useState
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
-import api from '../services/api'; // Importa el servicio de la API
+import api from '../services/api';
 
 function ProductCard({
   image,
@@ -15,14 +15,12 @@ function ProductCard({
   isPremium,
   productId,
 }) {
-  const [message, setMessage] = useState(''); // Estado para mensajes de feedback
+  const [message, setMessage] = useState('');
 
   const handleAddToCart = async () => {
     try {
-      // Asume que siempre se añade 1 unidad por ahora
-      await api.post('/cart', { productId: productId, quantity: 1 });
+      await api.post('/cart', { productId, quantity: 1 });
       setMessage('¡Producto añadido al carrito!');
-      // Opcional: limpiar el mensaje después de un tiempo
       setTimeout(() => setMessage(''), 3000);
     } catch (error) {
       console.error('Error al añadir producto al carrito:', error);
@@ -33,55 +31,53 @@ function ProductCard({
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 30 }}
+      initial={{ opacity: 0, y: 40 }}
       animate={{ opacity: 1, y: 0 }}
-      whileHover={{ scale: 1.02 }}
-      transition={{ duration: 0.3 }}
-      className={`bg-white border rounded-xl shadow-md p-5 font-inter transition ${
-        isPremium ? 'border-green-500 shadow-green-200' : 'border-gray-200'
-      }`}
+      whileHover={{ scale: 1.03 }}
+      transition={{ duration: 0.4, ease: 'easeOut' }}
+      className={`bg-white rounded-xl shadow-lg p-5 font-inter transition-all duration-300 border ${
+        isPremium ? 'border-lime-500 shadow-lime-200' : 'border-gray-200'
+      } hover:shadow-xl`}
     >
-      <div className="mb-4">
+      <div className="mb-4 relative">
         <img
           src={image}
           alt={name}
-          className="w-full h-48 object-cover rounded-lg border"
+          className="w-full h-48 object-cover rounded-lg border border-gray-300"
         />
+        {isPremium && (
+          <span className="absolute top-2 right-2 bg-yellow-400 text-white px-2 py-1 rounded-full text-xs font-bold shadow-md animate-pulse">
+            PREMIUM
+          </span>
+        )}
       </div>
 
-      <h2 className="text-xl font-bold text-gray-800 mb-2">{name}</h2>
-
+      <h2 className="text-xl font-bold text-gray-800 mb-1 tracking-wide">{name}</h2>
       <p className="text-gray-600 text-sm line-clamp-3 mb-3">{description}</p>
 
-      <div className="flex justify-between items-center text-sm text-gray-700 mb-4">
+      <div className="flex justify-between items-center text-sm text-gray-700 mb-2">
         <span>💲 <strong>{price.toLocaleString()} COP</strong></span>
         <span>📦 {quantity} disponibles</span>
       </div>
 
-      <div className="flex justify-between items-center text-sm">
+      <div className="flex justify-between items-center text-sm mb-4">
         <span>
           🔁 Truequeable:{' '}
           <span className={isTradable ? 'text-green-600 font-bold' : 'text-red-500 font-bold'}>
             {isTradable ? 'Sí' : 'No'}
           </span>
         </span>
-
-        {isPremium && (
-          <span className="bg-yellow-400 text-white px-2 py-1 rounded text-xs font-bold shadow">
-            PREMIUM
-          </span>
-        )}
       </div>
 
-      <div className="mt-5 flex gap-3"> {/* Contenedor para los dos botones */}
+      <div className="mt-4 flex gap-3">
         <button
           onClick={handleAddToCart}
-          className="flex-1 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg font-bold transition text-sm"
+          className="flex-1 bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white py-2 px-4 rounded-lg font-bold transition-all duration-300 shadow hover:shadow-md text-sm"
         >
           Añadir al carrito
         </button>
         <Link to={`/products/${productId}`} className="flex-1">
-          <button className="w-full bg-blue-600 hover:bg-blue-700 text-white py-2 px-4 rounded-lg font-bold transition text-sm">
+          <button className="w-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white py-2 px-4 rounded-lg font-bold transition-all duration-300 shadow hover:shadow-md text-sm">
             Ver más
           </button>
         </Link>

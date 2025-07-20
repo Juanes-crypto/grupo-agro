@@ -46,7 +46,7 @@ import CreateBarterProposalPage from './pages/CreateBarterProposalPage';
 import CreateCounterProposalPage from './pages/CreateCounterProposalPage';
 import MyBarterProposalsPage from './pages/MyBarterProposalsPage';
 import CreateRentalPage from './pages/CreateRentalPage';
-import RentalPage from './pages/RentalPage';
+import RentalListPage from './pages/RentalListPage';
 import CreateServicePage from './pages/CreateServicePage';
 import ServiceListPage from './pages/ServiceListPage';
 import ServiceDetailsPage from './pages/ServiceDetailsPage'; 
@@ -64,7 +64,7 @@ function App() {
         <AuthProvider>
             <Router>
                 <Navbar /> {/* Tu barra de navegación */}
-                <main className="container mx-auto px-4 py-8">
+                <main className="container mx-auto px-4 py-8 pl-72">
                     <Routes>
                         {/* ====================================================== */}
                         {/* ⭐ RUTAS PÚBLICAS (accesibles sin autenticación) ⭐ */}
@@ -78,7 +78,7 @@ function App() {
                         <Route path="/products" element={<ProductListPage />} />
                         <Route path="/products/:id" element={<ProductDetailsPage />} />
                         <Route path="/services" element={<ServiceListPage />} />
-                        <Route path="/rentals" element={<RentalPage />} />
+                        <Route path="/rentals" element={<RentalListPage />} />
                         <Route path="/services/:id" element={<ServiceDetailsPage />} />
                         <Route path="/rentals/:id" element={<RentalDetailsPage />} />
 

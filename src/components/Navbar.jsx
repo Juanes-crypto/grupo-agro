@@ -1,129 +1,99 @@
-// src/components/Navbar.jsx
+// src/components/Sidebar.jsx
+
 import React, { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import {
+  FaSignInAlt, FaUser, FaSeedling, FaStore, FaHandshake, FaPlus, FaSignOutAlt,
+  FaSun, FaBell, FaShoppingCart, FaExchangeAlt, FaListAlt
+} from 'react-icons/fa';
 
-import { FaSignInAlt, FaUser, FaSeedling, FaStore, FaHandshake, FaPlus, FaSignOutAlt, FaSun, FaBell, FaShoppingCart, FaExchangeAlt, FaListAlt } from 'react-icons/fa';
+function Sidebar() {
+  const { isAuthenticated, isPremium, logout, cartItems } = useContext(AuthContext);
+  const navigate = useNavigate();
 
-function Navbar() {
-    const { isAuthenticated, user, isPremium, logout, cartItems } = useContext(AuthContext);
-    const navigate = useNavigate();
+  const onLogout = () => {
+    logout();
+    navigate('/');
+  };
 
-    const onLogout = () => {
-        logout();
-        navigate('/');
-    };
+  const totalCartItems = cartItems ? cartItems.reduce((total, item) => total + item.quantity, 0) : 0;
 
-    const totalCartItems = cartItems ? cartItems.reduce((total, item) => total + item.quantity, 0) : 0;
+  return (
+    <aside className="w-72 bg-gradient-to-b from-green-900 via-green-800 to-green-700 text-white min-h-screen p-6 shadow-xl fixed top-0 left-0 z-50 font-sans border-r-2 border-green-600">
+      <Link
+        to="/"
+        className="text-3xl font-bold mb-10 block text-lime-300 hover:text-yellow-300 transition transform hover:scale-105 duration-300 tracking-wide"
+      >
+        🌾 AgroApp
+      </Link>
 
-    return (
-        <header className="bg-green-800 text-white p-4 shadow-lg">
-            <nav className="container mx-auto flex justify-between items-center">
-                <Link to="/" className="text-2xl font-bold font-lilita hover:text-green-200 transition">
-                    AgroApp 🌾
-                </Link>
-                <ul className="flex space-x-6 items-center">
-                    <li>
-                        <Link to="/products" className="flex items-center hover:text-green-200 transition">
-                            <FaStore className="mr-1" /> Productos
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/services" className="flex items-center hover:text-green-200 transition">
-                            <FaHandshake className="mr-1" /> Servicios
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/rentals" className="flex items-center hover:text-green-200 transition">
-                            <FaSun className="mr-1" /> Rentas
-                        </Link>
-                    </li>
+      <nav className="flex flex-col space-y-4 text-[1.05rem]">
+        {/* Navegación principal */}
+        <SidebarLink to="/products" icon={<FaStore />}>Productos</SidebarLink>
+        <SidebarLink to="/services" icon={<FaHandshake />}>Servicios</SidebarLink>
+        <SidebarLink to="/rentals" icon={<FaSun />}>Rentas</SidebarLink>
+        <SidebarLink to="/my-barter-proposals" icon={<FaExchangeAlt />}>Trueques</SidebarLink>
+        <SidebarLink to="/my-orders" icon={<FaListAlt />}>Pedidos</SidebarLink>
+        <SidebarLink to="/notifications" icon={<FaBell />}>Notificaciones</SidebarLink>
 
-                    {/* Enlaces para trueques, pedidos y notificaciones */}
-                    <li>
-                        <Link to="/my-barter-proposals" className="flex items-center hover:text-green-200 transition">
-                            <FaExchangeAlt className="mr-1" /> Trueques
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/my-orders" className="flex items-center hover:text-green-200 transition">
-                            <FaListAlt className="mr-1" /> Pedidos
-                        </Link>
-                    </li>
-                    <li>
-                        <Link to="/notifications" className="flex items-center hover:text-green-200 transition">
-                            <FaBell className="mr-1" /> Notificaciones
-                        </Link>
-                    </li>
+        {/* Carrito con contador */}
+        <div className="relative">
+          <SidebarLink to="/cart" icon={<FaShoppingCart />}>Carrito</SidebarLink>
+          {totalCartItems > 0 && (
+            <span className="absolute top-0 left-28 bg-red-600 text-xs font-bold rounded-full px-2 py-1 animate-pulse">
+              {totalCartItems}
+            </span>
+          )}
+        </div>
 
-                    {/* Enlace al Carrito con contador */}
-                    <li>
-                        <Link to="/cart" className="relative flex items-center hover:text-green-200 transition">
-                            <FaShoppingCart className="mr-1" /> Carrito
-                            {totalCartItems > 0 && (
-                                <span className="absolute -top-2 -right-4 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                                    {totalCartItems}
-                                </span>
-                            )}
-                        </Link>
-                    </li>
+        <hr className="my-4 border-green-500" />
 
-                    {isAuthenticated ? (
-                        <>
-                            {/* ⭐ CAMBIO AQUÍ: Estos enlaces ahora son visibles para CUALQUIER usuario autenticado ⭐ */}
-                            <li>
-                                <Link to="/create-product" className="flex items-center hover:text-green-200 transition bg-green-700 px-3 py-1 rounded-full">
-                                    <FaPlus className="mr-1" /> Ofrecer Producto
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/create-service" className="flex items-center hover:text-green-200 transition bg-green-700 px-3 py-1 rounded-full">
-                                    <FaPlus className="mr-1" /> Ofrecer Servicio
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/create-rental" className="flex items-center hover:text-green-200 transition bg-green-700 px-3 py-1 rounded-full">
-                                    <FaPlus className="mr-1" /> Ofrecer Renta
-                                </Link>
-                            </li>
-                            {isPremium && (
-                                <>
-                                    <li>
-                                        <Link to="/premium-inventory" className="flex items-center hover:text-green-200 transition">
-                                            <FaSeedling className="mr-1" /> Mi Inventario Premium
-                                        </Link>
-                                    </li>
-                                </>
-                            )}
-                            <li>
-                                <button onClick={onLogout} className="flex items-center hover:text-green-200 transition bg-red-600 px-3 py-1 rounded-full">
-                                    <FaSignOutAlt className="mr-1" /> Salir
-                                </button>
-                            </li>
-                        </>
-                    ) : (
-                        <>
-                            <li>
-                                <Link to="/login" className="flex items-center hover:text-green-200 transition">
-                                    <FaSignInAlt className="mr-1" /> Iniciar Sesión
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/register" className="flex items-center hover:text-green-200 transition">
-                                    <FaUser className="mr-1" /> Registrarse
-                                </Link>
-                            </li>
-                            <li>
-                                <Link to="/premium-upsell" className="flex items-center hover:text-green-200 transition bg-yellow-500 text-green-900 px-3 py-1 rounded-full font-bold">
-                                    🌟 Hazte Premium
-                                </Link>
-                            </li>
-                        </>
-                    )}
-                </ul>
-            </nav>
-        </header>
-    );
+        {/* Acciones del usuario */}
+        {isAuthenticated ? (
+          <>
+            <SidebarLink to="/create-product" icon={<FaPlus />}>Ofrecer Producto</SidebarLink>
+            <SidebarLink to="/create-service" icon={<FaPlus />}>Ofrecer Servicio</SidebarLink>
+            <SidebarLink to="/create-rental" icon={<FaPlus />}>Ofrecer Renta</SidebarLink>
+
+            {isPremium && (
+              <SidebarLink to="/premium-inventory" icon={<FaSeedling />}>Inventario Premium</SidebarLink>
+            )}
+            <button
+              onClick={onLogout}
+              className="flex items-center gap-3 text-red-300 hover:text-red-400 transition transform hover:scale-105 duration-300 font-semibold"
+            >
+              <FaSignOutAlt /> Salir
+            </button>
+          </>
+        ) : (
+          <>
+            <SidebarLink to="/login" icon={<FaSignInAlt />}>Iniciar Sesión</SidebarLink>
+            <SidebarLink to="/register" icon={<FaUser />}>Registrarse</SidebarLink>
+            <SidebarLink
+              to="/premium-upsell"
+              icon={null}
+              className="text-yellow-300 font-bold hover:text-yellow-400"
+            >
+              🌟 Hazte Premium
+            </SidebarLink>
+          </>
+        )}
+      </nav>
+    </aside>
+  );
 }
 
-export default Navbar;
+function SidebarLink({ to, icon, children, className = '' }) {
+  return (
+    <Link
+      to={to}
+      className={`flex items-center gap-3 px-2 py-2 rounded-md hover:bg-green-600 transition duration-300 transform hover:scale-105 ${className}`}
+    >
+      {icon && <span className="text-lg">{icon}</span>}
+      <span>{children}</span>
+    </Link>
+  );
+}
+
+export default Sidebar;
