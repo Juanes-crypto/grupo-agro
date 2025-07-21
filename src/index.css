@@ -1,3 +1,4 @@
+@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
 /* src/index.css */
 
 /* 1. Importa las directivas base, componentes y utilidades de Tailwind CSS */
@@ -6,7 +7,6 @@
 @tailwind utilities;
 
 /* 2. Importa tus fuentes si las necesitas */
-@import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap');
 
 /* 3. Tus clases @apply personalizadas DEBEN ir aquí. */
 .btn-green {

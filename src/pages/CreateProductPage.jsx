@@ -21,6 +21,7 @@ function CreateProductPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
+    const [isTradable, setIsTradable] = useState(false); // <--- NUEVO ESTADO PARA IS_TRUEQUEABLE
 
     const categories = [
         'Frutas', 'Verduras', 'Granos', 'Lácteos', 'Carnes',
@@ -35,6 +36,11 @@ function CreateProductPage() {
             ...prevData,
             [name]: value
         }));
+    };
+
+    // <--- NUEVO HANDLER PARA EL CHECKBOX DE TRUEQUEABLE
+    const handleTradableChange = (e) => {
+        setIsTradable(e.target.checked);
     };
 
     const handleImageChange = (e) => {
@@ -72,13 +78,11 @@ function CreateProductPage() {
         formData.append('name', productData.name);
         formData.append('description', productData.description);
         formData.append('price', productData.price);
-        // ⭐ CAMBIO CLAVE AQUÍ: Enviar 'stock' y 'unit' por separado ⭐
         formData.append('stock', productData.stock); 
         formData.append('unit', productData.unit); 
-        // ⬆️ Eliminamos: formData.append('quantity', `${productData.stock} ${productData.unit}`);
-
         formData.append('category', productData.category);
         formData.append('isPublished', true); // Se mantiene para publicación automática
+        formData.append('isTradable', isTradable); // <--- ¡ENVIAR EL ESTADO DE TRUEQUEABLE!
 
         if (image) {
             formData.append('image', image);
@@ -104,6 +108,7 @@ function CreateProductPage() {
             });
             setImage(null);
             setPreviewUrl('');
+            setIsTradable(false); // Restablecer el checkbox
             console.log('Producto creado:', data);
             navigate('/products'); 
 
@@ -190,6 +195,21 @@ function CreateProductPage() {
                             <img src={previewUrl} alt="Vista previa" className="rounded-md object-cover max-w-full h-auto" />
                         </div>
                     )}
+                </div>
+
+                {/* <--- ¡NUEVO CAMPO PARA TRUEQUEABLE! */}
+                <div className="flex items-center mt-4">
+                    <input
+                        type="checkbox"
+                        id="isTradable"
+                        name="isTradable"
+                        checked={isTradable}
+                        onChange={handleTradableChange}
+                        className="h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
+                    />
+                    <label htmlFor="isTradable" className="ml-2 block text-sm font-medium text-gray-700">
+                        ¿Es este producto truequeable?
+                    </label>
                 </div>
 
                 {error && <p className="text-red-600 text-sm text-center mt-4">{error}</p>}

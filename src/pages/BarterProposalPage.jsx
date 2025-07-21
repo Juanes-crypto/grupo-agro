@@ -1,65 +1,63 @@
-// src/pages/CreateBarterProposalPage.jsx
-
+// src/pages/BarterProposalPage.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
-import { CurrencyDollarIcon, CheckCircleIcon, ExclamationCircleIcon, ArrowPathIcon, HandThumbUpIcon, ShieldCheckIcon, UsersIcon } from '@heroicons/react/24/outline';
+import api from '../services/api';
 
-function CreateBarterProposalPage() {
+function BarterProposalPage() {
     const { productId } = useParams(); // ID del producto que el usuario quiere obtener
     const navigate = useNavigate();
-    const { isAuthenticated, user, loading: authLoading } = useContext(AuthContext);
+    const { isAuthenticated, user } = useContext(AuthContext);
 
     const [desiredProduct, setDesiredProduct] = useState(null);
+    const [offeredProduct, setOfferedProduct] = useState(null); // Producto que el usuario ofrece
     const [userTruequeableProducts, setUserTruequeableProducts] = useState([]);
-    const [selectedOfferedProductIds, setSelectedOfferedProductIds] = useState([]); // IDs de productos que el usuario ofrece
-    const [barterEquity, setBarterEquity] = useState(null); // Feedback de equidad del trueque desde el backend
-
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [successMessage, setSuccessMessage] = useState('');
-    const [message, setMessage] = useState('');
+    const [barterEquity, setBarterEquity] = useState(null); // Feedback de equidad del trueque desde el backend
+
     // Estados para el sistema de 3 pasos
     const [currentStep, setCurrentStep] = useState(1); // 1: Selección, 2: Propuesta, 3: Acuerdo
     const [agreementChecked, setAgreementChecked] = useState(false);
     const [timeAgreementChecked, setTimeAgreementChecked] = useState(false);
 
     useEffect(() => {
-        const fetchBarterData = async () => {
-            if (!isAuthenticated) {
-                setError('Debes iniciar sesión para proponer un trueque.');
-                setLoading(false);
-                return;
-            }
+        if (!isAuthenticated) {
+            alert('Debes iniciar sesión para proponer un trueque.');
+            navigate('/login');
+            return;
+        }
 
+        const fetchBarterData = async () => {
             setLoading(true);
             setError(null);
             try {
-                // 1. Obtener detalles del producto deseado (el que el usuario quiere)
+                // 1. Obtener detalles del producto deseado
                 const desiredProductRes = await api.get(`http://localhost:5000/api/products/${productId}`);
-                const fetchedDesiredProduct = desiredProductRes.data;
-                setDesiredProduct(fetchedDesiredProduct);
+                setDesiredProduct(desiredProductRes.data);
 
-                // 2. Obtener productos del usuario logueado que son truequeables y tienen stock
-                const userProductsRes = await api.get(`http://localhost:5000/api/products?user=${user._id}&isTradable=true&stock_gt=0`); // Usando 'stock_gt=0' para filtrar
+                // 2. Obtener productos del usuario logueado que son truequeables
+                // Asumiendo que el backend tiene un endpoint para esto, o que `api.get('/products')`
+                // puede filtrar por el usuario autenticado y `is_truequeable`.
+                const userProductsRes = await api.get(`http://localhost:5000/api/products?user=${user._id}&is_truequeable=true&inventory_gt=0`);
                 
-                // Filtrar productos del usuario para que no incluyan el producto deseado (si por alguna razón lo fuera)
-                const filteredUserProducts = userProductsRes.data.filter(p => p._id !== fetchedDesiredProduct._id);
+                // Filtrar productos del usuario para que no incluyan el producto deseado (si fuera el caso)
+                const filteredUserProducts = userProductsRes.data.filter(p => p._id !== desiredProductRes.data._id);
                 setUserTruequeableProducts(filteredUserProducts);
 
                 // Validaciones iniciales (Paso 0 del flujo)
-                if (fetchedDesiredProduct.user && fetchedDesiredProduct.user._id === user._id) {
+                if (desiredProductRes.data.user && desiredProductRes.data.user._id === user._id) {
                     setError('No puedes proponer un trueque por tu propio producto.');
                     setLoading(false);
                     return;
                 }
-                if (!fetchedDesiredProduct.isTradable || fetchedDesiredProduct.stock <= 0) {
-                    setError('Este producto no está disponible para trueque o no tiene stock.');
+                if (!desiredProductRes.data.is_truequeable || desiredProductRes.data.inventory <= 0) {
+                    setError('Este producto no está disponible para trueque o no tiene inventario.');
                     setLoading(false);
                     return;
                 }
-                // Las validaciones de reputación y certificación de frescura se harán en el backend al crear la propuesta.
+                // La validación de reputación del vendedor del producto deseado se hará en el backend al crear la propuesta
+                // y la de certificación de frescura también.
 
             } catch (err) {
                 setError('Error al cargar la información para el trueque: ' + (err.response?.data?.message || err.message));
@@ -69,133 +67,92 @@ function CreateBarterProposalPage() {
             }
         };
 
-        if (!authLoading && user) { // Asegurarse de que el usuario esté cargado antes de hacer las peticiones
+        if (user) { // Asegurarse de que el usuario esté cargado antes de hacer las peticiones
             fetchBarterData();
         }
-    }, [productId, isAuthenticated, user, authLoading, navigate]);
+    }, [productId, isAuthenticated, user, navigate]);
 
     // Función para obtener la valoración de equidad del backend
-    useEffect(() => {
-        const getBarterEquityFromBackend = async () => {
-            if (selectedOfferedProductIds.length === 0 || !desiredProduct) {
-                setBarterEquity(null);
-                return;
-            }
-            try {
-                // Para simplificar, comparamos el primer producto ofrecido con el deseado.
-                // Si se permiten múltiples productos, la lógica de comparación de valor debería ser más compleja en el backend.
-                const product1Id = selectedOfferedProductIds[0]; // Asume que el primer producto ofrecido es el principal para la comparación
-                const product2Id = desiredProduct._id;
-
-                const response = await api.get(`http://localhost:5000/api/barter/value-comparison?product1Id=${product1Id}&product2Id=${product2Id}`);
-                setBarterEquity(response.data); // { isFair: boolean, message: string, difference: object, differencePercentage: number }
-            } catch (err) {
-                console.error("Error fetching barter equity:", err);
-                setBarterEquity({ isFair: false, message: "No se pudo calcular la equidad. Intenta de nuevo.", difference: null, differencePercentage: 100 });
-            }
-        };
-
-        getBarterEquityFromBackend();
-    }, [selectedOfferedProductIds, desiredProduct]);
-
-    const handleOfferedItemToggle = (productId) => {
-        setSelectedOfferedProductIds(prev =>
-            prev.includes(productId)
-                ? prev.filter(id => id !== productId)
-                : [...prev, productId]
-        );
+    const getBarterEquityFromBackend = async (offeredProdId, desiredProdId) => {
+        try {
+            const response = await api.get(`http://localhost:5000/api/barter/value-comparison?product1Id=${offeredProdId}&product2Id=${desiredProdId}`);
+            setBarterEquity(response.data); // { isFair: boolean, message: string, difference: object, differencePercentage: number }
+        } catch (err) {
+            console.error("Error fetching barter equity:", err);
+            setBarterEquity({ isFair: false, message: "No se pudo calcular la equidad. Intenta de nuevo.", difference: null, differencePercentage: 100 });
+        }
     };
 
+    useEffect(() => {
+        if (offeredProduct && desiredProduct) {
+            getBarterEquityFromBackend(offeredProduct._id, desiredProduct._id);
+        } else {
+            setBarterEquity(null);
+        }
+    }, [offeredProduct, desiredProduct]);
+
     const handleProposeBarter = async () => {
-        if (selectedOfferedProductIds.length === 0) {
-            setError('Por favor, selecciona al menos un producto que deseas ofrecer.');
+        if (!offeredProduct) {
+            alert('Por favor, selecciona el producto que deseas ofrecer.');
             return;
         }
         if (!desiredProduct) {
-            setError('Error: Producto deseado no cargado.');
+            alert('Error: Producto deseado no cargado.');
             return;
         }
 
         // Validar en frontend si la diferencia es demasiado grande antes de enviar al backend
         if (barterEquity && !barterEquity.isFair && barterEquity.differencePercentage > 40) {
-             setError('La diferencia de valor supera el 40%. Por favor, ajusta tu oferta.');
+             alert('La diferencia de valor es demasiado grande para un trueque justo. Por favor, ajusta tu oferta.');
              return;
         }
 
-        setLoading(true);
-        setError(null);
         try {
+            // Envío de la propuesta al backend
             const proposalData = {
                 recipientId: desiredProduct.user._id, // El dueño del producto deseado es el recipiente
-                offeredProductIds: selectedOfferedProductIds,
-                requestedProductIds: [desiredProduct._id], // El producto deseado es el único solicitado
-                message: message || `¡Hola! Me gustaría intercambiar mi(s) producto(s) por tu ${desiredProduct.name}. ¿Qué te parece esta oferta?`
+                offeredProductIds: [offeredProduct._id], // Por ahora, solo un producto ofrecido
+                requestedProductIds: [desiredProduct._id], // Por ahora, solo un producto solicitado
+                message: "¡Hola! Me gustaría intercambiar mi producto por el tuyo. ¿Qué te parece esta oferta?" // Mensaje por defecto
             };
             const response = await api.post('http://localhost:5000/api/barter', proposalData);
-            setSuccessMessage('¡Propuesta de trueque enviada con éxito! Espera la respuesta del otro usuario.');
-            console.log('Propuesta creada:', response.data);
+            console.log('Propuesta de trueque enviada:', response.data);
+            alert('¡Propuesta de trueque enviada con éxito! Espera la respuesta del otro usuario.');
             setCurrentStep(3); // Avanzar al paso de acuerdo
         } catch (err) {
             setError('Error al enviar la propuesta de trueque: ' + (err.response?.data?.message || err.message));
             console.error("Error sending barter proposal:", err);
-        } finally {
-            setLoading(false);
         }
     };
 
     const handleAcceptAgreement = async () => {
         if (!agreementChecked || !timeAgreementChecked) {
-            setError('Debes aceptar ambos términos para firmar el acuerdo.');
+            alert('Debes aceptar ambos términos para firmar el acuerdo.');
             return;
         }
-        setSuccessMessage('¡Acuerdo de trueque firmado! Recibirás notificaciones sobre los siguientes pasos logísticos.');
         // En un sistema real, aquí se confirmaría el acuerdo y se pasaría a la logística.
         // Por ahora, solo navegamos.
-        setTimeout(() => navigate('/my-barters'), 2000); // Redirigir a una página de trueques del usuario (a crear)
+        alert('¡Acuerdo de trueque firmado! Recibirás notificaciones sobre los siguientes pasos logísticos.');
+        navigate('/my-barters'); // Redirigir a una página de trueques del usuario (a crear)
     };
 
-    if (loading || authLoading) {
+    if (loading) {
         return <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 text-gray-700 text-2xl animate-pulse">Cargando detalles del trueque...</div>;
     }
 
-    if (error && !successMessage) { // Mostrar error solo si no hay mensaje de éxito
+    if (error) {
         return <div className="flex justify-center items-center min-h-screen bg-red-50 text-red-700 text-xl font-semibold">Error: {error}</div>;
     }
 
-    if (!isAuthenticated) {
-        return (
-            <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-8 px-4 sm:px-6 lg:px-8 flex flex-col items-center justify-center">
-                <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Crear Propuesta de Trueque</h2>
-                <p className="text-center text-gray-600 mb-4">Por favor, <Link to="/login" className="text-blue-600 hover:underline font-bold">inicia sesión</Link> para crear una propuesta de trueque.</p>
-            </div>
-        );
-    }
-
     if (!desiredProduct) {
-        return <div className="flex justify-center items-center min-h-screen bg-gray-50 text-gray-700 text-xl">Producto deseado no encontrado o no disponible para trueque.</div>;
+        return <div className="flex justify-center items-center min-h-screen bg-gray-50 text-gray-700 text-xl">Producto no encontrado o no disponible para trueque.</div>;
     }
-
-    const selectedOfferedProductsDetails = userTruequeableProducts.filter(p => selectedOfferedProductIds.includes(p._id));
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-8 px-4 sm:px-6 lg:px-8">
             <h1 className="text-4xl font-extrabold text-center text-green-800 mb-10 drop-shadow-md">
                 Propón un Trueque
             </h1>
-
-            {/* Mensajes de éxito y error */}
-            {successMessage && (
-                <div className="max-w-4xl mx-auto bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded-lg relative mb-6 text-center shadow-md" role="alert">
-                    <strong className="font-bold">¡Éxito!</strong>
-                    <span className="block sm:inline ml-2">{successMessage}</span>
-                </div>
-            )}
-            {error && (
-                <div className="max-w-4xl mx-auto bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6 text-center shadow-md" role="alert">
-                    <strong className="font-bold">¡Error!</strong>
-                    <span className="block sm:inline ml-2">{error}</span>
-                </div>
-            )}
 
             {/* Indicador de Pasos */}
             <div className="max-w-4xl mx-auto mb-10 flex justify-around items-center relative">
@@ -237,10 +194,10 @@ function CreateBarterProposalPage() {
                                         <p className="text-gray-500 text-xs mt-1">Vendedor: {desiredProduct.user.name} ({desiredProduct.user.reputation} estrellas)</p>
                                     )}
                                     {/* Principio de Escasez */}
-                                    {desiredProduct.stock > 0 && desiredProduct.stock < 5 && (
+                                    {desiredProduct.inventory > 0 && desiredProduct.inventory < 5 && (
                                         <div className="mt-3 p-2 bg-red-100 text-red-700 rounded-lg text-sm font-medium flex items-center">
-                                            <ExclamationCircleIcon className="w-5 h-5 mr-2" />
-                                            ¡Solo {desiredProduct.stock} {desiredProduct.unit} disponible para trueque!
+                                            <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 102 0V6zm-1 8a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd"></path></svg>
+                                            ¡Solo {desiredProduct.inventory} disponible para trueque!
                                         </div>
                                     )}
                                 </div>
@@ -249,25 +206,40 @@ function CreateBarterProposalPage() {
 
                         {/* Tu Oferta (Derecha) */}
                         <div className="flex flex-col items-center p-6 bg-blue-50 rounded-xl shadow-md border border-blue-200">
-                            <h3 className="text-2xl font-bold text-blue-800 mb-4">Tus Productos a Ofrecer</h3>
+                            <h3 className="text-2xl font-bold text-blue-800 mb-4">Tu Oferta</h3>
                             {userTruequeableProducts.length > 0 ? (
-                                <div className="grid grid-cols-2 gap-4 w-full max-w-lg overflow-y-auto max-h-96 p-2">
-                                    {userTruequeableProducts.map(product => (
-                                        <div
-                                            key={product._id}
-                                            onClick={() => handleOfferedItemToggle(product._id)}
-                                            className={`border rounded-lg p-3 text-center cursor-pointer transition-all duration-200 ease-in-out
-                                                ${selectedOfferedProductIds.includes(product._id) ? 'border-blue-600 ring-2 ring-blue-300 bg-blue-100' : 'border-gray-300 bg-white hover:border-blue-400'}`}
+                                <>
+                                    <label htmlFor="offeredProduct" className="block text-sm font-medium text-gray-700 mb-2">Selecciona un producto para ofrecer:</label>
+                                    <div className="relative w-full max-w-sm mb-6">
+                                        <select
+                                            id="offeredProduct"
+                                            value={offeredProduct ? offeredProduct._id : ''}
+                                            onChange={(e) => setOfferedProduct(userTruequeableProducts.find(p => p._id === e.target.value))}
+                                            className="block w-full p-3 border border-blue-300 rounded-lg focus:outline-none focus:ring-3 focus:ring-blue-400 bg-white text-gray-700 appearance-none pr-8 shadow-sm"
                                         >
-                                            <img src={product.imageUrl || 'https://via.placeholder.com/100x80?text=Tu+Oferta'} alt={product.name} className="w-full h-24 object-cover rounded-md mb-2"/>
-                                            <p className="font-semibold text-gray-800 text-base">{product.name}</p>
-                                            <p className="text-gray-600 text-sm">{product.stock} {product.unit}</p>
-                                            <p className="text-green-700 font-bold text-sm">COP {product.price ? product.price.toLocaleString('es-CO') : 'N/A'}</p>
+                                            <option value="">Selecciona tu producto</option>
+                                            {userTruequeableProducts.map(product => (
+                                                <option key={product._id} value={product._id}>{product.name} ({product.quantity})</option>
+                                            ))}
+                                        </select>
+                                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
+                                            <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 6.096 6.924 4.682 8.338z"/></svg>
                                         </div>
-                                    ))}
-                                </div>
+                                    </div>
+
+                                    {offeredProduct && (
+                                        <div className="w-full max-w-sm bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+                                            <img src={offeredProduct.imageUrl || 'https://via.placeholder.com/400x300?text=Tu Oferta'} alt={offeredProduct.name} className="w-full h-48 object-cover"/>
+                                            <div className="p-4">
+                                                <h4 className="text-xl font-semibold text-gray-900">{offeredProduct.name}</h4>
+                                                <p className="text-gray-600 text-sm mt-1 line-clamp-2">{offeredProduct.description}</p>
+                                                <p className="text-lg font-bold text-blue-700 mt-2">COP {offeredProduct.price ? offeredProduct.price.toLocaleString('es-CO') : 'N/A'}</p>
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
                             ) : (
-                                <div className="text-center text-gray-600 p-4">
+                                <div className="text-center text-gray-600">
                                     <p className="mb-4">No tienes productos disponibles para trueque.</p>
                                     <Link to="/create-product" className="bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
                                         Publica un Producto Truequeable
@@ -280,8 +252,8 @@ function CreateBarterProposalPage() {
                     <div className="mt-10 flex justify-center">
                         <button
                             onClick={() => setCurrentStep(2)}
-                            disabled={selectedOfferedProductIds.length === 0}
-                            className={`bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-10 rounded-full text-xl transition duration-300 shadow-lg ${selectedOfferedProductIds.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            disabled={!offeredProduct}
+                            className={`bg-green-600 hover:bg-green-700 text-white font-bold py-4 px-10 rounded-full text-xl transition duration-300 shadow-lg ${!offeredProduct ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             Continuar a la Propuesta
                         </button>
@@ -310,17 +282,12 @@ function CreateBarterProposalPage() {
                         {/* Tu Oferta */}
                         <div className="flex flex-col items-center p-6 bg-blue-50 rounded-xl shadow-md border border-blue-200">
                             <h3 className="text-2xl font-bold text-blue-800 mb-4">Ofrecerás:</h3>
-                            <div className="w-full max-w-sm grid grid-cols-2 gap-4">
-                                {selectedOfferedProductsDetails.map(product => (
-                                    <div key={product._id} className="bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
-                                        <img src={product.imageUrl || 'https://via.placeholder.com/200x150?text=Tu Oferta'} alt={product.name} className="w-full h-24 object-cover"/>
-                                        <div className="p-2">
-                                            <h4 className="text-md font-semibold text-gray-900">{product.name}</h4>
-                                            <p className="text-sm text-gray-600">{product.stock} {product.unit}</p>
-                                            <p className="text-md font-bold text-blue-700">COP {product.price ? product.price.toLocaleString('es-CO') : 'N/A'}</p>
-                                        </div>
-                                    </div>
-                                ))}
+                            <div className="w-full max-w-sm bg-white rounded-xl shadow-lg overflow-hidden border border-gray-200">
+                                <img src={offeredProduct.imageUrl || 'https://via.placeholder.com/400x300?text=Tu Oferta'} alt={offeredProduct.name} className="w-full h-48 object-cover"/>
+                                <div className="p-4">
+                                    <h4 className="text-xl font-semibold text-gray-900">{offeredProduct.name}</h4>
+                                    <p className="text-lg font-bold text-blue-700 mt-2">COP {offeredProduct.price ? offeredProduct.price.toLocaleString('es-CO') : 'N/A'}</p>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -344,25 +311,9 @@ function CreateBarterProposalPage() {
                         </div>
                     ) : (
                         <div className="mt-10 p-6 rounded-xl text-center shadow-inner border bg-gray-100 border-gray-300 text-gray-800">
-                            <p className="text-lg animate-pulse flex items-center justify-center">
-                                <ArrowPathIcon className="w-6 h-6 mr-3 animate-spin text-gray-600" />
-                                Calculando equidad del trueque...
-                            </p>
+                            <p className="text-lg animate-pulse">Calculando equidad del trueque...</p>
                         </div>
                     )}
-
-                    {/* Mensaje opcional */}
-                    <div className="mt-8">
-                        <label htmlFor="message" className="block text-lg font-medium text-gray-700 mb-2">Mensaje para el receptor (Opcional):</label>
-                        <textarea
-                            id="message"
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
-                            placeholder="Ej: ¡Hola! Me interesa mucho tu producto. Espero que mi oferta sea de tu agrado."
-                            rows="4"
-                            className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-400 transition duration-200 shadow-sm"
-                        ></textarea>
-                    </div>
 
                     {/* Botones de navegación */}
                     <div className="mt-10 flex justify-between">
@@ -400,7 +351,7 @@ function CreateBarterProposalPage() {
                                 onChange={(e) => setAgreementChecked(e.target.checked)}
                                 className="form-checkbox h-6 w-6 text-green-600 rounded-md border-gray-300 focus:ring-green-500"
                             />
-                            <span className="ml-3">Acepto recibir <span className="font-semibold">[{desiredProduct.name}]</span> y entregar <span className="font-semibold">[{selectedOfferedProductsDetails.map(p => p.name).join(', ')}]</span>.</span>
+                            <span className="ml-3">Acepto recibir <span className="font-semibold">[{desiredProduct.name}]</span> y entregar <span className="font-semibold">[{offeredProduct.name}]</span>.</span>
                         </label>
                         <label className="flex items-center text-lg text-gray-800 cursor-pointer">
                             <input
@@ -433,13 +384,13 @@ function CreateBarterProposalPage() {
             {/* Microcopys de Prueba Social y Autoridad (ejemplos estáticos por ahora) */}
             <div className="max-w-4xl mx-auto mt-12 grid grid-cols-1 md:grid-cols-2 gap-8">
                 <div className="bg-blue-100 p-6 rounded-xl shadow-md flex items-center space-x-4">
-                    <ShieldCheckIcon className="w-8 h-8 text-blue-600" />
+                    <svg className="w-8 h-8 text-blue-600" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path></svg>
                     <p className="text-blue-800 font-medium">
                         <span className="font-bold">¡Trueque verificado por Fedegan!</span> Este producto cumple con los estándares de calidad.
                     </p>
                 </div>
                 <div className="bg-purple-100 p-6 rounded-xl shadow-md flex items-center space-x-4">
-                    <UsersIcon className="w-8 h-8 text-purple-600" />
+                    <svg className="w-8 h-8 text-purple-600" fill="currentColor" viewBox="0 0 20 20"><path d="M13 6a3 3 0 11-6 0 3 3 0 016 0zM18 8a2 2 0 11-4 0 2 2 0 014 0zM14 15a4 4 0 00-8 0v3h8v-3zM6 8a2 2 0 11-4 0 2 2 0 014 0zM14.5 19a.5.5 0 00.5-.5v-1.5a.5.5 0 00-.5-.5h-9a.5.5 0 00-.5.5v1.5a.5.5 0 00.5.5h9z"></path></svg>
                     <p className="text-purple-800 font-medium">
                         <span className="font-bold">Juan en Antioquia</span> cambió 10kg café por un saco de fertilizante hace 2 horas.
                     </p>
@@ -449,4 +400,4 @@ function CreateBarterProposalPage() {
     );
 }
 
-export default CreateBarterProposalPage;
+export default BarterProposalPage;
