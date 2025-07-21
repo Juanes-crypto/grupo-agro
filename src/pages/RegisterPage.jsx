@@ -33,9 +33,8 @@ function RegisterPage() {
                 },
                 body: JSON.stringify({ name, email, password }),
             });
-
             const data = await response.json();
-
+            console.log('Backend response data:', data);
             if (!response.ok) {
                 throw new Error(data.message || 'Error al registrar usuario.');
             }

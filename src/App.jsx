@@ -102,6 +102,8 @@ function App() {
                             <Route path="/edit-product/:id" element={<EditProductPage />} />
                             {/* Usamos ProductListPage para mostrar los productos del usuario actual */}
                             <Route path="/my-products" element={<ProductListPage />} />
+                            <Route path="/my-services" element={<ServiceListPage />} />
+                            <Route path="/my-rentals" element={<RentalListPage />} />
 
                             {/* Rutas de Trueque */}
                             <Route path="/barter-details/:id" element={<BarterDetailsPage />} />

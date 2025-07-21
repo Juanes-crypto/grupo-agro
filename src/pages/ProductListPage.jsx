@@ -277,7 +277,7 @@ function ProductListPage() {
                             {/* Información del vendedor */}
                             {product.user && (
                                 <p className="text-sm text-gray-500 mb-4">
-                                    Publicado por: <span className="font-medium text-gray-700">{product.user.name}</span>
+                                    Publicado por: <span className="font-medium text-gray-700">{product.user.name ? product.user.name : 'Desconocido'}</span>
                                 </p>
                             )}
 
@@ -310,7 +310,7 @@ function ProductListPage() {
                                             </>
                                         ) : (
                                             // Botones para otros usuarios (cuando no es mi producto)
-                                            product.user._id !== user._id && (
+                                            product.user && user && product.user._id !== user._id && (
                                                 <>
                                                     {product.stock > 0 ? (
                                                         <button
