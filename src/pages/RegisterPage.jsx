@@ -7,9 +7,10 @@ function RegisterPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
-    const [profilePicture, setProfilePicture] = useState(null); // ⭐ Nuevo estado para la foto de perfil ⭐
+    const [profilePicture, setProfilePicture] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState(null);
+    // ⭐ Cambiamos 'error' a 'errors' para manejar múltiples mensajes ⭐
+    const [errors, setErrors] = useState([]); 
 
     const navigate = useNavigate();
     const { register } = useContext(AuthContext);
@@ -17,49 +18,55 @@ function RegisterPage() {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setError(null);
+        // ⭐ Limpiamos los errores antes de un nuevo intento ⭐
+        setErrors([]); 
 
         if (password !== confirmPassword) {
-            setError('Las contraseñas no coinciden.');
+            setErrors(['Las contraseñas no coinciden.']); // Ahora es un array
             setLoading(false);
             return;
         }
 
         try {
-            // ⭐ Crear un objeto FormData para enviar archivos y campos de texto ⭐
             const formData = new FormData();
             formData.append('name', name);
             formData.append('email', email);
             formData.append('password', password);
-            if (profilePicture) { // Solo añadir si hay una imagen seleccionada
+            if (profilePicture) {
                 formData.append('profilePicture', profilePicture);
             }
 
-            // ⭐ LLAMADA A TU API DE REGISTRO DEL BACKEND ⭐
             const response = await fetch('http://localhost:5000/api/users/register', {
                 method: 'POST',
-                // ⭐ MUY IMPORTANTE: NO establezcas 'Content-Type': 'application/json' ⭐
-                // Cuando envías FormData, el navegador lo establecerá automáticamente
-                // con el boundary correcto. Si lo estableces manualmente, fallará.
-                body: formData, // Envía el objeto FormData
+                body: formData,
             });
             const data = await response.json();
             console.log('Backend response data:', data);
 
             if (!response.ok) {
-                // Si el backend devuelve un error específico (ej. "usuario ya existe"),
-                // úsalo, de lo contrario, un mensaje genérico.
-                throw new Error(data.message || 'Error al registrar usuario.');
+                // ⭐ MODIFICACIÓN CLAVE AQUÍ: Manejar errores de express-validator ⭐
+                if (data.errors && Array.isArray(data.errors)) {
+                    // Si el backend envió un array de errores de validación
+                    const backendErrorMessages = data.errors.map(err => err.msg);
+                    setErrors(backendErrorMessages); // Guardamos todos los mensajes
+                } else if (data.message) {
+                    // Si el backend envió un mensaje de error genérico (ej. "usuario ya existe")
+                    setErrors([data.message]);
+                } else {
+                    // Si la estructura del error es inesperada
+                    setErrors(['Error al registrar usuario. Por favor, inténtalo de nuevo.']);
+                }
+                setLoading(false);
+                return; // Importante para detener la ejecución aquí si hay errores
             }
 
-            // En un registro exitoso, almacena los datos del usuario y el token en AuthContext
-            // El objeto 'data.user' ahora debería incluir 'profilePicture' desde el backend
             register(data.user, data.token);
             console.log('Registro exitoso:', data);
-            navigate('/welcome'); // Redirige a la página de bienvenida o dashboard
+            navigate('/welcome'); 
 
         } catch (err) {
-            setError(err.message || 'Error al registrar usuario. Inténtalo de nuevo.');
+            // Este catch manejará errores de red u otros que no sean 400 del backend
+            setErrors(['Error de conexión o inesperado. ' + (err.message || 'Por favor, inténtalo de nuevo.')]);
             console.error("Error de registro:", err);
         } finally {
             setLoading(false);
@@ -114,14 +121,14 @@ function RegisterPage() {
                         required
                     />
                 </div>
-                {/* ⭐ Nuevo campo para la foto de perfil ⭐ */}
+                {/* Campo para la foto de perfil */}
                 <div>
                     <label htmlFor="profilePicture" className="block text-sm font-medium text-gray-700">Foto de Perfil (Opcional)</label>
                     <input
                         type="file"
                         id="profilePicture"
                         className="mt-1 block w-full text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
-                        accept="image/*" // Solo acepta archivos de imagen
+                        accept="image/*"
                         onChange={(e) => setProfilePicture(e.target.files[0])}
                     />
                     {profilePicture && (
@@ -130,7 +137,17 @@ function RegisterPage() {
                         </p>
                     )}
                 </div>
-                {error && <p className="text-red-600 text-sm text-center">{error}</p>}
+                {/* ⭐ Mostrar los errores aquí ⭐ */}
+                {errors.length > 0 && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+                        <strong className="font-bold">¡Errores de registro!</strong>
+                        <ul className="mt-2 list-disc list-inside">
+                            {errors.map((msg, index) => (
+                                <li key={index} className="text-sm">{msg}</li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
                 <button
                     type="submit"
                     className="w-full bg-green-600 text-white py-2 px-4 rounded-md hover:bg-green-700 transition duration-300 disabled:bg-green-400"
