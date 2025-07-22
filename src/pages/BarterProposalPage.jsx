@@ -103,8 +103,8 @@ function BarterProposalPage() {
 
         // Validar en frontend si la diferencia es demasiado grande antes de enviar al backend
         if (barterEquity && !barterEquity.isFair && barterEquity.differencePercentage > 40) {
-             alert('La diferencia de valor es demasiado grande para un trueque justo. Por favor, ajusta tu oferta.');
-             return;
+              alert('La diferencia de valor es demasiado grande para un trueque justo. Por favor, ajusta tu oferta.');
+              return;
         }
 
         try {
@@ -133,7 +133,9 @@ function BarterProposalPage() {
         // En un sistema real, aquí se confirmaría el acuerdo y se pasaría a la logística.
         // Por ahora, solo navegamos.
         alert('¡Acuerdo de trueque firmado! Recibirás notificaciones sobre los siguientes pasos logísticos.');
-        navigate('/my-barters'); // Redirigir a una página de trueques del usuario (a crear)
+        // CAMBIA ESTA LÍNEA:
+        // setTimeout(() => navigate('/my-barters'), 2000); // Antes (línea que tenías)
+        setTimeout(() => navigate('/my-barter-proposals'), 2000); // Después (la nueva línea)
     };
 
     if (loading) {

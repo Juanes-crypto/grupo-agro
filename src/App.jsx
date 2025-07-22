@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { ToastContainer } from 'react-toastify'; 
+import 'react-toastify/dist/ReactToastify.css'; // ¡Este es importante para los estilos!
 
 // ======================================================
 // ⭐ IMPORTACIONES DE CONTEXTOS ⭐
@@ -157,6 +159,19 @@ function App() {
                 </main>
                 {/* Si tienes un componente Footer.jsx, descomenta la siguiente línea: */}
                 {/* <Footer /> */}
+
+                {/* --- AQUÍ SE AÑADE EL TOASTCONTAINER --- */}
+                <ToastContainer
+                    position="bottom-right" // Puedes cambiar la posición (top-right, top-center, etc.)
+                    autoClose={5000}       // Las notificaciones se cierran después de 5 segundos
+                    hideProgressBar={false} // Muestra una pequeña barra de progreso
+                    newestOnTop={false}    // Las notificaciones más nuevas aparecen abajo
+                    closeOnClick           // Cierra la notificación al hacer clic
+                    rtl={false}            // Soporte para idiomas de derecha a izquierda
+                    pauseOnFocusLoss       // Pausa el temporizador si la ventana pierde el foco
+                    draggable              // Permite arrastrar las notificaciones
+                    pauseOnHover           // Pausa el temporizador si pasas el ratón por encima
+                />
             </Router>
         </AuthProvider>
     );
