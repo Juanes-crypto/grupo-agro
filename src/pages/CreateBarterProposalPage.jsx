@@ -151,7 +151,7 @@ function CreateBarterProposalPage() {
         setSuccessMessage('¡Acuerdo de trueque firmado! Recibirás notificaciones sobre los siguientes pasos logísticos.');
         // En un sistema real, aquí se confirmaría el acuerdo y se pasaría a la logística.
         // Por ahora, solo navegamos.
-        setTimeout(() => navigate('/my-barters'), 2000); // Redirigir a una página de trueques del usuario (a crear)
+        setTimeout(() => navigate('/my-barter-proposals'), 2000); // Redirigir a una página de trueques del usuario (a crear)
     };
 
     if (loading || authLoading) {

@@ -8,10 +8,7 @@ import {
     FaSun, FaBell, FaShoppingCart, FaExchangeAlt, FaListAlt, FaBox, FaWrench, FaBuilding
 } from 'react-icons/fa';
 
-// ⭐ Importa una imagen de perfil por defecto si no hay ninguna ⭐
-// Puedes descargar una imagen genérica y colocarla en tu carpeta 'public' o 'src/assets'
-// Por ejemplo, si la pones en 'src/assets/default-profile.png'
-import defaultProfilePicture from '../assets/default-profile.png'; // Asegúrate de crear este archivo o ajustar la ruta
+import defaultProfilePicture from '../assets/default-profile.png'; // Asegúrate de tener esta imagen
 
 function Navbar() {
     const { isAuthenticated, isPremium, logout, cartItems, user } = useContext(AuthContext);
@@ -27,7 +24,6 @@ function Navbar() {
     const totalCartItems = cartItems ? cartItems.reduce((total, item) => total + item.quantity, 0) : 0;
 
     return (
-        // ⭐ Clases añadidas: h-screen y overflow-y-auto ⭐
         <aside className="w-72 bg-gradient-to-b from-green-900 via-green-800 to-green-700 text-white h-screen p-6 shadow-xl fixed top-0 left-0 z-50 font-sans border-r-2 border-green-600 overflow-y-auto">
             <Link
                 to="/"
@@ -36,28 +32,26 @@ function Navbar() {
                 🌾 AgroApp
             </Link>
 
-            {/* ⭐ Sección de perfil del usuario ⭐ */}
-            {isAuthenticated && user && ( // Solo muestra si está autenticado y los datos de usuario están disponibles
+            {/* Sección de perfil del usuario */}
+            {isAuthenticated && user && (
                 <div className="flex flex-col items-center mb-6 text-center">
                     <img
-                        src={user.profilePicture || defaultProfilePicture} // Usa la imagen de perfil del usuario o una por defecto
+                        src={user.profilePicture || defaultProfilePicture}
                         alt="Foto de perfil"
-                        className="w-24 h-24 rounded-full border-4 border-lime-300 object-cover shadow-lg mb-3" // Estilo circular
+                        className="w-24 h-24 rounded-full border-4 border-lime-300 object-cover shadow-lg mb-3"
                     />
                     <h3 className="text-xl font-semibold text-white mb-1">
-                        {user.name || 'Tu Canal'} {/* Muestra el nombre del usuario */}
+                        {user.name || 'Tu Canal'}
                     </h3>
                     <p className="text-sm text-gray-300">
-                        {user.email} {/* Muestra el email del usuario */}
+                        {user.email}
                     </p>
-                    <hr className="my-4 w-full border-green-500" /> {/* Separador */}
+                    <hr className="my-4 w-full border-green-500" />
                 </div>
             )}
 
             <nav className="flex flex-col space-y-4 text-[1.05rem]">
                 {/* Navegación principal con efecto hover */}
-
-                {/* Productos */}
                 <div
                     onMouseEnter={() => setHoveredItem('products')}
                     onMouseLeave={() => setHoveredItem(null)}
@@ -71,7 +65,6 @@ function Navbar() {
                     )}
                 </div>
 
-                {/* Servicios */}
                 <div
                     onMouseEnter={() => setHoveredItem('services')}
                     onMouseLeave={() => setHoveredItem(null)}
@@ -85,7 +78,6 @@ function Navbar() {
                     )}
                 </div>
 
-                {/* Rentas */}
                 <div
                     onMouseEnter={() => setHoveredItem('rentals')}
                     onMouseLeave={() => setHoveredItem(null)}
@@ -122,9 +114,20 @@ function Navbar() {
                         <SidebarLink to="/create-service" icon={<FaPlus />}>Ofrecer Servicio</SidebarLink>
                         <SidebarLink to="/create-rental" icon={<FaPlus />}>Ofrecer Renta</SidebarLink>
 
-                        {isPremium && (
-                            <SidebarLink to="/premium-inventory" icon={<FaSeedling />}>Inventario Premium</SidebarLink>
+                        {/* ⭐ Inventario Premium: Siempre visible si autenticado ⭐ */}
+                        <SidebarLink to="/premium-inventory" icon={<FaSeedling />}>Mi Inventario Premium</SidebarLink>
+                        
+                        {/* ⭐ Hazte Premium: Visible solo si autenticado Y NO premium ⭐ */}
+                        {!isPremium && (
+                            <SidebarLink
+                                to="/premium-upsell"
+                                icon={null}
+                                className="text-yellow-300 font-bold hover:text-yellow-400"
+                            >
+                                🌟 Hazte Premium
+                            </SidebarLink>
                         )}
+
                         <button
                             onClick={onLogout}
                             className="flex items-center gap-3 text-red-300 hover:text-red-400 transition transform hover:scale-105 duration-300 font-semibold"
@@ -136,7 +139,11 @@ function Navbar() {
                     <>
                         <SidebarLink to="/login" icon={<FaSignInAlt />}>Iniciar Sesión</SidebarLink>
                         <SidebarLink to="/register" icon={<FaUser />}>Registrarse</SidebarLink>
-                        <SidebarLink
+                        {/* ⭐ Hazte Premium: También visible para no autenticados, si lo quieres aquí ⭐
+                           Si solo lo quieres para autenticados NO premium, quita este bloque.
+                           Lo dejo aquí como estaba, pero el de arriba es el que añadí para autenticados NO premium.
+                        */}
+                         <SidebarLink
                             to="/premium-upsell"
                             icon={null}
                             className="text-yellow-300 font-bold hover:text-yellow-400"
