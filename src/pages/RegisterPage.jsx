@@ -7,11 +7,12 @@ function RegisterPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [confirmPassword, setConfirmPassword] = useState('');
+    const [profilePicture, setProfilePicture] = useState(null); // ⭐ Nuevo estado para la foto de perfil ⭐
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
 
     const navigate = useNavigate();
-    const { register } = useContext(AuthContext); // Obtiene la función de registro del contexto
+    const { register } = useContext(AuthContext);
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -25,22 +26,34 @@ function RegisterPage() {
         }
 
         try {
+            // ⭐ Crear un objeto FormData para enviar archivos y campos de texto ⭐
+            const formData = new FormData();
+            formData.append('name', name);
+            formData.append('email', email);
+            formData.append('password', password);
+            if (profilePicture) { // Solo añadir si hay una imagen seleccionada
+                formData.append('profilePicture', profilePicture);
+            }
+
             // ⭐ LLAMADA A TU API DE REGISTRO DEL BACKEND ⭐
-            const response = await fetch('http://localhost:5000/api/users/register', { // ⭐ VERIFICA TU URL Y PUERTO DEL BACKEND ⭐
+            const response = await fetch('http://localhost:5000/api/users/register', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ name, email, password }),
+                // ⭐ MUY IMPORTANTE: NO establezcas 'Content-Type': 'application/json' ⭐
+                // Cuando envías FormData, el navegador lo establecerá automáticamente
+                // con el boundary correcto. Si lo estableces manualmente, fallará.
+                body: formData, // Envía el objeto FormData
             });
             const data = await response.json();
             console.log('Backend response data:', data);
+
             if (!response.ok) {
+                // Si el backend devuelve un error específico (ej. "usuario ya existe"),
+                // úsalo, de lo contrario, un mensaje genérico.
                 throw new Error(data.message || 'Error al registrar usuario.');
             }
 
             // En un registro exitoso, almacena los datos del usuario y el token en AuthContext
-            // Asumiendo que el backend devuelve { user: { _id, name, email, isPremium }, token: '...' }
+            // El objeto 'data.user' ahora debería incluir 'profilePicture' desde el backend
             register(data.user, data.token);
             console.log('Registro exitoso:', data);
             navigate('/welcome'); // Redirige a la página de bienvenida o dashboard
@@ -100,6 +113,22 @@ function RegisterPage() {
                         onChange={(e) => setConfirmPassword(e.target.value)}
                         required
                     />
+                </div>
+                {/* ⭐ Nuevo campo para la foto de perfil ⭐ */}
+                <div>
+                    <label htmlFor="profilePicture" className="block text-sm font-medium text-gray-700">Foto de Perfil (Opcional)</label>
+                    <input
+                        type="file"
+                        id="profilePicture"
+                        className="mt-1 block w-full text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100"
+                        accept="image/*" // Solo acepta archivos de imagen
+                        onChange={(e) => setProfilePicture(e.target.files[0])}
+                    />
+                    {profilePicture && (
+                        <p className="mt-2 text-sm text-gray-500">
+                            Archivo seleccionado: {profilePicture.name}
+                        </p>
+                    )}
                 </div>
                 {error && <p className="text-red-600 text-sm text-center">{error}</p>}
                 <button
