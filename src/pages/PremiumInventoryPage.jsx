@@ -61,7 +61,7 @@ function PremiumInventoryPage() {
             if (!isAuthenticated) {
                 navigate('/login');
             } else if (!isPremium) {
-                navigate('/premium');
+                navigate('/premium-upsell');
             } else {
                 fetchUserProducts(); // Ahora fetchUserProducts está definido cuando se llama aquí
             }

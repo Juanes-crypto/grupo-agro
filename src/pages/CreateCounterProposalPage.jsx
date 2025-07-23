@@ -1,113 +1,180 @@
-// src/pages/CreateCounterProposalPage.jsx
-
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
-import api from '../services/api';
-import { AuthContext } from '../context/AuthContext';
+import api from '../services/api'; // Asegúrate de que tu instancia de Axios esté aquí
+import { AuthContext } from '../context/AuthContext'; // Para acceder al usuario autenticado
+import { toast } from 'react-toastify'; // Para notificaciones de éxito/error
 
 function CreateCounterProposalPage() {
-    const { id: originalProposalId } = useParams(); // ID de la propuesta original
+    const { proposalId: originalProposalId } = useParams(); // ¡Asegúrate de que coincida con el nombre en App.jsx!
     const [originalProposal, setOriginalProposal] = useState(null);
-    const [allProducts, setAllProducts] = useState([]);
-    const [myProducts, setMyProducts] = useState([]);
-    const [otherUsersProducts, setOtherUsersProducts] = useState([]);
-    const [selectedOfferedItems, setSelectedOfferedItems] = useState([]); // IDs de productos que ofrezco en la contrapropuesta
-    const [selectedRequestedItems, setSelectedRequestedItems] = useState([]); // IDs de productos que solicito en la contrapropuesta
+    const [myProducts, setMyProducts] = useState([]); // Mis productos disponibles para ofrecer
+    const [otherUserProducts, setOtherUserProducts] = useState([]); // Productos del otro usuario disponibles para solicitar
+
+    // Estado para los ítems de la contrapropuesta (productoId, name, quantity, image, unit)
+    const [offeredItemsCounter, setOfferedItemsCounter] = useState([]); // Lo que yo ofrezco en la contrapropuesta
+    const [requestedItemsCounter, setRequestedItemsCounter] = useState([]); // Lo que yo solicito en la contrapropuesta
+
     const [message, setMessage] = useState('');
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-    const [successMessage, setSuccessMessage] = useState('');
 
     const { user, isAuthenticated, loading: authLoading } = useContext(AuthContext);
     const navigate = useNavigate();
 
     useEffect(() => {
         const fetchData = async () => {
+            console.log('DEBUG: Iniciando fetchData en CreateCounterProposalPage...');
+            console.log('DEBUG: originalProposalId:', originalProposalId);
+            console.log('DEBUG: isAuthenticated:', isAuthenticated);
+            console.log('DEBUG: authLoading:', authLoading);
+            console.log('DEBUG: user:', user);
             if (!isAuthenticated) {
-                setLoading(false);
-                setError('Debes iniciar sesión para crear una contrapropuesta.');
+                console.log('DEBUG: Usuario no autenticado, redirigiendo a /login.');
+                navigate('/login');
                 return;
             }
+
             try {
                 setLoading(true);
-                // Obtener la propuesta original
-                const originalResponse = await api.get(`/barter/${originalProposalId}`);
+                setError('');
+                console.log(`DEBUG: Intentando obtener propuesta original con ID: ${originalProposalId}`);
+                // 1. Obtener la propuesta original
+                const originalResponse = await api.get(`http://localhost:5000/api/barter/${originalProposalId}`);
                 const prop = originalResponse.data;
+                console.log('DEBUG: Propuesta original obtenida:', prop);
 
                 // Verificar que el usuario actual es el RECIPIENTE de la propuesta original
-                if (prop.recipient._id !== user._id) {
-                    setError('No autorizado para hacer una contraoferta a esta propuesta.');
+                // Solo el recipiente puede contraofertar
+                if (!user || prop.recipient._id !== user._id) {
+                    console.log('DEBUG: No autorizado o no es el recipiente. Recipient ID:', prop.recipient._id, 'User ID:', user?._id);
+                    setError('No autorizado para hacer una contraoferta a esta propuesta o la propuesta no está pendiente.');
                     setLoading(false);
                     return;
                 }
+                
+                // Solo se puede contraofertar si el estado es 'pending'
                 if (prop.status !== 'pending') {
-                    setError(`No se puede contraofertar una propuesta que ya está ${prop.status}.`);
+                    console.log('DEBUG: Estado de la propuesta no es "pending":', prop.status);
+                    setError(`No se puede contraofertar una propuesta que ya está '${prop.status}'.`);
                     setLoading(false);
                     return;
                 }
 
                 setOriginalProposal(prop);
+                console.log('DEBUG: Propuesta original establecida.');
 
-                // Obtener todos los productos
-                const productsResponse = await api.get('/products');
-                const productsData = productsResponse.data;
-                setAllProducts(productsData);
+                console.log('DEBUG: Obteniendo mis productos...');
+                // 2. Obtener mis productos (los que puedo ofrecer en la contrapropuesta)
+                const myProductsResponse = await api.get('http://localhost:5000/api/products/myproducts');
+                const fetchedMyProducts = Array.isArray(myProductsResponse.data) ? myProductsResponse.data : [];
+                setMyProducts(fetchedMyProducts);
+                console.log('DEBUG: Mis productos obtenidos:', myProductsResponse.data.length, 'productos.');
 
-                // Filtrar mis productos (los que el recipiente original puede ofrecer)
-                const myProds = productsData.filter(p => p.user === user._id);
-                setMyProducts(myProds);
+                console.log(`DEBUG: Obteniendo productos de ${prop.proposer.username}...`);
+                // 3. Obtener los productos del proponente original (los que puedo solicitar en la contrapropuesta)
+                // Usamos el ID del proponente original de la propuesta que acabamos de cargar
+                const otherUserProductsResponse = await api.get(`http://localhost:5000/api/products/user/${prop.proposer._id}`);
+                setOtherUserProducts(otherUserProductsResponse.data);
 
-                // Filtrar los productos del proponente original (los que el recipiente original puede solicitar)
-                const originalProposerProducts = productsData.filter(p => p.user === prop.proposer._id);
-                setOtherUsersProducts(originalProposerProducts); // Renombrado para claridad en este contexto
+                console.log('DEBUG: Productos del otro usuario obtenidos:', otherUserProductsResponse.data.length, 'productos.');
+                // 4. Pre-rellenar los ítems de la contrapropuesta
+                // Yo OFREZCO lo que el original SOLICITÓ
+                const initialOffered = prop.requestedItems.map(item => ({
+                    product: item.product._id,
+                    name: item.product.name, // Asegúrate de que 'name' venga de item.product.name
+                    quantity: parseFloat(item.quantity.split(' ')[0]) || 0, // Esto analiza el número
+                    image: item.product.imageUrl || 'https://placehold.co/100x80/e2e8f0/64748b?text=Producto', // Asegúrate de que 'image' venga de item.product.imageUrl
+                    unit: item.product.unit || 'unidades' // Asegura que la unidad esté presente
+                }));
+                setOfferedItemsCounter(initialOffered);
+                console.log('DEBUG: offeredItemsCounter inicializado:', initialOffered);
 
-                // Pre-seleccionar los ítems de la propuesta original como punto de partida
-                // Ofreces lo que el original pidió, pides lo que el original ofreció
-                setSelectedOfferedItems(prop.requestedItems.map(item => item.product._id));
-                setSelectedRequestedItems(prop.offeredItems.map(item => item.product._id));
+                // Yo SOLICITO lo que el original OFRECIÓ
+                const initialRequested = prop.offeredItems.map(item => ({
+                    product: item.product._id,
+                    name: item.product.name, // El nombre del producto para generar consistencia
+                    quantity: parseFloat(item.quantity.split(' ')[0]) || 0, // Analiza a número
+                    image: item.product.imageUrl || 'https://placehold.co/100x80/e2e8f0/64748b?text=Producto', // Asegúrate de que 'image' venga de item.product.imageUrl
+                    unit: item.product.unit || 'unidades' // Asegura que la unidad esté presente
+                }));
+                setRequestedItemsCounter(initialRequested);
+                console.log('DEBUG: requestedItemsCounter inicializado:', initialRequested);
 
-
-                setError('');
             } catch (err) {
                 console.error('Error al cargar datos para contrapropuesta:', err);
-                if (err.response && err.response.data && err.response.data.message) {
-                    setError(`Error al cargar datos: ${err.response.data.message}`);
-                } else {
-                    setError('Error desconocido al cargar datos para la contrapropuesta.');
-                }
+                setError('Error al cargar datos para la contrapropuesta: ' + (err.response?.data?.message || err.message));
             } finally {
+                console.log('DEBUG: Finalizando fetchData, setting loading to false.');
                 setLoading(false);
             }
         };
 
         if (!authLoading && originalProposalId) {
+            console.log('DEBUG: authLoading es false y originalProposalId está presente, ejecutando fetchData.');
             fetchData();
+        }else {
+            console.log('DEBUG: fetchData no se ejecutó. authLoading:', authLoading, 'originalProposalId:', originalProposalId);
         }
-    }, [isAuthenticated, authLoading, user, originalProposalId]);
+    }, [isAuthenticated, authLoading, user, originalProposalId, navigate]);
 
-    const handleOfferedItemChange = (productId) => {
-        setSelectedOfferedItems(prev =>
-            prev.includes(productId)
-                ? prev.filter(id => id !== productId)
-                : [...prev, productId]
+    // Manejar cambio de cantidad para un producto en los ítems ofrecidos
+    const handleOfferedQuantityChange = (productId, newQuantity) => {
+        setOfferedItemsCounter(prevItems =>
+            prevItems.map(item =>
+                item.product === productId ? { ...item, quantity: newQuantity } : item
+            )
         );
     };
 
-    const handleRequestedItemChange = (productId) => {
-        // En una contrapropuesta, solo puedes solicitar productos del proponente original
-        // No necesitamos verificar múltiples recipientes aquí.
-        setSelectedRequestedItems(prev =>
-            prev.includes(productId)
-                ? prev.filter(id => id !== productId)
-                : [...prev, productId]
+    // Manejar adición/remoción de productos a ofrecer
+    const toggleOfferedItem = (product) => {
+        setOfferedItemsCounter(prevItems => {
+            const exists = prevItems.some(item => item.product === product._id);
+            if (exists) {
+                return prevItems.filter(item => item.product !== product._id);
+            } else {
+                return [...prevItems, {
+                    product: product._id,
+                    name: product.name,
+                    quantity: product.stock > 0 ? 1 : 0, // Almacenar como número
+                    image: product.imageUrl,
+                    unit: product.unit
+                }];
+            }
+        });
+    };
+
+    // Manejar cambio de cantidad para un producto en los ítems solicitados
+    const handleRequestedQuantityChange = (productId, newQuantity) => {
+        setRequestedItemsCounter(prevItems =>
+            prevItems.map(item =>
+                item.product === productId ? { ...item, quantity: newQuantity } : item
+            )
         );
+    };
+
+    // Manejar adición/remoción de productos a solicitar
+    const toggleRequestedItem = (product) => {
+        setRequestedItemsCounter(prevItems => {
+            const exists = prevItems.some(item => item.product === product._id);
+            if (exists) {
+                return prevItems.filter(item => item.product !== product._id);
+            } else {
+                return [...prevItems, {
+                    product: product._id,
+                    name: product.name,
+                    quantity: 1, // Almacenar como número
+                    image: product.imageUrl,
+                    unit: product.unit
+                }];
+            }
+        });
     };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
-        setSuccessMessage('');
 
         if (!isAuthenticated || !user) {
             setError('Debes iniciar sesión para enviar una contrapropuesta.');
@@ -115,286 +182,261 @@ function CreateCounterProposalPage() {
             return;
         }
 
-        if (selectedOfferedItems.length === 0 || selectedRequestedItems.length === 0) {
+        if (offeredItemsCounter.length === 0 || requestedItemsCounter.length === 0) {
             setError('Debes seleccionar al menos un producto para ofrecer y uno para solicitar en la contrapropuesta.');
+            setLoading(false);
+            return;
+        }
+
+        // Validar que las cantidades no sean cero o negativas
+        const hasInvalidQuantities = [...offeredItemsCounter, ...requestedItemsCounter].some(item => {
+            return item.quantity <= 0; // La cantidad ya es un número en el estado
+        });
+
+        if (hasInvalidQuantities) {
+            setError('Las cantidades de los productos no pueden ser cero o negativas.');
             setLoading(false);
             return;
         }
 
         try {
             const counterProposalData = {
-                offeredProductIds: selectedOfferedItems,
-                requestedProductIds: selectedRequestedItems,
+                offeredItems: offeredItemsCounter.map(item => ({
+                    product: item.product,
+                    name: item.name,
+                    quantity: `${item.quantity} ${item.unit}`, // Reconstruye la cadena "número unidad" para el backend
+                    image: item.image,
+                })),
+                requestedItems: requestedItemsCounter.map(item => ({
+                    product: item.product,
+                    name: item.name,
+                    quantity: `${item.quantity} ${item.unit}`, // Reconstruye la cadena "número unidad" para el backend
+                    image: item.image,
+                })),
                 message,
             };
 
-            // El endpoint para contraofertar es POST /api/barter/:id/counter
-            const response = await api.post(`/barter/${originalProposalId}/counter`, counterProposalData);
-            setSuccessMessage('¡Contrapropuesta enviada exitosamente!');
+            const response = await api.post(`http://localhost:5000/api/barter/${originalProposalId}/counter`, counterProposalData);
+            toast.success('¡Contrapropuesta enviada exitosamente! 🎉');
             console.log('Contrapropuesta creada:', response.data);
 
-            // Limpiar formulario y redirigir a mis trueques
-            setSelectedOfferedItems([]);
-            setSelectedRequestedItems([]);
-            setMessage('');
-            
-            setTimeout(() => navigate('/mybarterproposals'), 2000);
+            setTimeout(() => navigate('/my-barter-proposals'), 2000);
 
         } catch (err) {
             console.error('Error al crear contrapropuesta:', err);
-            if (err.response && err.response.data && err.response.data.message) {
-                setError(`Error al crear contrapropuesta: ${err.response.data.message}`);
-            } else {
-                setError('Error desconocido al crear la contrapropuesta.');
-            }
+            setError('Error al crear contrapropuesta: ' + (err.response?.data?.message || err.message));
         } finally {
             setLoading(false);
         }
     };
 
     if (loading || authLoading) {
-        return <div style={styles.loading}>Cargando contrapropuesta...</div>;
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-gray-100">
+                <p className="text-xl text-gray-700 animate-pulse">Cargando contrapropuesta...</p>
+            </div>
+        );
     }
 
     if (error) {
-        return <div style={styles.error}>{error}</div>;
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-red-100 text-red-700 text-center p-4">
+                <p className="text-xl font-semibold">{error}</p>
+            </div>
+        );
     }
 
     if (!isAuthenticated) {
         return (
-            <div style={styles.container}>
-                <h2 style={styles.heading}>Crear Contrapropuesta</h2>
-                <p style={styles.message}>Por favor, <Link to="/login" style={styles.link}>inicia sesión</Link> para crear una contrapropuesta.</p>
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+                <h2 className="text-3xl font-bold text-gray-800 mb-4">Crear Contrapropuesta</h2>
+                <p className="text-lg text-gray-600 mb-6">Por favor, <Link to="/login" className="text-blue-600 hover:underline">inicia sesión</Link> para crear una contrapropuesta.</p>
             </div>
         );
     }
 
     if (!originalProposal) {
         return (
-            <div style={styles.container}>
-                <h2 style={styles.heading}>Crear Contrapropuesta</h2>
-                <p style={styles.message}>No se pudo cargar la propuesta original o no tienes permiso para contraofertarla.</p>
-                <Link to="/mybarterproposals" style={styles.link}>Volver a Mis Trueques</Link>
+            <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 p-4">
+                <h2 className="text-3xl font-bold text-gray-800 mb-4">Crear Contrapropuesta</h2>
+                <p className="text-lg text-gray-600 mb-6">No se pudo cargar la propuesta original o no tienes permiso para contraofertarla.</p>
+                <Link to="/mybarterproposals" className="text-blue-600 hover:underline">Volver a Mis Trueques</Link>
             </div>
         );
     }
 
     return (
-        <div style={styles.container}>
-            <h2 style={styles.heading}>Contraofertar Propuesta #{originalProposal._id.substring(0, 8)}...</h2>
-            <p style={styles.subheading}>De: {originalProposal.proposer.username} | Solicitando: {originalProposal.offeredItems.map(item => item.name).join(', ')}</p>
-            <p style={styles.subheading}>Ofreciendo: {originalProposal.requestedItems.map(item => item.name).join(', ')}</p>
+        <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-8 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-2xl p-6 sm:p-8 lg:p-10">
+                <h1 className="text-3xl sm:text-4xl font-extrabold text-center text-green-800 mb-6">
+                    Contraofertar Propuesta #{originalProposal._id.slice(-6)} 🔄
+                </h1>
+                <p className="text-center text-gray-600 mb-8">
+                    Estás respondiendo a la propuesta de <span className="font-semibold">{originalProposal.proposer.username}</span>.
+                    Ajusta los productos que ofreces y solicitas.
+                </p>
 
-            {successMessage && <p style={styles.successMessage}>{successMessage}</p>}
-            {error && <p style={styles.errorMessage}>{error}</p>}
+                {error && (
+                    <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mb-6" role="alert">
+                        <strong className="font-bold">¡Error!</strong>
+                        <span className="block sm:inline ml-2">{error}</span>
+                    </div>
+                )}
 
-            <form onSubmit={handleSubmit} style={styles.form}>
-                {/* Sección de Tus Productos a Ofrecer (como contraoferta) */}
-                <div style={styles.section}>
-                    <h3 style={styles.sectionHeading}>1. Tus Productos a Ofrecer (en la contrapropuesta)</h3>
-                    {myProducts.length === 0 ? (
-                        <p style={styles.noProducts}>No tienes productos para ofrecer. <Link to="/create-product" style={styles.link}>Crea uno</Link>.</p>
-                    ) : (
-                        <div style={styles.productSelectionGrid}>
-                            {myProducts.map(product => (
-                                <div
-                                    key={product._id}
-                                    style={selectedOfferedItems.includes(product._id) ? styles.selectedProductCard : styles.productCard}
-                                    onClick={() => handleOfferedItemChange(product._id)}
-                                >
-                                    <img src={product.imageUrl || 'https://placehold.co/100x80'} alt={product.name} style={styles.productImage} />
-                                    <p style={styles.productName}>{product.name}</p>
-                                    <p style={styles.productQuantity}>{product.quantity}</p>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                <form onSubmit={handleSubmit} className="space-y-8">
+                    {/* Sección: Mis Productos a Ofrecer (en la contrapropuesta) */}
+                    <div className="bg-blue-50 p-6 rounded-lg shadow-md border-l-4 border-blue-500">
+                        <h3 className="text-xl font-bold text-blue-800 mb-4 flex items-center">
+                            <span className="mr-2 text-2xl">📤</span> 1. Tus Productos a Ofrecer
+                        </h3>
+                        <p className="text-gray-600 mb-4">
+                            Selecciona y ajusta la cantidad de los productos que tú (el recipiente original) quieres ofrecer en esta contrapropuesta.
+                            Estos productos son los que el proponente original te había solicitado.
+                        </p>
+                        {myProducts.length === 0 ? (
+                            <p className="text-gray-500 text-center py-4">No tienes productos disponibles para ofrecer. <Link to="/create-product" className="text-blue-600 hover:underline">Crea uno</Link>.</p>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {myProducts.map(product => {
+                                    const isSelected = offeredItemsCounter.some(item => item.product === product._id);
+                                    const currentQuantityItem = offeredItemsCounter.find(item => item.product === product._id);
+                                    // currentQuantityValue ya no necesita split(' ') porque quantity es un número
+                                    const currentQuantityValue = currentQuantityItem ? currentQuantityItem.quantity : 0;
 
-                {/* Sección de Productos a Solicitar (del proponente original) */}
-                <div style={styles.section}>
-                    <h3 style={styles.sectionHeading}>2. Productos a Solicitar (a {originalProposal.proposer.username})</h3>
-                    {otherUsersProducts.length === 0 ? (
-                        <p style={styles.noProducts}>El usuario {originalProposal.proposer.username} no tiene productos disponibles para trueque.</p>
-                    ) : (
-                        <div style={styles.productSelectionGrid}>
-                            {otherUsersProducts.map(product => (
-                                <div
-                                    key={product._id}
-                                    style={selectedRequestedItems.includes(product._id) ? styles.selectedProductCard : styles.productCard}
-                                    onClick={() => handleRequestedItemChange(product._id)}
-                                >
-                                    <img src={product.imageUrl || 'https://placehold.co/100x80'} alt={product.name} style={styles.productImage} />
-                                    <p style={styles.productName}>{product.name}</p>
-                                    <p style={styles.productQuantity}>{product.quantity}</p>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                                    return (
+                                        <div
+                                            key={product._id}
+                                            className={`p-4 border rounded-lg shadow-sm cursor-pointer transition-all duration-200 
+                                                         ${isSelected ? 'border-blue-500 bg-blue-100 ring-2 ring-blue-300' : 'border-gray-200 bg-white hover:shadow-md'}`}
+                                            onClick={() => toggleOfferedItem(product)}
+                                        >
+                                            <img
+                                                src={product.imageUrl || 'https://placehold.co/100x80/e2e8f0/64748b?text=Producto'}
+                                                alt={product.name}
+                                                className="w-full h-24 object-cover rounded-md mb-2"
+                                            />
+                                            <h4 className="font-semibold text-gray-800 text-lg">{product.name}</h4>
+                                            <p className="text-sm text-gray-600">Stock: {product.stock} {product.unit}</p>
+                                            {isSelected && (
+                                                <div className="mt-2">
+                                                    <label htmlFor={`offered-qty-${product._id}`} className="block text-sm font-medium text-gray-700">Cantidad a ofrecer:</label>
+                                                    <input
+                                                        type="number"
+                                                        id={`offered-qty-${product._id}`}
+                                                        value={currentQuantityValue}
+                                                        onChange={(e) => {
+                                                            const val = parseFloat(e.target.value);
+                                                            if (!isNaN(val) && val >= 0) {
+                                                                // Pasa directamente el número
+                                                                handleOfferedQuantityChange(product._id, val);
+                                                            }
+                                                        }}
+                                                        onClick={(e) => e.stopPropagation()} // Evita que el clic en el input deseleccione
+                                                        min="0"
+                                                        max={product.stock}
+                                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-2"
+                                                    />
+                                                    {currentQuantityValue > product.stock && (
+                                                        <p className="text-red-500 text-xs mt-1">Cantidad excede tu stock disponible.</p>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
 
-                {/* Sección de Mensaje */}
-                <div style={styles.section}>
-                    <h3 style={styles.sectionHeading}>3. Mensaje para la Contrapropuesta (Opcional)</h3>
-                    <textarea
-                        value={message}
-                        onChange={(e) => setMessage(e.target.value)}
-                        placeholder="Explica tu contraoferta..."
-                        style={styles.textarea}
-                        rows="4"
-                    ></textarea>
-                </div>
+                    {/* Sección: Productos a Solicitar (del proponente original) */}
+                    <div className="bg-green-50 p-6 rounded-lg shadow-md border-l-4 border-green-500">
+                        <h3 className="text-xl font-bold text-green-800 mb-4 flex items-center">
+                            <span className="mr-2 text-2xl">📥</span> 2. Productos a Solicitar (a {originalProposal.proposer.username})
+                        </h3>
+                        <p className="text-gray-600 mb-4">
+                            Selecciona y ajusta la cantidad de los productos que quieres solicitar al otro usuario.
+                            Estos productos son los que el proponente original te había ofrecido.
+                        </p>
+                        {otherUserProducts.length === 0 ? (
+                            <p className="text-gray-500 text-center py-4">El usuario {originalProposal.proposer.username} no tiene productos disponibles para trueque.</p>
+                        ) : (
+                            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                                {otherUserProducts.map(product => {
+                                    const isSelected = requestedItemsCounter.some(item => item.product === product._id);
+                                    const currentQuantityItem = requestedItemsCounter.find(item => item.product === product._id);
+                                    // currentQuantityValue ya no necesita split(' ') porque quantity es un número
+                                    const currentQuantityValue = currentQuantityItem ? currentQuantityItem.quantity : 0;
 
-                <button type="submit" disabled={loading} style={styles.button}>
-                    {loading ? 'Enviando Contrapropuesta...' : 'Enviar Contrapropuesta'}
-                </button>
-            </form>
+                                    return (
+                                        <div
+                                            key={product._id}
+                                            className={`p-4 border rounded-lg shadow-sm cursor-pointer transition-all duration-200 
+                                                         ${isSelected ? 'border-green-500 bg-green-100 ring-2 ring-green-300' : 'border-gray-200 bg-white hover:shadow-md'}`}
+                                            onClick={() => toggleRequestedItem(product)}
+                                        >
+                                            <img
+                                                src={product.imageUrl || 'https://placehold.co/100x80/e2e8f0/64748b?text=Producto'}
+                                                alt={product.name}
+                                                className="w-full h-24 object-cover rounded-md mb-2"
+                                            />
+                                            <h4 className="font-semibold text-gray-800 text-lg">{product.name}</h4>
+                                            <p className="text-sm text-gray-600">Stock: {product.stock} {product.unit}</p>
+                                            {isSelected && (
+                                                <div className="mt-2">
+                                                    <label htmlFor={`requested-qty-${product._id}`} className="block text-sm font-medium text-gray-700">Cantidad a solicitar:</label>
+                                                    <input
+                                                        type="number"
+                                                        id={`requested-qty-${product._id}`}
+                                                        value={currentQuantityValue}
+                                                        onChange={(e) => {
+                                                            const val = parseFloat(e.target.value);
+                                                            if (!isNaN(val) && val >= 0) {
+                                                                // Pasa directamente el número
+                                                                handleRequestedQuantityChange(product._id, val);
+                                                            }
+                                                        }}
+                                                        onClick={(e) => e.stopPropagation()}
+                                                        min="0"
+                                                        max={product.stock}
+                                                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500 sm:text-sm p-2"
+                                                    />
+                                                    {currentQuantityValue > product.stock && (
+                                                        <p className="text-red-500 text-xs mt-1">Cantidad excede el stock disponible del otro usuario.</p>
+                                                    )}
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </div>
+
+                    {/* Sección: Mensaje */}
+                    <div className="bg-gray-50 p-6 rounded-lg shadow-md border-l-4 border-gray-300">
+                        <h3 className="text-xl font-bold text-gray-800 mb-4 flex items-center">
+                            <span className="mr-2 text-2xl">💬</span> 3. Mensaje para la Contrapropuesta (Opcional)
+                        </h3>
+                        <textarea
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            placeholder="Explica tu contraoferta, por qué cambiaste la propuesta, etc."
+                            rows="4"
+                            className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm p-3"
+                        ></textarea>
+                    </div>
+
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded-lg transition-colors duration-200 text-lg shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {loading ? 'Enviando Contrapropuesta...' : 'Enviar Contrapropuesta'}
+                    </button>
+                </form>
+            </div>
         </div>
     );
 }
-
-const styles = {
-    container: {
-        maxWidth: '1000px',
-        margin: '50px auto',
-        padding: '30px',
-        backgroundColor: '#f8f9fa',
-        borderRadius: '10px',
-        boxShadow: '0 4px 15px rgba(0,0,0,0.1)',
-        fontFamily: 'Arial, sans-serif',
-    },
-    heading: {
-        textAlign: 'center',
-        color: '#2c3e50',
-        marginBottom: '10px',
-        fontSize: '2.5em',
-        fontWeight: '600',
-    },
-    subheading: {
-        textAlign: 'center',
-        color: '#555',
-        marginBottom: '20px',
-        fontSize: '1.1em',
-    },
-    loading: {
-        textAlign: 'center',
-        fontSize: '1.2em',
-        color: '#666',
-        padding: '50px',
-    },
-    error: {
-        color: '#dc3545',
-        backgroundColor: '#f8d7da',
-        border: '1px solid #f5c6cb',
-        borderRadius: '5px',
-        padding: '10px',
-        marginBottom: '20px',
-        textAlign: 'center',
-    },
-    successMessage: {
-        color: '#28a745',
-        backgroundColor: '#d4edda',
-        border: '1px solid #c3e6cb',
-        borderRadius: '5px',
-        padding: '10px',
-        marginBottom: '20px',
-        textAlign: 'center',
-    },
-    message: {
-        textAlign: 'center',
-        fontSize: '1.1em',
-        color: '#555',
-        marginBottom: '20px',
-    },
-    link: {
-        color: '#007bff',
-        textDecoration: 'none',
-        fontWeight: 'bold',
-    },
-    section: {
-        backgroundColor: '#fff',
-        borderRadius: '8px',
-        padding: '25px',
-        marginBottom: '25px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-    },
-    sectionHeading: {
-        fontSize: '1.8em',
-        color: '#34495e',
-        marginBottom: '20px',
-        borderBottom: '1px solid #eee',
-        paddingBottom: '10px',
-    },
-    productSelectionGrid: {
-        display: 'grid',
-        gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))',
-        gap: '15px',
-        marginTop: '15px',
-    },
-    productCard: {
-        border: '1px solid #e0e0e0',
-        borderRadius: '8px',
-        padding: '10px',
-        textAlign: 'center',
-        cursor: 'pointer',
-        transition: 'all 0.2s ease-in-out',
-        backgroundColor: '#fefefe',
-        boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-    },
-    selectedProductCard: {
-        border: '2px solid #007bff',
-        backgroundColor: '#e7f3ff',
-        transform: 'scale(1.02)',
-        boxShadow: '0 2px 6px rgba(0,0,0,0.1)',
-    },
-    productImage: {
-        width: '100%',
-        height: '80px',
-        objectFit: 'cover',
-        borderRadius: '4px',
-        marginBottom: '8px',
-    },
-    productName: {
-        fontSize: '0.9em',
-        fontWeight: 'bold',
-        color: '#333',
-        marginBottom: '4px',
-    },
-    productQuantity: {
-        fontSize: '0.8em',
-        color: '#666',
-    },
-    noProducts: {
-        textAlign: 'center',
-        color: '#888',
-        padding: '20px',
-    },
-    textarea: {
-        width: '100%',
-        padding: '12px',
-        border: '1px solid #ced4da',
-        borderRadius: '5px',
-        fontSize: '1em',
-        minHeight: '100px',
-        resize: 'vertical',
-        boxSizing: 'border-box',
-    },
-    button: {
-        backgroundColor: '#007bff',
-        color: 'white',
-        padding: '14px 20px',
-        border: 'none',
-        borderRadius: '5px',
-        cursor: 'pointer',
-        fontSize: '1.1em',
-        fontWeight: 'bold',
-        marginTop: '20px',
-        width: '100%',
-        transition: 'background-color 0.3s ease',
-    },
-    buttonHover: {
-        backgroundColor: '#0056b3',
-    },
-};
 
 export default CreateCounterProposalPage;

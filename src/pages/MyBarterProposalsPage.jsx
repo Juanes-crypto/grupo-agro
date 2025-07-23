@@ -19,11 +19,12 @@ function MyBarterProposalsPage() {
         setError(null);
         try {
             const response = await api.get('http://localhost:5000/api/barter/myproposals');
+            // Asegúrate de que response.data sea un array, si no, usa un array vacío
             setProposals(Array.isArray(response.data) ? response.data : []);
         } catch (err) {
             setError('Error al cargar tus propuestas de trueque: ' + (err.response?.data?.message || err.message));
             console.error("Error fetching barter proposals:", err);
-            setProposals([]);
+            setProposals([]); // Asegura que proposals sea un array vacío en caso de error
         } finally {
             setLoading(false);
         }
@@ -39,8 +40,7 @@ function MyBarterProposalsPage() {
 
     // Función auxiliar para determinar si la propuesta fue iniciada por el usuario actual
     const isOutgoingProposal = (proposal) => {
-        // Corrección: Usar optional chaining para evitar errores si 'proponent' es undefined/null
-        return proposal.proponent?._id === user?._id;
+        return proposal.proposer?._id === user?._id;
     };
 
     // Función auxiliar para determinar si la propuesta es una contraoferta
@@ -105,7 +105,6 @@ function MyBarterProposalsPage() {
         }
     };
 
-
     const getStatusClass = (status) => {
         switch (status) {
             case 'pending': return 'bg-yellow-100 text-yellow-800 ring-yellow-500/10';
@@ -136,7 +135,7 @@ function MyBarterProposalsPage() {
 
     return (
         <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-8 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-7xl mx-auto"> {/* Contenedor más ancho */}
+            <div className="max-w-7xl mx-auto">
                 <h1 className="text-4xl sm:text-5xl font-extrabold text-center text-green-900 mb-8 sm:mb-12 drop-shadow-lg">
                     Mis Trueques y Propuestas 🤝
                 </h1>
@@ -159,13 +158,13 @@ function MyBarterProposalsPage() {
                 )}
 
                 {Array.isArray(proposals) && proposals.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8"> {/* Grid más responsivo */}
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6 sm:gap-8">
                         {proposals.map(proposal => (
                             <div
                                 key={proposal._id}
-                                className="bg-white rounded-2xl shadow-xl overflow-hidden transform transition-transform duration-300 hover:scale-[1.02] border border-gray-200 flex flex-col" // Flex para que el contenido empuje el footer
+                                className="bg-white rounded-2xl shadow-xl overflow-hidden transform transition-transform duration-300 hover:scale-[1.02] border border-gray-200 flex flex-col"
                             >
-                                <div className="p-5 flex-grow"> {/* Flex-grow para que el contenido principal ocupe espacio */}
+                                <div className="p-5 flex-grow">
                                     <div className="flex justify-between items-start mb-3">
                                         <h2 className="text-xl sm:text-2xl font-bold text-gray-900 leading-tight">
                                             Trueque #{proposal._id.slice(-6)}
@@ -186,10 +185,9 @@ function MyBarterProposalsPage() {
                                         Fecha: {new Date(proposal.createdAt).toLocaleDateString('es-CO', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                                     </p>
 
-                                    {/* Información de usuarios involucrados */}
                                     <div className="mb-4 text-sm sm:text-base">
                                         <p className="text-gray-700">
-                                            <span className="font-semibold">Proponente:</span> {proposal.proponent?.username || 'Desconocido'} ({proposal.proponent?.email || 'N/A'})
+                                            <span className="font-semibold">Proponente:</span> {proposal.proposer?.username || 'Desconocido'} ({proposal.proposer?.email || 'N/A'})
                                         </p>
                                         <p className="text-gray-700">
                                             <span className="font-semibold">Recipiente:</span> {proposal.recipient?.username || 'Desconocido'} ({proposal.recipient?.email || 'N/A'})
@@ -203,16 +201,23 @@ function MyBarterProposalsPage() {
                                                 <span className="mr-2">📤</span> Tus Ofrecidos
                                             </h3>
                                             {Array.isArray(proposal.offeredItems) && proposal.offeredItems.map(item => (
-                                                <div key={item.product._id} className="flex items-center space-x-2 mb-2 last:mb-0">
-                                                    <img
-                                                        src={item.product.imageUrl && item.product.imageUrl.startsWith('http') ? item.product.imageUrl : `http://localhost:5000/${item.product.imageUrl || 'https://via.placeholder.com/60?text=Producto'}`}
-                                                        alt={item.product.name}
-                                                        className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-md shadow-sm"
-                                                    />
+                                                <div key={item.product?._id || item._id} className="flex items-center space-x-2 mb-2 last:mb-0">
+                                                    {/* ⭐ CAMBIO CLAVE AQUÍ: Usar item.image y comprobación de item.product ⭐ */}
+                                                    {item.image ? (
+                                                        <img
+                                                            src={item.image.startsWith('http') ? item.image : `http://localhost:5000/${item.image}`}
+                                                            alt={item.name}
+                                                            className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-md shadow-sm"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-200 flex items-center justify-center text-gray-500 text-xs text-center rounded-md shadow-sm">
+                                                            No hay <br/> imagen
+                                                        </div>
+                                                    )}
                                                     <div>
-                                                        <p className="font-medium text-gray-800 text-sm sm:text-base">{item.product.name}</p>
+                                                        <p className="font-medium text-gray-800 text-sm sm:text-base">{item.name}</p>
                                                         <p className="text-xs sm:text-sm text-gray-600">Cant: {item.quantity}</p>
-                                                        <p className="text-xs text-gray-500">Valor: COP {item.product.price ? item.product.price.toLocaleString('es-CO') : 'N/A'}</p>
+                                                        <p className="text-xs text-gray-500">Valor: COP {item.price ? item.price.toLocaleString('es-CO') : 'N/A'}</p>
                                                     </div>
                                                 </div>
                                             ))}
@@ -224,16 +229,23 @@ function MyBarterProposalsPage() {
                                                 <span className="mr-2">📥</span> Tus Solicitados
                                             </h3>
                                             {Array.isArray(proposal.requestedItems) && proposal.requestedItems.map(item => (
-                                                <div key={item.product._id} className="flex items-center space-x-2 mb-2 last:mb-0">
-                                                    <img
-                                                        src={item.product.imageUrl && item.product.imageUrl.startsWith('http') ? item.product.imageUrl : `http://localhost:5000/${item.product.imageUrl || 'https://via.placeholder.com/60?text=Producto'}`}
-                                                        alt={item.product.name}
-                                                        className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-md shadow-sm"
-                                                    />
+                                                <div key={item.product?._id || item._id} className="flex items-center space-x-2 mb-2 last:mb-0">
+                                                    {/* ⭐ CAMBIO CLAVE AQUÍ: Usar item.image y comprobación de item.product ⭐ */}
+                                                    {item.image ? (
+                                                        <img
+                                                            src={item.image.startsWith('http') ? item.image : `http://localhost:5000/${item.image}`}
+                                                            alt={item.name}
+                                                            className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-md shadow-sm"
+                                                        />
+                                                    ) : (
+                                                        <div className="w-12 h-12 sm:w-14 sm:h-14 bg-gray-200 flex items-center justify-center text-gray-500 text-xs text-center rounded-md shadow-sm">
+                                                            No hay <br/> imagen
+                                                        </div>
+                                                    )}
                                                     <div>
-                                                        <p className="font-medium text-gray-800 text-sm sm:text-base">{item.product.name}</p>
+                                                        <p className="font-medium text-gray-800 text-sm sm:text-base">{item.name}</p>
                                                         <p className="text-xs sm:text-sm text-gray-600">Cant: {item.quantity}</p>
-                                                        <p className="text-xs text-gray-500">Valor: COP {item.product.price ? item.product.price.toLocaleString('es-CO') : 'N/A'}</p>
+                                                        <p className="text-xs text-gray-500">Valor: COP {item.price ? item.price.toLocaleString('es-CO') : 'N/A'}</p>
                                                     </div>
                                                 </div>
                                             ))}
@@ -251,7 +263,6 @@ function MyBarterProposalsPage() {
                                 {/* --- Sección de Botones de Acción --- */}
                                 <div className="p-5 border-t border-gray-100 bg-gray-50">
                                     {/* Lógica para Propuestas Originales (no contraofertas) */}
-                                    {/* Corrección: Añadir optional chaining a proposal.recipient y user */}
                                     {!isCounterProposal(proposal) && proposal.status === 'pending' && proposal.recipient?._id === user?._id && (
                                         <div className="flex flex-wrap justify-end gap-3">
                                             <button
@@ -276,7 +287,6 @@ function MyBarterProposalsPage() {
                                     )}
 
                                     {/* Lógica para Contraofertas Recibidas (que el usuario actual debe responder) */}
-                                    {/* Corrección: Añadir optional chaining a proposal.recipient y user */}
                                     {isCounterProposal(proposal) && proposal.status === 'pending' && proposal.recipient?._id === user?._id && (
                                         <div className="flex flex-wrap justify-end gap-3">
                                             <button
@@ -295,9 +305,8 @@ function MyBarterProposalsPage() {
                                     )}
 
                                     {/* Lógica para Cancelar (para propuestas pendientes o contraofertadas, tuyas o que te llegaron) */}
-                                    {/* Corrección: Añadir optional chaining a proposal.proponent y proposal.recipient, y user */}
                                     {(proposal.status === 'pending' || proposal.status === 'countered') &&
-                                        (proposal.proponent?._id === user?._id || proposal.recipient?._id === user?._id) && (
+                                        (proposal.proposer?._id === user?._id || proposal.recipient?._id === user?._id) && (
                                             <div className="flex justify-end mt-4">
                                                 <button
                                                     onClick={() => handleCancelProposal(proposal._id)}
@@ -319,7 +328,7 @@ function MyBarterProposalsPage() {
                                             Esta propuesta ha sido rechazada. 😔
                                         </div>
                                     )}
-                                     {proposal.status === 'completed' && (
+                                    {proposal.status === 'completed' && (
                                         <div className="mt-6 text-center text-purple-700 font-semibold text-base p-3 bg-purple-50 rounded-lg border border-purple-200">
                                             ¡Trueque completado! ✅
                                         </div>
@@ -329,7 +338,7 @@ function MyBarterProposalsPage() {
                                             Tu propuesta original ha sido contraofertada. Esperando respuesta. 🔄
                                         </div>
                                     )}
-                                     {proposal.status === 'cancelled' && (
+                                    {proposal.status === 'cancelled' && (
                                         <div className="mt-6 text-center text-gray-700 font-semibold text-base p-3 bg-gray-50 rounded-lg border border-gray-200">
                                             Esta propuesta ha sido cancelada. 🚫
                                         </div>
