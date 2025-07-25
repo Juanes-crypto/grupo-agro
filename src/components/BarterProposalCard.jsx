@@ -38,7 +38,7 @@ function BarterProposalCard({ proposal, currentUserId, onUpdateStatus }) {
             <div className="p-6">
                 <div className="flex justify-between items-start mb-4">
                     <h3 className="text-xl font-bold text-gray-800">
-                        Propuesta de Trueque {isProposer ? 'Enviada' : 'Recibida'}
+                        Propuesta de Permuta {isProposer ? 'Enviada' : 'Recibida'}
                     </h3>
                     {getStatusDisplay(proposal.status)}
                 </div>

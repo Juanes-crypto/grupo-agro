@@ -27,7 +27,7 @@ function BarterDetailsPage() {
             setError('');
             setMessage('');
         } catch (err) {
-            console.error('Error al obtener los detalles de la propuesta de trueque:', err);
+            console.error('Error al obtener los detalles de la propuesta de premuta:', err);
             if (err.response && err.response.data && err.response.data.message) {
                 setError(`Error al cargar la propuesta: ${err.response.data.message}`);
             } else {

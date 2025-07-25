@@ -347,7 +347,7 @@ function ProductListPage() {
                                             )
                                         )}
                                         {/* Mensaje si es tu propio producto en la vista general */}
-                                        {!isMyProductsPage && product.user._id === user._id && (
+                                        {!isMyProductsPage && product.user === user && (
                                             <p className="text-gray-500 text-center text-sm font-medium pt-2">Este es tu producto. Visible para otros.</p>
                                         )}
                                     </>

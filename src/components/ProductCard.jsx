@@ -62,7 +62,7 @@ function ProductCard({
 
       <div className="flex justify-between items-center text-sm mb-4">
         <span>
-          🔁 Truequeable:{' '}
+          🔁 Permutable:{' '}
           <span className={isTradable ? 'text-green-600 font-bold' : 'text-red-500 font-bold'}>
             {isTradable ? 'Sí' : 'No'}
           </span>
