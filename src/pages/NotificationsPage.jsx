@@ -1,85 +1,151 @@
 // src/pages/NotificationsPage.jsx
-import React, { useState, useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
+import { NotificationContext } from '../context/NotificationContext'; // Importar el contexto de notificaciones
+import { toast } from 'react-toastify'; // Importar toast para las notificaciones de usuario
+import { Link } from 'react-router-dom'; // Para enlaces a entidades relacionadas
 
-function NotificationsPage({ userId }) {
-    const [notifications, setNotifications] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+function NotificationsPage() {
+    const {
+        notifications,
+        loadingNotifications,
+        errorNotifications,
+        fetchNotifications, // Función para recargar notificaciones
+        markNotificationAsRead,
+        deleteNotification,
+    } = useContext(NotificationContext);
 
+    // Cargar notificaciones al montar el componente y recargar si la dependencia cambia
     useEffect(() => {
-        // Simular la carga de notificaciones
-        const fetchNotifications = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                // Simula un retraso de red
-                await new Promise(resolve => setTimeout(resolve, 1200));
-
-                // Datos de notificaciones de ejemplo
-                const dummyNotifications = [
-                    { id: 'n1', type: 'Trueque', message: 'Tu propuesta de trueque por "Semillas de Maíz" ha sido aceptada.', date: '2025-07-15', read: false },
-                    { id: 'n2', type: 'Orden', message: 'Tu orden #12345 ha sido enviada.', date: '2025-07-14', read: true },
-                    { id: 'n3', type: 'Nuevo Producto', message: '¡Un nuevo producto "Miel Orgánica" ha sido publicado en tu categoría favorita!', date: '2025-07-13', read: false },
-                    { id: 'n4', type: 'Sistema', message: 'Actualización importante: Términos y Condiciones de AgroApp.', date: '2025-07-10', read: true },
-                ];
-
-                // Filtra las notificaciones si se necesita una lógica por userId, de lo contrario, muestra todas.
-                // Por ahora, mostraremos todas las simuladas.
-                setNotifications(dummyNotifications);
-
-            } catch (err) {
-                setError('Error desconocido al cargar tus notificaciones.');
-                console.error("Error fetching dummy notifications:", err);
-            } finally {
-                setLoading(false);
-            }
-        };
-
         fetchNotifications();
-    }, [userId]); // Dependencia del userId
+    }, [fetchNotifications]); // fetchNotifications es una useCallback, así que es estable.
 
-    const handleMarkAsRead = (id) => {
-        // Simular marcar como leída
-        setNotifications(prev =>
-            prev.map(notif =>
-                notif.id === id ? { ...notif, read: true } : notif
-            )
+    const handleMarkAsRead = async (id) => {
+        await markNotificationAsRead(id);
+        toast.success('Notificación marcada como leída.');
+    };
+
+    const handleDelete = async (id) => {
+        if (window.confirm('¿Estás seguro de que quieres eliminar esta notificación?')) {
+            await deleteNotification(id);
+            toast.info('Notificación eliminada.');
+        }
+    };
+
+    // Helper para obtener el ícono según el tipo de notificación
+    const getNotificationIcon = (type) => {
+        switch (type) {
+            case 'new_barter_proposal':
+                return '🤝'; // Manos de trueque
+            case 'barter_accepted':
+                return '✅'; // Checkmark
+            case 'barter_rejected':
+                return '❌'; // Cruz
+            case 'barter_countered':
+                return '🔄'; // Flechas de ciclo
+            case 'order_status_update':
+                return '📦'; // Caja
+            case 'product_update':
+                return '📝'; // Lápiz
+            case 'general_message':
+                return '💬'; // Burbuja de mensaje
+            default:
+                return '🔔'; // Campana por defecto
+        }
+    };
+
+    // Helper para obtener la clase de color de fondo según el tipo
+    const getNotificationColorClass = (type) => {
+        switch (type) {
+            case 'new_barter_proposal':
+                return 'bg-blue-100 border-blue-400';
+            case 'barter_accepted':
+                return 'bg-green-100 border-green-400';
+            case 'barter_rejected':
+                return 'bg-red-100 border-red-400';
+            case 'barter_countered':
+                return 'bg-yellow-100 border-yellow-400';
+            default:
+                return 'bg-gray-100 border-gray-300';
+        }
+    };
+
+    if (loadingNotifications) {
+        return (
+            <div className="flex justify-center items-center min-h-screen text-xl text-gray-700 animate-pulse">
+                Cargando notificaciones...
+            </div>
         );
-        console.log(`Notificación ${id} marcada como leída.`);
-        // Aquí eventualmente llamarías a tu API para actualizar el estado de la notificación
-    };
+    }
 
-    const getNotificationClass = (read) => {
-        return read ? 'bg-gray-50 text-gray-700' : 'bg-blue-50 text-blue-800 font-semibold';
-    };
+    if (errorNotifications) {
+        return (
+            <div className="flex justify-center items-center min-h-screen text-red-600 text-xl font-semibold">
+                Error: {errorNotifications}
+            </div>
+        );
+    }
+
+    if (notifications.length === 0) {
+        return (
+            <div className="flex flex-col justify-center items-center min-h-screen bg-gray-50 p-4">
+                <p className="text-2xl font-semibold text-gray-700 mb-4">No tienes notificaciones por el momento. ¡Todo tranquilo! 🎉</p>
+                <Link to="/products" className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-300 shadow-lg hover:shadow-xl">
+                    Explorar Productos
+                </Link>
+            </div>
+        );
+    }
 
     return (
-        <div className="max-w-4xl mx-auto bg-white p-8 rounded-lg shadow-md">
-            <h2 className="text-3xl font-bold text-gray-800 mb-6 text-center">Mis Notificaciones</h2>
-            {loading && <p className="text-center text-gray-600">Cargando notificaciones...</p>}
-            {error && <p className="text-center text-red-600">{error}</p>}
-            {!loading && !error && notifications.length === 0 && (
-                <p className="text-center text-gray-600">No tienes notificaciones nuevas.</p>
-            )}
-
-            <div className="space-y-4">
-                {notifications.map(notif => (
+        <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+            <h1 className="text-4xl font-extrabold text-center text-gray-800 mb-10 drop-shadow-md">Tus Notificaciones</h1>
+            <div className="max-w-3xl mx-auto space-y-4">
+                {notifications.map((notification) => (
                     <div
-                        key={notif.id}
-                        className={`flex justify-between items-center p-4 rounded-lg shadow-sm border border-gray-200 ${getNotificationClass(notif.read)}`}
+                        key={notification._id} // Usamos _id de la DB en lugar de 'id'
+                        className={`p-5 rounded-lg shadow-md flex items-center space-x-4 transition-all duration-200
+                                    ${notification.isRead ? 'bg-gray-200 text-gray-600' : `${getNotificationColorClass(notification.type)} text-gray-800 font-semibold border-l-8`}
+                                    ${!notification.isRead ? 'hover:shadow-lg' : ''}`}
                     >
-                        <div>
-                            <p className="text-lg mb-1">{notif.message}</p>
-                            <p className="text-sm text-gray-500">({notif.type}) - {notif.date}</p>
+                        <div className={`text-4xl ${!notification.isRead ? 'text-gray-700' : 'text-gray-400'}`}>
+                            {getNotificationIcon(notification.type)}
                         </div>
-                        {!notif.read && (
+                        <div className="flex-grow">
+                            <h3 className={`text-lg font-bold ${notification.isRead ? 'text-gray-500' : 'text-gray-800'}`}>
+                                {notification.title} {/* Usamos 'title' de la DB */}
+                            </h3>
+                            <p className={`text-sm ${notification.isRead ? 'text-gray-500' : 'text-gray-700'}`}>
+                                {notification.message} {/* Usamos 'message' de la DB */}
+                            </p>
+                            <span className="text-xs text-gray-400 mt-1 block">
+                                {new Date(notification.createdAt).toLocaleString()} {/* Usamos 'createdAt' de la DB */}
+                            </span>
+                        </div>
+                        <div className="flex flex-col space-y-2">
+                            {!notification.isRead && (
+                                <button
+                                    onClick={() => handleMarkAsRead(notification._id)}
+                                    className="bg-green-500 hover:bg-green-600 text-white text-sm px-3 py-1 rounded-md transition duration-200 shadow-sm"
+                                >
+                                    Marcar Leída
+                                </button>
+                            )}
+                            {/* Enlace condicional a la entidad relacionada */}
+                            {notification.relatedEntityId && notification.relatedEntityType === 'BarterProposal' && (
+                                <Link
+                                    to={`/barter-details/${notification.relatedEntityId}`} // Ajusta esta ruta si tienes una página específica para ver los detalles de una propuesta de trueque
+                                    className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded-md text-center transition duration-200 shadow-sm"
+                                >
+                                    Ver Detalles
+                                </Link>
+                            )}
                             <button
-                                onClick={() => handleMarkAsRead(notif.id)}
-                                className="ml-4 px-3 py-1 bg-blue-500 text-white rounded-md hover:bg-blue-600 transition-colors duration-200"
+                                onClick={() => handleDelete(notification._id)}
+                                className="bg-red-500 hover:bg-red-600 text-white text-sm px-3 py-1 rounded-md transition duration-200 shadow-sm"
                             >
-                                Marcar como leída
+                                Eliminar
                             </button>
-                        )}
+                        </div>
                     </div>
                 ))}
             </div>

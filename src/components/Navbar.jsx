@@ -3,6 +3,8 @@
 import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { NotificationContext } from '../context/NotificationContext'; // Importar el contexto de notificaciones
+import { toast } from 'react-toastify'; // Para mensajes toast
 import {
     FaSignInAlt, FaUser, FaSeedling, FaStore, FaHandshake, FaPlus, FaSignOutAlt,
     FaSun, FaBell, FaShoppingCart, FaExchangeAlt, FaListAlt, FaBox, FaWrench, FaBuilding
@@ -12,13 +14,15 @@ import defaultProfilePicture from '../assets/default-profile.png'; // Asegúrate
 
 function Navbar() {
     const { isAuthenticated, isPremium, logout, cartItems, user } = useContext(AuthContext);
+    const { unreadCount } = useContext(NotificationContext); // Consumir el unreadCount
     const navigate = useNavigate();
 
     const [hoveredItem, setHoveredItem] = useState(null);
 
     const onLogout = () => {
         logout();
-        navigate('/');
+        toast.success('Sesión cerrada con éxito.'); // Mensaje de éxito al cerrar sesión
+        navigate('/'); // Redirigir a la página de inicio o login
     };
 
     const totalCartItems = cartItems ? cartItems.reduce((total, item) => total + item.quantity, 0) : 0;
@@ -93,7 +97,19 @@ function Navbar() {
 
                 <SidebarLink to="/my-barter-proposals" icon={<FaExchangeAlt />}>Trueques</SidebarLink>
                 <SidebarLink to="/my-orders" icon={<FaListAlt />}>Pedidos</SidebarLink>
-                <SidebarLink to="/notifications" icon={<FaBell />}>Notificaciones</SidebarLink>
+
+                {/* Enlace de Notificaciones con contador */}
+                {isAuthenticated && ( // Solo muestra notificaciones si el usuario está autenticado
+                    <div className="relative">
+                        <SidebarLink to="/notifications" icon={<FaBell />}>Notificaciones</SidebarLink>
+                        {unreadCount > 0 && (
+                            <span className="absolute top-0 left-36 bg-red-600 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
+                                {unreadCount}
+                            </span>
+                        )}
+                    </div>
+                )}
+                
 
                 {/* Carrito con contador */}
                 <div className="relative">
@@ -140,10 +156,10 @@ function Navbar() {
                         <SidebarLink to="/login" icon={<FaSignInAlt />}>Iniciar Sesión</SidebarLink>
                         <SidebarLink to="/register" icon={<FaUser />}>Registrarse</SidebarLink>
                         {/* ⭐ Hazte Premium: También visible para no autenticados, si lo quieres aquí ⭐
-                           Si solo lo quieres para autenticados NO premium, quita este bloque.
-                           Lo dejo aquí como estaba, pero el de arriba es el que añadí para autenticados NO premium.
+                            Si solo lo quieres para autenticados NO premium, quita este bloque.
+                            Lo dejo aquí como estaba, pero el de arriba es el que añadí para autenticados NO premium.
                         */}
-                         <SidebarLink
+                        <SidebarLink
                             to="/premium-upsell"
                             icon={null}
                             className="text-yellow-300 font-bold hover:text-yellow-400"
