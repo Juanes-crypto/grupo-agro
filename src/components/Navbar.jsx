@@ -95,7 +95,7 @@ function Navbar() {
                     )}
                 </div>
 
-                <SidebarLink to="/my-barter-proposals" icon={<FaExchangeAlt />}>Trueques</SidebarLink>
+                <SidebarLink to="/my-barter-proposals" icon={<FaExchangeAlt />}>Permutas</SidebarLink>
                 <SidebarLink to="/my-orders" icon={<FaListAlt />}>Pedidos</SidebarLink>
 
                 {/* Enlace de Notificaciones con contador */}

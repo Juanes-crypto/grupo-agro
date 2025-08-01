@@ -310,7 +310,7 @@ function ProductListPage() {
                                             </>
                                         ) : (
                                             // Botones para otros usuarios (cuando no es mi producto)
-                                            product.user && user && product.user._id !== user._id && (
+                                            product.user && user && product.user._id !== user._id && ( // Check product.user existence and compare IDs
                                                 <>
                                                     {product.stock > 0 ? (
                                                         <button
@@ -347,7 +347,7 @@ function ProductListPage() {
                                             )
                                         )}
                                         {/* Mensaje si es tu propio producto en la vista general */}
-                                        {!isMyProductsPage && product.user === user && (
+                                        {!isMyProductsPage && product.user && user && product.user._id === user._id && (
                                             <p className="text-gray-500 text-center text-sm font-medium pt-2">Este es tu producto. Visible para otros.</p>
                                         )}
                                     </>
