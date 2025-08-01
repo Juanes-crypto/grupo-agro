@@ -1,5 +1,3 @@
-// src/pages/RentalListPage.jsx
-
 import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
@@ -91,25 +89,26 @@ function RentalListPage() {
       return;
     }
 
-    if (rental.user && rental.user.phoneNumber) {
-      // Abre WhatsApp si hay un número de teléfono
+    // MODIFICADO: Cambiado rental.user por rental.owner y añadido showPhoneNumber
+    if (rental.owner && rental.owner.phoneNumber && rental.owner.showPhoneNumber) {
+      // Abre WhatsApp si hay un número de teléfono Y showPhoneNumber es true
       const whatsappMessage = `Hola, estoy interesado en tu equipo en renta: ${rental.name} (ID: ${rental._id}). ¿Podrías darme más información?`;
       window.open(
-        `https://wa.me/${rental.user.phoneNumber}?text=${encodeURIComponent(
+        `https://wa.me/${rental.owner.phoneNumber}?text=${encodeURIComponent(
           whatsappMessage
         )}`,
         "_blank"
       );
-    } else if (rental.user && rental.user.email) {
-      // Fallback a email si no hay número de teléfono
+    } else if (rental.owner && rental.owner.email) {
+      // Fallback a email si no hay número de teléfono o showPhoneNumber es false
       alert(
         `Simulando contacto con ${
-          rental.user.name || "el proveedor"
-        } al email: ${rental.user.email}`
+          rental.owner.name || "el proveedor"
+        } al email: ${rental.owner.email}`
       );
-      // O podrías abrir un cliente de correo: window.location.href = `mailto:${rental.user.email}?subject=Interés en ${rental.name}`;
+      // O podrías abrir un cliente de correo: window.location.href = `mailto:${rental.owner.email}?subject=Interés en ${rental.name}`;
     } else {
-      alert("Funcionalidad de contacto en desarrollo o sin datos de contacto.");
+      alert("Funcionalidad de contacto en desarrollo o sin datos de contacto disponibles públicamente.");
     }
   };
 
@@ -246,13 +245,13 @@ function RentalListPage() {
           <div
             key={rental._id}
             className={`bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col transform hover:-translate-y-1 relative
-              ${
-                rental.user && rental.user.isPremium
-                  ? "border-4 border-yellow-400 ring-4 ring-yellow-200"
-                  : "border border-gray-200"
-              }`}
+            ${
+              rental.owner && rental.owner.isPremium // MODIFICADO: rental.user.isPremium por rental.owner.isPremium
+                ? "border-4 border-yellow-400 ring-4 ring-yellow-200"
+                : "border border-gray-200"
+            }`}
           >
-            {rental.user && rental.user.isPremium && (
+            {rental.owner && rental.owner.isPremium && ( // MODIFICADO: rental.user.isPremium por rental.owner.isPremium
               <span className="absolute top-3 right-3 bg-yellow-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md z-10">
                 ⭐ Proveedor Premium
               </span>
@@ -298,8 +297,8 @@ function RentalListPage() {
 
                 {isAuthenticated &&
                 user &&
-                rental.owner &&
-                rental.owner._id === user._id ? (
+                rental.owner && // MODIFICADO: rental.user por rental.owner
+                rental.owner._id === user._id ? ( // MODIFICADO: rental.user._id por rental.owner._id
                   <>
                     <Link
                       to={`/edit-rental/${rental._id}`}
@@ -316,7 +315,8 @@ function RentalListPage() {
                   </>
                 ) : (
                   <>
-                    {rental.user && rental.user.phoneNumber ? (
+                    {/* MODIFICADO: rental.user.phoneNumber por rental.owner.phoneNumber Y añadido rental.owner.showPhoneNumber */}
+                    {rental.owner && rental.owner.phoneNumber && rental.owner.showPhoneNumber ? (
                       <button
                         onClick={() => handleContactMe(rental)}
                         className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md hover:shadow-lg flex items-center justify-center space-x-2"

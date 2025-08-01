@@ -165,7 +165,7 @@ function LoginPage() {
                             <li>Optimiza tus precios, maximiza ingresos.</li>
                             <li>Tus productos apareceran primero en los resultados de busqueda.</li>
                             <li>Herramientas de Gestion: Accede a un panel de control avanzado.</li>
-                            <li>Prioridad de renderizacion: Tus productos apareceran en una "ZONA VIP".</li>
+                            <li>Prioridad de renderizacion: Tus productos tienen prioridad de muestra.</li>
                         </ul>
                     </div>
                     <Link 
