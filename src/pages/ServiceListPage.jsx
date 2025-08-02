@@ -2,6 +2,8 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import { ChatBubbleBottomCenterTextIcon, PhoneIcon } from '@heroicons/react/24/solid';
+
 import api from '../services/api';
 
 function ServiceListPage() {
@@ -86,8 +88,9 @@ function ServiceListPage() {
             navigate('/login');
             return;
         }
-        if (service.user && service.user.phoneNumber) {
-            // Abre WhatsApp si hay un número de teléfono
+
+        // ⭐ MODIFICADO: Lógica para el botón "WhatsApp" basada en showPhoneNumber ⭐
+        if (service.user && service.user.phoneNumber && service.user.showPhoneNumber) {
             const whatsappMessage = `Hola, estoy interesado en tu servicio: ${service.name} (ID: ${service._id}). ¿Podrías darme más información?`;
             window.open(
                 `https://wa.me/${service.user.phoneNumber}?text=${encodeURIComponent(
@@ -96,24 +99,43 @@ function ServiceListPage() {
                 "_blank"
             );
         } else if (service.user && service.user.email) {
-            // Fallback a email si no hay número de teléfono
             alert(`Simulando contacto con ${service.user.name || 'el proveedor'} al email: ${service.user.email}`);
             // O podrías abrir un cliente de correo: window.location.href = `mailto:${service.user.email}?subject=Interés en ${service.name}`;
         } else {
-            alert('Funcionalidad de contacto en desarrollo o sin datos de contacto.');
+            alert('Funcionalidad de contacto no disponible públicamente para este proveedor.');
         }
     };
 
-    const handleAddToCart = (service) => {
+    const handleAddToCart = async (service) => { // ⭐ MODIFICADO: Ahora es asíncrono y hace una llamada a la API ⭐
         if (!isAuthenticated) {
             alert("Debes iniciar sesión para añadir al carrito.");
             navigate("/login");
             return;
         }
-        // Aquí iría la lógica real para añadir al carrito.
-        // Podrías usar un contexto de carrito, Redux, o una llamada a la API.
-        console.log(`Añadiendo ${service.name} (ID: ${service._id}) al carrito.`);
-        alert(`"${service.name}" ha sido añadido al carrito (funcionalidad en desarrollo).`);
+
+        try {
+            // Asegúrate de que tu backend tenga un endpoint para añadir servicios al carrito
+            // y que espere un body como { serviceId: '...' }
+            const response = await api.post('/cart/add', {
+                itemId: service._id, // Usar 'itemId' o el nombre que espere tu backend
+                itemType: 'service', // Para diferenciar entre productos, servicios, rentas, etc.
+                quantity: 1, // La cantidad para un servicio puede ser 1 por defecto
+                // Puedes añadir más campos si tu modelo de carrito los necesita (e.g., priceAtTimeOfAdd)
+            }, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            alert(response.data.message || `"${service.name}" ha sido añadido al carrito.`);
+            // Opcional: Actualizar el estado del carrito en el contexto si lo tienes
+        } catch (err) {
+            console.error("Error al añadir servicio al carrito:", err);
+            if (err.response && err.response.data && err.response.data.message) {
+                alert(`Error al añadir al carrito: ${err.response.data.message}`);
+            } else {
+                alert('Error desconocido al añadir el servicio al carrito.');
+            }
+        }
     };
 
     const handleDeleteService = async (serviceId) => {
@@ -213,10 +235,10 @@ function ServiceListPage() {
                         )}
                         <div className="w-full h-48 bg-gray-100 flex items-center justify-center flex-shrink-0">
                             <img
-                                src={service.imageUrl || '/no-image.png'} // Usar la ruta relativa para la imagen por defecto
+                                src={service.imageUrl || '/no-image.png'}
                                 alt={service.name}
                                 className="w-full h-full object-cover rounded-t-xl"
-                                onError={(e) => { e.target.onerror = null; e.target.src = '/no-image.png'; }} // Fallback final si la imagen es inaccesible
+                                onError={(e) => { e.target.onerror = null; e.target.src = '/no-image.png'; }}
                             />
                         </div>
                         <div className="p-5 flex flex-col flex-grow min-h-[180px]">
@@ -254,19 +276,13 @@ function ServiceListPage() {
                                     </>
                                 ) : (
                                     <>
-                                        {service.user && service.user.phoneNumber ? (
+                                        {/* ⭐ MODIFICADO: Condición para mostrar el botón de WhatsApp ⭐ */}
+                                        {service.user && service.user.phoneNumber && service.user.showPhoneNumber ? (
                                             <button
                                                 onClick={() => handleContactMe(service)}
                                                 className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md hover:shadow-lg flex items-center justify-center space-x-2"
                                             >
-                                                <svg
-                                                    className="w-5 h-5"
-                                                    fill="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                >
-                                                    <path d="M12.035 1.5C6.065 1.5 1.25 6.31 1.25 12.28c0 2.21.655 4.31 1.83 6.13l-1.31 4.77 4.9-1.29c1.78.97 3.8.7 5.51.7 5.97 0 10.79-4.81 10.79-10.78C22.75 6.31 17.94 1.5 12.035 1.5zm-.01 19.5c-1.63 0-3.2-.42-4.57-1.2L5 20l.96-3.56c-.95-1.3-1.48-2.83-1.48-4.46C4.48 7.6 8.01 4.07 12.02 4.07c3.96 0 7.23 3.25 7.23 7.23 0 4-3.27 7.23-7.23 7.23zm3.17-5.11c-.18-.09-.96-.48-1.11-.53-.15-.05-.26-.07-.37.07-.12.15-.46.53-.56.64-.09.12-.18.12-.34.05-.15-.07-.63-.23-1.2-.74-.45-.4-.75-.67-.89-.92-.15-.26-.01-.22.1-.33.09-.09.2-.23.3-.34.09-.09.12-.15.18-.26.07-.1.04-.18-.02-.26-.05-.07-.37-.9-.51-1.22-.12-.26-.26-.23-.37-.23-.12 0-.26-.03-.4-.03-.15 0-.34.05-.51.23-.15.15-.57.56-.57 1.36 0 .8.59 1.57.67 1.68.09.12 1.16 1.77 2.82 2.45.38.15.68.23.91.28.37.07.96.34 1.16.2.19-.15.26-.18.3-.28.05-.09.18-.53.26-.99.09-.45.09-.84.07-.92z" />
-                                                </svg>
+                                                <PhoneIcon className="w-5 h-5" />
                                                 <span>WhatsApp</span>
                                             </button>
                                         ) : (
@@ -277,7 +293,8 @@ function ServiceListPage() {
                                                 Comunícate Conmigo
                                             </button>
                                         )}
-                                        {!isMyServicesPage && ( // Mostrar "Añadir al Carrito" solo en la página principal, no en "Mis Servicios"
+                                        {/* ⭐ MODIFICADO: Botón "Añadir al Carrito" condicional y funcional ⭐ */}
+                                        {!isMyServicesPage && ( // Solo mostrar "Añadir al Carrito" en la página principal
                                             <button
                                                 onClick={() => handleAddToCart(service)}
                                                 className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md hover:shadow-lg"

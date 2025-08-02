@@ -40,22 +40,23 @@ function ServiceDetailsPage() {
             return;
         }
 
-        // ⭐ Lógica para "Comunícate Conmigo" ⭐
-        // Aquí puedes implementar:
-        // 1. Un modal con un formulario de contacto.
-        // 2. Un enlace a un chat interno (si lo implementas).
-        // 3. Mostrar la información de contacto del usuario (si el backend la provee y es pública/premium).
-
-        // Por ahora, mostraremos un mensaje simple y simularemos un contacto.
-        // Idealmente, aquí harías un `fetch` a tu backend para iniciar un chat o enviar un mensaje.
-        
-        // Si el servicio tiene un 'user' populado con detalles como email/phone:
-        if (service && service.user) {
-            setContactMessage(`Puedes contactar a ${service.user.name || 'el proveedor'} al email: ${service.user.email || 'No disponible'}. (Simulado)`);
+        // MODIFICADO: Lógica para "Comunícate Conmigo" con WhatsApp y showPhoneNumber
+        if (service && service.user && service.user.phoneNumber && service.user.showPhoneNumber) {
+            const whatsappMessage = `Hola, estoy interesado en tu servicio: ${service.name} (ID: ${service._id}). ¿Podrías darme más información?`;
+            window.open(
+                `https://wa.me/${service.user.phoneNumber}?text=${encodeURIComponent(
+                    whatsappMessage
+                )}`,
+                "_blank"
+            );
+            setContactMessage(''); // Limpiar el mensaje si se abre WhatsApp
+        } else if (service && service.user && service.user.email) {
+            setContactMessage(`Puedes contactar a ${service.user.name || 'el proveedor'} al email: ${service.user.email}. (Simulado)`);
+            setTimeout(() => setContactMessage(''), 5000);
         } else {
-            setContactMessage('Funcionalidad de contacto en desarrollo. (Simulado)');
+            setContactMessage('Funcionalidad de contacto no disponible públicamente para este proveedor.');
+            setTimeout(() => setContactMessage(''), 5000);
         }
-        setTimeout(() => setContactMessage(''), 5000); // Ocultar mensaje después de 5 segundos
     };
 
     if (loading) {
@@ -91,21 +92,40 @@ function ServiceDetailsPage() {
                 <div className="text-4xl font-extrabold text-green-800 mb-6">
                     COP {service.price.toLocaleString('es-CO')}
                 </div>
-                
-                {/* Botón de Contacto */}
+
+                {/* Botón de Contacto (MODIFICADO) */}
                 {!isMyService ? ( // Solo mostrar si NO es mi propio servicio
-                    <button
-                        onClick={handleContactMe}
-                        className="w-full bg-blue-600 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-blue-700 transition-colors duration-300"
-                    >
-                        Comunícate Conmigo
-                    </button>
+                    <>
+                        {service.user && service.user.phoneNumber && service.user.showPhoneNumber ? (
+                            <button
+                                onClick={handleContactMe}
+                                className="w-full bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-md text-lg font-semibold transition-colors duration-300 flex items-center justify-center space-x-2"
+                            >
+                                <svg
+                                    className="w-6 h-6"
+                                    fill="currentColor"
+                                    viewBox="0 0 24 24"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <path d="M12.035 1.5C6.065 1.5 1.25 6.31 1.25 12.28c0 2.21.655 4.31 1.83 6.13l-1.31 4.77 4.9-1.29c1.78.97 3.8.7 5.51.7 5.97 0 10.79-4.81 10.79-10.78C22.75 6.31 17.94 1.5 12.035 1.5zm-.01 19.5c-1.63 0-3.2-.42-4.57-1.2L5 20l.96-3.56c-.95-1.3-1.48-2.83-1.48-4.46C4.48 7.6 8.01 4.07 12.02 4.07c3.96 0 7.23 3.25 7.23 7.23 0 4-3.27 7.23-7.23 7.23zm3.17-5.11c-.18-.09-.96-.48-1.11-.53-.15-.05-.26-.07-.37.07-.12.15-.46.53-.56.64-.09.12-.18.12-.34.05-.15-.07-.63-.23-1.2-.74-.45-.4-.75-.67-.89-.92-.15-.26-.01-.22.1-.33.09-.09.2-.23.3-.34.09-.09.12-.15.18-.26.07-.1.04-.18-.02-.26-.05-.07-.37-.9-.51-1.22-.12-.26-.26-.23-.37-.23-.12 0-.26-.03-.4-.03-.15 0-.34.05-.51.23-.15.15-.57.56-.57 1.36 0 .8.59 1.57.67 1.68.09.12 1.16 1.77 2.82 2.45.38.15.68.23.91.28.37.07.96.34 1.16.2.19-.15.26-.18.3-.28.05-.09.18-.53.26-.99.09-.45.09-.84.07-.92z" />
+                                </svg>
+                                <span>Contactar por WhatsApp</span>
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleContactMe}
+                                className="w-full bg-blue-600 text-white px-6 py-3 rounded-md text-lg font-semibold hover:bg-blue-700 transition-colors duration-300"
+                            >
+                                Comunícate Conmigo
+                            </button>
+                        )}
+                    </>
                 ) : (
                     <p className="text-gray-500 text-md text-center">Este es tu servicio. Puedes gestionarlo desde tu panel.</p>
                 )}
 
                 {contactMessage && (
-                    <p className={`text-center mt-3 font-medium ${contactMessage.includes('Debes iniciar sesión') ? 'text-red-600' : 'text-green-600'}`}>
+                    <p className={`text-center mt-3 font-medium ${contactMessage.includes('Debes iniciar sesión') || contactMessage.includes('no disponible') ? 'text-red-600' : 'text-green-600'}`}>
                         {contactMessage}
                     </p>
                 )}

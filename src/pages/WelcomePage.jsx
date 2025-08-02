@@ -36,9 +36,9 @@ function WelcomePage() {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <Link to="/create-product" className="btn-green">Publicar Producto</Link>
-          <Link to="/create-barter" className="btn-yellow">Proponer Trueque</Link>
-          <Link to="/rent-space" className="btn-blue">Rentar un Espacio</Link>
-          <Link to="/myorders" className="btn-gray">Ver Mis Pedidos</Link>
+          <Link to="/products" className="btn-yellow">Proponer Trueque</Link>
+          <Link to="/rentals" className="btn-blue">Rentar un Espacio</Link>
+          <Link to="/my-orders" className="btn-gray">Ver Mis Pedidos</Link>
         </div>
 
         {!isPremium && (
@@ -46,7 +46,8 @@ function WelcomePage() {
             <p className="text-sm text-gray-600 mb-2">
               ¿Quieres publicar automáticamente y destacar tus productos?
             </p>
-            <Link to="/premium" className="btn-purple">Activar Plan Premium</Link>
+            <br />
+            <Link to="/premium-upsell" className="btn-purple">Activar Plan Premium</Link>
           </div>
         )}
 
