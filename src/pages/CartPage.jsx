@@ -31,8 +31,8 @@ function CartPage() {
 
             <div className="bg-white shadow-lg rounded-lg p-6 mb-8">
                 {cartItems.map((item) => (
-                    <div key={item._id} className="flex items-center justify-between border-b pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0">
-                        <div className="flex items-center">
+                    <div key={item._id} className="flex flex-col sm:flex-row items-center justify-between border-b pb-4 mb-4 last:border-b-0 last:pb-0 last:mb-0">
+                        <div className="flex items-center mb-4 sm:mb-0">
                             {item.imageUrl && (
                                 <img
                                     src={item.imageUrl}
@@ -43,19 +43,27 @@ function CartPage() {
                             <div>
                                 <h2 className="text-xl font-semibold">{item.name}</h2>
                                 <p className="text-gray-600">${item.price.toFixed(2)}</p>
+                                {/* Muestra el stock disponible */}
+                                {/* Asegúrate de que 'item.stock' exista en tu objeto de carrito */}
+                                {typeof item.stock !== 'undefined' && item.stock !== null && (
+                                    <p className="text-sm text-gray-500">Stock disponible: {item.stock}</p>
+                                )}
                             </div>
                         </div>
                         <div className="flex items-center space-x-4">
                             <button
                                 onClick={() => updateQuantity(item._id, item.quantity - 1)}
-                                className="bg-gray-200 text-gray-700 px-3 py-1 rounded-md hover:bg-gray-300"
+                                className="bg-gray-200 text-gray-700 px-3 py-1 rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={item.quantity <= 1} // Deshabilita si la cantidad es 1 o menos
                             >
                                 -
                             </button>
                             <span className="text-lg font-medium">{item.quantity}</span>
                             <button
                                 onClick={() => updateQuantity(item._id, item.quantity + 1)}
-                                className="bg-gray-200 text-gray-700 px-3 py-1 rounded-md hover:bg-gray-300"
+                                className="bg-gray-200 text-gray-700 px-3 py-1 rounded-md hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                // Deshabilita si la cantidad alcanza el stock, o si el stock no está disponible
+                                disabled={item.quantity >= item.stock || typeof item.stock === 'undefined' || item.stock === null}
                             >
                                 +
                             </button>

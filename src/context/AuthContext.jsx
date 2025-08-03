@@ -102,7 +102,7 @@ export const AuthProvider = ({ children }) => {
         setIsAuthenticated(false);
         setIsPremium(false);
         setToken(null); // Borra el token
-        setCartItems([]); // Borra el carrito al cerrar sesión
+        clearCart(); // Llama a clearCart para borrar el carrito al cerrar sesión
         setLoading(false); // Termina la carga después del logout
     };
 
@@ -116,34 +116,84 @@ export const AuthProvider = ({ children }) => {
         setLoading(false); // Termina la carga después del registro
     };
 
-    // Funciones del carrito (se mantienen como están, usando localStorage por ahora)
+    // Funciones del carrito
     const addToCart = (product) => {
+        // Asegúrate de que el producto tiene la propiedad 'stock'
+        if (typeof product.stock === 'undefined' || product.stock === null) {
+            console.error("Error: El producto no tiene una propiedad 'stock' definida.", product);
+            alert("No se pudo añadir el producto al carrito: stock no disponible.");
+            return; // No se puede añadir sin stock
+        }
+
         setCartItems((prevItems) => {
-            const existingItem = prevItems.find((item) => item._id === product._id); // Usar _id del backend
+            const existingItem = prevItems.find((item) => item._id === product._id);
+
             if (existingItem) {
+                // Si el producto ya está en el carrito, intenta aumentar la cantidad
+                const newQuantity = existingItem.quantity + 1;
+                // La cantidad no puede exceder el stock disponible
+                const finalQuantity = Math.min(newQuantity, product.stock);
+
+                if (existingItem.quantity === finalQuantity) {
+                    console.warn(`El producto "${product.name}" ya alcanzó el stock máximo (${product.stock}). No se añadió más.`);
+                    return prevItems; // No hay cambio si ya está en el límite
+                }
+
                 return prevItems.map((item) =>
-                    item._id === product._id ? { ...item, quantity: item.quantity + 1 } : item
+                    item._id === product._id ? { ...item, quantity: finalQuantity } : item
                 );
             } else {
-                return [...prevItems, { ...product, quantity: 1, price: product.price || 0, name: product.name || 'Producto Desconocido' }];
+                // Si el producto es nuevo, añádelo con cantidad 1, pero no más de su stock
+                const initialQuantity = Math.min(1, product.stock); // Asegura que no se añada si stock es 0 o negativo
+
+                if (initialQuantity <= 0) {
+                    console.warn(`El producto "${product.name}" tiene stock 0 o negativo. No se puede añadir.`);
+                    alert(`El producto "${product.name}" no está disponible en este momento.`);
+                    return prevItems; // No añadir si el stock es 0 o negativo
+                }
+                return [...prevItems, {
+                    ...product,
+                    quantity: initialQuantity,
+                    price: product.price || 0,
+                    name: product.name || 'Producto Desconocido',
+                    stock: product.stock // MUY IMPORTANTE: Asegúrate de que el stock esté aquí
+                }];
             }
         });
-        console.log("Producto añadido al carrito:", product.name);
+        console.log("Producto añadido/actualizado en el carrito:", product.name);
     };
 
+
     const removeFromCart = (productId) => {
-        setCartItems((prevItems) => prevItems.filter((item) => item._id !== productId)); // Usar _id
+        setCartItems((prevItems) => prevItems.filter((item) => item._id !== productId));
         console.log("Producto eliminado del carrito:", productId);
     };
 
     const updateQuantity = (productId, newQuantity) => {
         setCartItems((prevItems) => {
-            if (newQuantity <= 0) {
-                return prevItems.filter((item) => item._id !== productId); // Usar _id
-            }
-            return prevItems.map((item) =>
-                item._id === productId ? { ...item, quantity: newQuantity } : item // Usar _id
-            );
+            return prevItems.map((item) => {
+                if (item._id === productId) {
+                    // Asegúrate de que item.stock esté disponible.
+                    // Si no lo está, esta lógica fallará. Necesitas que 'stock'
+                    // venga cuando se añade el producto al carrito inicialmente (en addToCart).
+                    const availableStock = item.stock;
+
+                    // 1. La cantidad no puede ser menor a 1
+                    const quantityLowerBound = Math.max(1, newQuantity);
+
+                    // 2. La cantidad no puede exceder el stock disponible
+                    const finalQuantity = Math.min(quantityLowerBound, availableStock);
+
+                    // Solo actualiza si la cantidad es realmente diferente para evitar re-renders innecesarios
+                    if (finalQuantity !== item.quantity) {
+                        return { ...item, quantity: finalQuantity };
+                    }
+                    // Si la cantidad no cambia (ej. intentó ir más allá del stock o menos de 1
+                    // y ya estaba en ese límite), devuelve el item sin cambios.
+                    return item;
+                }
+                return item;
+            }).filter(item => item.quantity > 0); // Filtra si la cantidad final es 0 (ej. al presionar '-' cuando la cantidad es 1)
         });
         console.log(`Cantidad actualizada para ${productId} a ${newQuantity}`);
     };
