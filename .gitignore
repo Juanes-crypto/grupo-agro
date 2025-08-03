@@ -22,3 +22,7 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# Archivos grandes del SDK de Dart que no deben ir en Git
+src/assets/dartsdk-windows-x64-release.zip
+src/assets/dartsdk-windows-x64-release/
