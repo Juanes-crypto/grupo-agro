@@ -9,9 +9,8 @@ import {
   SparklesIcon,
   ShoppingBagIcon,
   CurrencyDollarIcon,
-  UserCircleIcon,
-  LogoutIcon 
-} from '@heroicons/react/outline';
+  UserCircleIcon 
+} from '@heroicons/react/24/outline';
 
 function WelcomePage() {
   const { user, logout } = useContext(AuthContext);

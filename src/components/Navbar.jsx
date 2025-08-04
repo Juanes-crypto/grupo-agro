@@ -1,170 +1,300 @@
-// src/components/Navbar.jsx
-
 import React, { useContext, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { NotificationContext } from '../context/NotificationContext'; // Importar el contexto de notificaciones
-import { toast } from 'react-toastify'; // Para mensajes toast
+import { NotificationContext } from '../context/NotificationContext';
+import { toast } from 'react-toastify';
 import {
-    FaSignInAlt, FaUser, FaSeedling, FaStore, FaHandshake, FaPlus, FaSignOutAlt,
-    FaSun, FaBell, FaShoppingCart, FaExchangeAlt, FaListAlt, FaBox, FaWrench, FaBuilding
-} from 'react-icons/fa';
+    ArrowRightIcon,
+    ArrowLeftOnRectangleIcon,
+    UserIcon,
+    ShoppingCartIcon,
+    BellIcon,
+    PlusIcon,
+    SparklesIcon,
+    SunIcon,
+    WrenchIcon,
+    BuildingStorefrontIcon,
+    BuildingOfficeIcon,
+    ArrowsRightLeftIcon,
+    ListBulletIcon,
+    CubeIcon,
+    UserCircleIcon
+} from '@heroicons/react/24/outline';
+import {
+    ArrowRightIcon as ArrowRightSolid,
+    ArrowLeftOnRectangleIcon as ArrowLeftOnRectangleSolid,
+    UserIcon as UserSolid,
+    ShoppingCartIcon as ShoppingCartSolid,
+    BellIcon as BellSolid,
+    PlusIcon as PlusSolid,
+    SparklesIcon as SparklesSolid,
+    SunIcon as SunSolid,
+    WrenchIcon as WrenchSolid,
+    BuildingStorefrontIcon as BuildingStorefrontSolid,
+    BuildingOfficeIcon as BuildingOfficeSolid,
+    ArrowsRightLeftIcon as ArrowsRightLeftSolid,
+    ListBulletIcon as ListBulletSolid,
+    CubeIcon as CubeSolid,
+    UserCircleIcon as UserCircleSolid
+} from '@heroicons/react/24/solid';
 
-import defaultProfilePicture from '../assets/default-profile.png'; // Asegúrate de tener esta imagen
+import defaultProfilePicture from '../assets/default-profile.png';
 
 function Navbar() {
     const { isAuthenticated, isPremium, logout, cartItems, user } = useContext(AuthContext);
-    const { unreadCount } = useContext(NotificationContext); // Consumir el unreadCount
+    const { unreadCount } = useContext(NotificationContext);
     const navigate = useNavigate();
-
     const [hoveredItem, setHoveredItem] = useState(null);
 
     const onLogout = () => {
         logout();
-        toast.success('Sesión cerrada con éxito.'); // Mensaje de éxito al cerrar sesión
-        navigate('/'); // Redirigir a la página de inicio o login
+        toast.success('Sesión cerrada con éxito');
+        navigate('/');
     };
 
     const totalCartItems = cartItems ? cartItems.reduce((total, item) => total + item.quantity, 0) : 0;
 
     return (
-        <aside className="w-72 bg-gradient-to-b from-green-900 via-green-800 to-green-700 text-white h-screen p-6 shadow-xl fixed top-0 left-0 z-50 font-sans border-r-2 border-green-600 overflow-y-auto">
+        <aside className="fixed inset-y-0 left-0 z-50 w-72 bg-gradient-to-b from-primary-800 to-primary-900 text-white shadow-2xl border-r border-primary-600/30 overflow-y-auto">
+            {/* Logo */}
             <Link
                 to="/"
-                className="text-3xl font-bold mb-10 block text-lime-300 hover:text-yellow-300 transition transform hover:scale-105 duration-300 tracking-wide"
+                className="flex items-center px-6 py-8 gap-3 group"
             >
-                🌾 AgroApp
+                <div className="relative">
+                    <div className="absolute -inset-2 bg-primary-500/20 rounded-full blur-md group-hover:blur-lg transition-all duration-300"></div>
+                    <div className="relative bg-primary-500 text-white p-3 rounded-xl shadow-lg">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                        </svg>
+                    </div>
+                </div>
+                <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-200 to-primary-300">
+                    AgroApp
+                </h1>
             </Link>
 
-            {/* Sección de perfil del usuario */}
+            {/* User Profile */}
             {isAuthenticated && user && (
-                <div className="flex flex-col items-center mb-6 text-center">
-                    <img
-                        src={user.profilePicture || defaultProfilePicture}
-                        alt="Foto de perfil"
-                        className="w-24 h-24 rounded-full border-4 border-lime-300 object-cover shadow-lg mb-3"
-                    />
-                    <h3 className="text-xl font-semibold text-white mb-1">
-                        {user.name || 'Tu Canal'}
-                    </h3>
-                    <p className="text-sm text-gray-300">
-                        {user.email}
-                    </p>
-                    <hr className="my-4 w-full border-green-500" />
+                <div className="px-6 pb-6">
+                    <div className="flex items-center gap-4 bg-primary-700/30 backdrop-blur-sm p-4 rounded-xl border border-primary-500/20">
+                        <img
+                            src={user.profilePicture || defaultProfilePicture}
+                            alt="Profile"
+                            className="w-12 h-12 rounded-full border-2 border-primary-300 object-cover"
+                        />
+                        <div>
+                            <h3 className="font-medium text-white">{user.name || 'Usuario'}</h3>
+                            <p className="text-xs text-primary-200">{user.email}</p>
+                        </div>
+                    </div>
                 </div>
             )}
 
-            <nav className="flex flex-col space-y-4 text-[1.05rem]">
-                {/* Navegación principal con efecto hover */}
-                <div
-                    onMouseEnter={() => setHoveredItem('products')}
-                    onMouseLeave={() => setHoveredItem(null)}
-                    className="relative"
-                >
-                    <SidebarLink to="/products" icon={<FaStore />}>Productos</SidebarLink>
-                    {isAuthenticated && hoveredItem === 'products' && (
-                        <div className="pl-8 pt-2 pb-1 transition-all duration-300 ease-in-out">
-                            <SidebarLink to="/my-products" icon={<FaBox />} className="text-sm font-light opacity-80 hover:opacity-100">Mis Productos</SidebarLink>
-                        </div>
-                    )}
-                </div>
-
-                <div
-                    onMouseEnter={() => setHoveredItem('services')}
-                    onMouseLeave={() => setHoveredItem(null)}
-                    className="relative"
-                >
-                    <SidebarLink to="/services" icon={<FaHandshake />}>Servicios</SidebarLink>
-                    {isAuthenticated && hoveredItem === 'services' && (
-                        <div className="pl-8 pt-2 pb-1 transition-all duration-300 ease-in-out">
-                            <SidebarLink to="/my-services" icon={<FaWrench />} className="text-sm font-light opacity-80 hover:opacity-100">Mis Servicios</SidebarLink>
-                        </div>
-                    )}
-                </div>
-
-                <div
-                    onMouseEnter={() => setHoveredItem('rentals')}
-                    onMouseLeave={() => setHoveredItem(null)}
-                    className="relative"
-                >
-                    <SidebarLink to="/rentals" icon={<FaSun />}>Rentas</SidebarLink>
-                    {isAuthenticated && hoveredItem === 'rentals' && (
-                        <div className="pl-8 pt-2 pb-1 transition-all duration-300 ease-in-out">
-                            <SidebarLink to="/my-rentals" icon={<FaBuilding />} className="text-sm font-light opacity-80 hover:opacity-100">Mis Rentas</SidebarLink>
-                        </div>
-                    )}
-                </div>
-
-                <SidebarLink to="/my-barter-proposals" icon={<FaExchangeAlt />}>Permutas</SidebarLink>
-                <SidebarLink to="/my-orders" icon={<FaListAlt />}>Pedidos</SidebarLink>
-
-                {/* Enlace de Notificaciones con contador */}
-                {isAuthenticated && ( // Solo muestra notificaciones si el usuario está autenticado
-                    <div className="relative">
-                        <SidebarLink to="/notifications" icon={<FaBell />}>Notificaciones</SidebarLink>
-                        {unreadCount > 0 && (
-                            <span className="absolute top-0 left-36 bg-red-600 text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center animate-pulse">
-                                {unreadCount}
-                            </span>
-                        )}
-                    </div>
-                )}
-                
-
-                {/* Carrito con contador */}
+            {/* Navigation */}
+            <nav className="px-4 pb-8 space-y-1">
+                {/* Products Section */}
                 <div className="relative">
-                    <SidebarLink to="/cart" icon={<FaShoppingCart />}>Carrito</SidebarLink>
-                    {totalCartItems > 0 && (
-                        <span className="absolute top-0 left-28 bg-red-600 text-xs font-bold rounded-full px-2 py-1 animate-pulse">
-                            {totalCartItems}
-                        </span>
+                    <SidebarLink 
+                        to="/products" 
+                        icon={<BuildingStorefrontIcon className="h-5 w-5" />}
+                        activeIcon={<BuildingStorefrontSolid className="h-5 w-5" />}
+                        onMouseEnter={() => setHoveredItem('products')}
+                        onMouseLeave={() => setHoveredItem(null)}
+                    >
+                        Productos
+                    </SidebarLink>
+                    {isAuthenticated && hoveredItem === 'products' && (
+                        <div className="ml-8 mt-1 space-y-1 animate-fadeIn">
+                            <SidebarLink 
+                                to="/my-products" 
+                                icon={<CubeIcon className="h-4 w-4" />}
+                                activeIcon={<CubeSolid className="h-4 w-4" />}
+                                className="text-sm text-primary-200 hover:text-white"
+                            >
+                                Mis Productos
+                            </SidebarLink>
+                        </div>
                     )}
                 </div>
 
-                <hr className="my-4 border-green-500" />
+                {/* Services Section */}
+                <div className="relative">
+                    <SidebarLink 
+                        to="/services" 
+                        icon={<WrenchIcon className="h-5 w-5" />}
+                        activeIcon={<WrenchSolid className="h-5 w-5" />}
+                        onMouseEnter={() => setHoveredItem('services')}
+                        onMouseLeave={() => setHoveredItem(null)}
+                    >
+                        Servicios
+                    </SidebarLink>
+                    {isAuthenticated && hoveredItem === 'services' && (
+                        <div className="ml-8 mt-1 space-y-1 animate-fadeIn">
+                            <SidebarLink 
+                                to="/my-services" 
+                                icon={<WrenchIcon className="h-4 w-4" />}
+                                activeIcon={<WrenchSolid className="h-4 w-4" />}
+                                className="text-sm text-primary-200 hover:text-white"
+                            >
+                                Mis Servicios
+                            </SidebarLink>
+                        </div>
+                    )}
+                </div>
 
-                {/* Acciones del usuario */}
+                {/* Rentals Section */}
+                <div className="relative">
+                    <SidebarLink 
+                        to="/rentals" 
+                        icon={<BuildingOfficeIcon className="h-5 w-5" />}
+                        activeIcon={<BuildingOfficeSolid className="h-5 w-5" />}
+                        onMouseEnter={() => setHoveredItem('rentals')}
+                        onMouseLeave={() => setHoveredItem(null)}
+                    >
+                        Rentas
+                    </SidebarLink>
+                    {isAuthenticated && hoveredItem === 'rentals' && (
+                        <div className="ml-8 mt-1 space-y-1 animate-fadeIn">
+                            <SidebarLink 
+                                to="/my-rentals" 
+                                icon={<BuildingOfficeIcon className="h-4 w-4" />}
+                                activeIcon={<BuildingOfficeSolid className="h-4 w-4" />}
+                                className="text-sm text-primary-200 hover:text-white"
+                            >
+                                Mis Rentas
+                            </SidebarLink>
+                        </div>
+                    )}
+                </div>
+
+                {/* Other Links */}
+                <SidebarLink 
+                    to="/my-barter-proposals" 
+                    icon={<ArrowsRightLeftIcon className="h-5 w-5" />}
+                    activeIcon={<ArrowsRightLeftSolid className="h-5 w-5" />}
+                >
+                    Permutas
+                </SidebarLink>
+
+                <SidebarLink 
+                    to="/my-orders" 
+                    icon={<ListBulletIcon className="h-5 w-5" />}
+                    activeIcon={<ListBulletSolid className="h-5 w-5" />}
+                >
+                    Pedidos
+                </SidebarLink>
+
+                {/* Notifications */}
+                {isAuthenticated && (
+                    <SidebarLink 
+                        to="/notifications" 
+                        icon={<BellIcon className="h-5 w-5" />}
+                        activeIcon={<BellSolid className="h-5 w-5" />}
+                        badge={unreadCount > 0 ? unreadCount : null}
+                    >
+                        Notificaciones
+                    </SidebarLink>
+                )}
+
+                {/* Cart */}
+                <SidebarLink 
+                    to="/cart" 
+                    icon={<ShoppingCartIcon className="h-5 w-5" />}
+                    activeIcon={<ShoppingCartSolid className="h-5 w-5" />}
+                    badge={totalCartItems > 0 ? totalCartItems : null}
+                >
+                    Carrito
+                </SidebarLink>
+
+                <div className="pt-4">
+                    <div className="border-t border-primary-600/30 my-4"></div>
+                </div>
+
+                {/* Create Links */}
                 {isAuthenticated ? (
                     <>
-                        <SidebarLink to="/create-product" icon={<FaPlus />}>Ofrecer Producto</SidebarLink>
-                        <SidebarLink to="/create-service" icon={<FaPlus />}>Ofrecer Servicio</SidebarLink>
-                        <SidebarLink to="/create-rental" icon={<FaPlus />}>Ofrecer Renta</SidebarLink>
+                        <SidebarLink 
+                            to="/create-product" 
+                            icon={<PlusIcon className="h-5 w-5" />}
+                            activeIcon={<PlusSolid className="h-5 w-5" />}
+                            className="bg-primary-700/50 hover:bg-primary-700"
+                        >
+                            Nuevo Producto
+                        </SidebarLink>
 
-                        {/* ⭐ Inventario Premium: Siempre visible si autenticado ⭐ */}
-                        <SidebarLink to="/premium-inventory" icon={<FaSeedling />}>Mi Inventario Premium</SidebarLink>
-                        
-                        {/* ⭐ Hazte Premium: Visible solo si autenticado Y NO premium ⭐ */}
+                        <SidebarLink 
+                            to="/create-service" 
+                            icon={<PlusIcon className="h-5 w-5" />}
+                            activeIcon={<PlusSolid className="h-5 w-5" />}
+                            className="bg-primary-700/50 hover:bg-primary-700"
+                        >
+                            Nuevo Servicio
+                        </SidebarLink>
+
+                        <SidebarLink 
+                            to="/create-rental" 
+                            icon={<PlusIcon className="h-5 w-5" />}
+                            activeIcon={<PlusSolid className="h-5 w-5" />}
+                            className="bg-primary-700/50 hover:bg-primary-700"
+                        >
+                            Nueva Renta
+                        </SidebarLink>
+
+                        {/* Premium */}
+                        <SidebarLink 
+                            to="/premium-inventory" 
+                            icon={<SparklesIcon className="h-5 w-5" />}
+                            activeIcon={<SparklesSolid className="h-5 w-5" />}
+                            className="bg-gradient-to-r from-premium-600 to-premium-700 hover:from-premium-500 hover:to-premium-600 text-white"
+                        >
+                            Inventario Premium
+                        </SidebarLink>
+
                         {!isPremium && (
-                            <SidebarLink
-                                to="/premium-upsell"
-                                icon={null}
-                                className="text-yellow-300 font-bold hover:text-yellow-400"
+                            <SidebarLink 
+                                to="/premium-upsell" 
+                                icon={<SparklesIcon className="h-5 w-5" />}
+                                activeIcon={<SparklesSolid className="h-5 w-5" />}
+                                className="bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-white shadow-lg"
                             >
-                                🌟 Hazte Premium
+                                Hazte Premium
                             </SidebarLink>
                         )}
 
                         <button
                             onClick={onLogout}
-                            className="flex items-center gap-3 text-red-300 hover:text-red-400 transition transform hover:scale-105 duration-300 font-semibold"
+                            className="w-full flex items-center gap-3 px-4 py-3 text-sm font-medium text-red-300 hover:text-red-200 rounded-lg transition-colors duration-200"
                         >
-                            <FaSignOutAlt /> Salir
+                            <ArrowLeftOnRectangleIcon className="h-5 w-5" />
+                            Cerrar Sesión
                         </button>
                     </>
                 ) : (
                     <>
-                        <SidebarLink to="/login" icon={<FaSignInAlt />}>Iniciar Sesión</SidebarLink>
-                        <SidebarLink to="/register" icon={<FaUser />}>Registrarse</SidebarLink>
-                        {/* ⭐ Hazte Premium: También visible para no autenticados, si lo quieres aquí ⭐
-                            Si solo lo quieres para autenticados NO premium, quita este bloque.
-                            Lo dejo aquí como estaba, pero el de arriba es el que añadí para autenticados NO premium.
-                        */}
-                        <SidebarLink
-                            to="/premium-upsell"
-                            icon={null}
-                            className="text-yellow-300 font-bold hover:text-yellow-400"
+                        <SidebarLink 
+                            to="/login" 
+                            icon={<ArrowRightIcon className="h-5 w-5" />}
+                            activeIcon={<ArrowRightSolid className="h-5 w-5" />}
                         >
-                            🌟 Hazte Premium
+                            Iniciar Sesión
+                        </SidebarLink>
+
+                        <SidebarLink 
+                            to="/register" 
+                            icon={<UserIcon className="h-5 w-5" />}
+                            activeIcon={<UserSolid className="h-5 w-5" />}
+                        >
+                            Registrarse
+                        </SidebarLink>
+
+                        <SidebarLink 
+                            to="/premium-upsell" 
+                            icon={<SparklesIcon className="h-5 w-5" />}
+                            activeIcon={<SparklesSolid className="h-5 w-5" />}
+                            className="bg-gradient-to-r from-yellow-500 to-amber-600 hover:from-yellow-400 hover:to-amber-500 text-white shadow-lg"
+                        >
+                            Hazte Premium
                         </SidebarLink>
                     </>
                 )}
@@ -173,14 +303,23 @@ function Navbar() {
     );
 }
 
-function SidebarLink({ to, icon, children, className = '' }) {
+function SidebarLink({ to, icon, activeIcon, children, className = '', badge = null, ...props }) {
     return (
         <Link
             to={to}
-            className={`flex items-center gap-3 px-2 py-2 rounded-md hover:bg-green-600 transition duration-300 transform hover:scale-105 ${className}`}
+            className={`flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 relative group ${className}`}
+            {...props}
         >
-            {icon && <span className="text-lg">{icon}</span>}
-            <span>{children}</span>
+            <span className="text-primary-200 group-hover:text-white">
+                {icon}
+            </span>
+            <span className="flex-1">{children}</span>
+            {badge !== null && (
+                <span className="bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {badge}
+                </span>
+            )}
+            <span className="absolute left-0 top-0 bottom-0 w-1 bg-primary-400 rounded-r-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200"></span>
         </Link>
     );
 }
