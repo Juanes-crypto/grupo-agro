@@ -41,7 +41,6 @@ import RentalDetailsPage from './pages/RentalDetailsPage';
 import BarterProposalPage from './pages/BarterProposalPage';
 import SubscriptionPlansPage from './pages/SubscriptionPlansPage';
 
-
 function App() {
     return (
         <AuthProvider>
