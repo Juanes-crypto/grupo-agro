@@ -57,22 +57,29 @@ function Navbar() {
     return (
         <aside className="fixed inset-y-0 left-0 z-50 w-72 bg-gradient-to-b from-primary-800 to-primary-900 text-white shadow-2xl border-r border-primary-600/30 overflow-y-auto">
             {/* Logo */}
-            <Link
-                to="/"
-                className="flex items-center px-6 py-8 gap-3 group"
-            >
-                <div className="relative">
-                    <div className="absolute -inset-2 bg-primary-500/20 rounded-full blur-md group-hover:blur-lg transition-all duration-300"></div>
-                    <div className="relative bg-primary-500 text-white p-3 rounded-xl shadow-lg">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-8 w-8" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                        </svg>
-                    </div>
-                </div>
-                <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-200 to-primary-300">
-                    AgroApp
-                </h1>
-            </Link>
+            <Link 
+  to="/" 
+  className="flex items-center px-6 py-8 gap-3 group"
+>
+  {/* Contenedor del logo con efectos */}
+  <div className="relative">
+    {/* Efecto de resplandor */}
+    <div className="absolute -inset-2 bg-primary-500/20 rounded-full blur-md group-hover:blur-lg transition-all duration-300"></div>
+    
+    {/* Logo personalizado - Ajusta las clases según necesites */}
+    <img 
+      src="/AgroApp-logo.png" 
+      alt="AgroApp Logo" 
+      className="relative h-12 w-auto object-contain" 
+    />
+  </div>
+  
+  {/* Texto del logo (opcional) */}
+  <h1 className="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary-200 to-primary-300">
+    AgroApp
+  </h1>
+</Link>
+
 
             {/* User Profile */}
             {isAuthenticated && user && (
