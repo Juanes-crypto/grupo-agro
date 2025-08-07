@@ -289,7 +289,7 @@ function WelcomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             {[
               {
-                name: "Carlos Mendoza",
+                name: "Anatolia Mendoza",
                 role: "Productor de frutas",
                 quote:
                   "Gracias a AgroApp he duplicado mis ventas y encontrado clientes confiables",

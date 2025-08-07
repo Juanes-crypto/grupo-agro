@@ -1,0 +1,29 @@
+/* Asegura que el contenido principal no se oculte detrás del navbar */
+main {
+  margin-top: 4rem; /* Altura del TopNavbar */
+  height: calc(100vh - 4rem);
+  overflow-y: auto;
+}
+
+/* Ajustes para el layout general */
+body {
+  overflow-x: hidden;
+}
+
+/* Estilos para el scroll */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}

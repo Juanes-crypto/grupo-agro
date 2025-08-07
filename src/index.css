@@ -28,3 +28,24 @@
 .btn-purple {
   @apply bg-purple-600 hover:bg-purple-700 text-white py-3 px-5 rounded-lg font-semibold transition;
 }
+body {
+  overflow-x: hidden;
+}
+
+/* Estilos para el scroll */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
