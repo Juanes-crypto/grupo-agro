@@ -1,5 +1,5 @@
 import React, { useContext } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import { NotificationContext } from "../context/NotificationContext";
 import {
@@ -9,6 +9,8 @@ import {
   BellIcon,
   ShoppingCartIcon,
   UserCircleIcon,
+  ChevronRightIcon,
+  HomeIcon,
 } from "@heroicons/react/24/outline";
 import {
   ArrowLeftIcon as ArrowLeftSolid,
@@ -23,15 +25,53 @@ function TopNavbar() {
   const { isAuthenticated, user, cartItems } = useContext(AuthContext);
   const { unreadCount } = useContext(NotificationContext);
   const navigate = useNavigate();
+  const location = useLocation();
 
   const totalCartItems = cartItems
     ? cartItems.reduce((total, item) => total + item.quantity, 0)
     : 0;
 
+  // Generar breadcrumbs dinámicos
+  const generateBreadcrumbs = () => {
+    const paths = location.pathname.split("/").filter(Boolean);
+    const breadcrumbs = [];
+    
+    let accumulatedPath = "";
+    paths.forEach((path, index) => {
+      accumulatedPath += `/${path}`;
+      const isLast = index === paths.length - 1;
+      
+      // Formatear el nombre para mostrar
+      let displayName = path;
+      if (path === "create-product") displayName = "Crear producto";
+      else if (path === "create-service") displayName = "Crear servicio";
+      else if (path === "create-rental") displayName = "Crear renta";
+      else if (path === "products") displayName = "Productos";
+      else if (path === "services") displayName = "Servicios";
+      else if (path === "rentals") displayName = "Rentas";
+      else if (path === "cart") displayName = "Carrito";
+      else if (path === "profile") displayName = "Perfil";
+      else if (path === "notifications") displayName = "Notificaciones";
+      else displayName = path.split("-").map(word => 
+        word.charAt(0).toUpperCase() + word.slice(1)
+      ).join(" ");
+
+      breadcrumbs.push({
+        path: accumulatedPath,
+        name: displayName,
+        isLast
+      });
+    });
+
+    return breadcrumbs;
+  };
+
+  const breadcrumbs = generateBreadcrumbs();
+
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-white shadow-sm border-b border-gray-100">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-stone-50 shadow-sm border-b border-amber-200">
       <div className="flex items-center justify-between h-16 px-4">
-        {/* Logo y navegación */}
+        {/* Logo, breadcrumbs y navegación */}
         <div className="flex items-center space-x-4">
           {/* Logo */}
           <Link to="/" className="flex items-center">
@@ -41,6 +81,30 @@ function TopNavbar() {
               className="h-8 w-auto"
             />
           </Link>
+
+          {/* Breadcrumbs */}
+          {breadcrumbs.length > 0 && (
+            <div className="flex items-center text-sm text-gray-600">
+              <Link to="/" className="text-green-600 hover:text-green-700">
+                <HomeIcon className="h-4 w-4" />
+              </Link>
+              {breadcrumbs.map((crumb, index) => (
+                <div key={index} className="flex items-center">
+                  <ChevronRightIcon className="h-3 w-3 mx-2 text-gray-400" />
+                  {crumb.isLast ? (
+                    <span className="text-gray-800 font-medium">{crumb.name}</span>
+                  ) : (
+                    <Link 
+                      to={crumb.path} 
+                      className="text-green-600 hover:text-green-700 hover:underline"
+                    >
+                      {crumb.name}
+                    </Link>
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
 
           {/* Botones de navegación */}
           <div className="flex items-center space-x-2">
@@ -67,21 +131,21 @@ function TopNavbar() {
             <>
               <Link
                 to="/create-product"
-                className="flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-green-50 text-green-700 hover:bg-green-100"
+                className="flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-amber-50 text-amber-700 hover:bg-amber-100"
               >
                 <PlusIcon className="h-4 w-4 mr-1.5" />
                 Producto
               </Link>
               <Link
                 to="/create-service"
-                className="flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100"
+                className="flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-green-50 text-green-700 hover:bg-green-100"
               >
                 <PlusIcon className="h-4 w-4 mr-1.5" />
                 Servicio
               </Link>
               <Link
                 to="/create-rental"
-                className="flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-amber-50 text-amber-700 hover:bg-amber-100"
+                className="flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100"
               >
                 <PlusIcon className="h-4 w-4 mr-1.5" />
                 Renta
