@@ -1,36 +1,47 @@
 // frontend/src/pages/ProductListPage.jsx
-
 import React, { useState, useEffect, useContext } from 'react';
 import { useLocation, Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
+import { FiSearch, FiFilter, FiStar, FiShoppingCart, FiRefreshCw, FiHeart, FiShield, FiAward } from 'react-icons/fi';
+import { FaLeaf, FaExchangeAlt, FaCrown } from 'react-icons/fa';
 
 function ProductListPage() {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
     const [searchTerm, setSearchTerm] = useState('');
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
-    
     const [selectedCategory, setSelectedCategory] = useState('');
     const [isTradableFilter, setIsTradableFilter] = useState(false);
+    const [showFilters, setShowFilters] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
 
     const { user, token, isAuthenticated, addToCart } = useContext(AuthContext);
     const navigate = useNavigate();
-
     const [addedToCartMessages, setAddedToCartMessages] = useState({});
-
     const location = useLocation();
     const isMyProductsPage = location.pathname === '/my-products';
+
+    // Separate premium and regular products
+    const premiumProducts = products.filter(product => product.user?.isPremium);
+    const regularProducts = products.filter(product => !product.user?.isPremium);
+
+    // Scroll effect for header
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 50);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     // Debounce effect for search term
     useEffect(() => {
         const handler = setTimeout(() => {
             setDebouncedSearchTerm(searchTerm);
-        }, 500); // 500ms debounce delay
+        }, 500);
 
-        // Cleanup function to cancel the timer if search term changes
         return () => {
             clearTimeout(handler);
         };
@@ -52,7 +63,6 @@ function ProductListPage() {
                     return;
                 }
             } else {
-                // Use the debounced search term for the API call
                 if (debouncedSearchTerm) {
                     params.append('search', debouncedSearchTerm);
                 }
@@ -79,7 +89,7 @@ function ProductListPage() {
                 setProducts(response.data);
             } catch (err) {
                 console.error("Error fetching products:", err);
-                if (err.response && err.response.data && err.response.data.message) {
+                if (err.response?.data?.message) {
                     setError(err.response.data.message);
                 } else {
                     setError('Error desconocido al cargar los productos.');
@@ -89,10 +99,7 @@ function ProductListPage() {
             }
         };
 
-        // Llama a fetchProducts sin condiciones.
-        // La lógica interna de fetchProducts manejará los filtros.
         fetchProducts();
-
     }, [isMyProductsPage, isAuthenticated, token, debouncedSearchTerm, selectedCategory, isTradableFilter]);
 
     const handleAddToCart = (product) => {
@@ -154,198 +161,311 @@ function ProductListPage() {
         'Plantas', 'Semillas', 'Fitosanitarios', 'Fertilizantes', 'Maquinaria', 'Otros'
     ];
 
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-8 px-4 sm:px-6 lg:px-8">
-            <h1 className="text-4xl font-extrabold text-center text-green-800 mb-10 drop-shadow-md">
-                {isMyProductsPage ? "Mis Productos Publicados" : "Explorar Productos Agrícolas"}
-            </h1>
-
-            {!isMyProductsPage && (
-                <div className="max-w-4xl mx-auto mb-10 p-6 bg-white rounded-2xl shadow-xl border border-green-100">
-                    <h2 className="text-2xl font-bold text-green-700 mb-5 text-center">Filtra tus Productos</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-                        <div>
-                            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">Buscar por nombre o descripción</label>
-                            <input
-                                id="search"
-                                type="text"
-                                placeholder="Ej: Tomates frescos..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full p-3 border border-green-300 rounded-lg focus:outline-none focus:ring-3 focus:ring-green-400 transition duration-200 text-gray-700 placeholder-gray-400 shadow-sm"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Seleccionar Categoría</label>
-                            <div className="relative">
-                                <select
-                                    id="category"
-                                    value={selectedCategory}
-                                    onChange={(e) => setSelectedCategory(e.target.value)}
-                                    className="block w-full p-3 border border-green-300 rounded-lg focus:outline-none focus:ring-3 focus:ring-green-400 transition duration-200 bg-white text-gray-700 appearance-none pr-8 shadow-sm"
-                                >
-                                    <option value="">Todas las categorías</option>
-                                    {categories.map(cat => (
-                                        <option key={cat} value={cat}>{cat}</option>
-                                    ))}
-                                </select>
-                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
-                                    <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 6.096 6.924 4.682 8.338z"/></svg>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex items-center justify-center md:justify-start pt-2 md:pt-0">
-                            <label htmlFor="isTradableFilter" className="flex items-center cursor-pointer">
-                                <div className="relative">
-                                    <input
-                                        type="checkbox"
-                                        id="isTradableFilter"
-                                        className="sr-only"
-                                        checked={isTradableFilter}
-                                        onChange={(e) => setIsTradableFilter(e.target.checked)}
-                                    />
-                                    <div className={`block w-14 h-8 rounded-full transition-all duration-300 ${isTradableFilter ? 'bg-purple-600' : 'bg-gray-300'}`}></div>
-                                    <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition-all duration-300 shadow-md ${isTradableFilter ? 'translate-x-full border-purple-800' : 'border-gray-400'}`}></div>
-                                </div>
-                                <div className="ml-3 text-lg font-medium text-gray-800">
-                                    Solo productos truequeables
-                                </div>
-                            </label>
-                        </div>
+    // Render product card with premium styling
+    const renderProductCard = (product, isPremium = false) => (
+        <div
+            key={product._id}
+            className={`relative rounded-xl overflow-hidden flex flex-col transition-all duration-300 transform hover:scale-[1.02] group
+                ${isPremium ? 
+                    'bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-amber-300 shadow-xl' : 
+                    'bg-white border border-gray-200 shadow-md hover:shadow-lg'
+                }`}
+        >
+            {/* Premium badge */}
+            {isPremium && (
+                <div className="absolute top-3 left-3 z-10">
+                    <div className="flex items-center bg-gradient-to-r from-amber-500 to-yellow-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                        <FaCrown className="mr-1" /> PREMIUM
                     </div>
                 </div>
             )}
-            
-            {loading ? (
-                <div className="flex justify-center items-center py-12 text-gray-700 text-2xl animate-pulse">Cargando productos...</div>
-            ) : error ? (
-                <div className="flex justify-center items-center py-12 text-red-700 text-xl font-semibold">Error: {error}</div>
-            ) : products.length === 0 ? (
-                <div className="flex flex-col justify-center items-center py-12 text-gray-700 text-xl p-4">
-                    <p className="mb-4 text-2xl font-semibold">🌱 ¡No se encontraron productos que coincidan con tu búsqueda!</p>
-                    <Link to="/create-product" className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-300 shadow-lg hover:shadow-xl">
-                        Publica un Producto Ahora
-                    </Link>
+
+            {/* Product image */}
+            <div className="relative w-full h-48 overflow-hidden">
+                <img
+                    src={product.imageUrl || 'https://via.placeholder.com/400x300?text=Producto+Agro'}
+                    alt={product.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/400x300?text=Imagen+No+Disponible'; }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+            </div>
+
+            {/* Product details */}
+            <div className="p-5 flex flex-col flex-grow">
+                <div className="flex justify-between items-start mb-2">
+                    <h2 className="text-xl font-bold text-gray-900 leading-tight">{product.name}</h2>
+                    {product.isTradable ? (
+                        <span className="flex items-center bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-semibold">
+                            <FaExchangeAlt className="mr-1" /> TRUEQUE
+                        </span>
+                    ) : (
+                        <span className="text-xl font-extrabold text-green-700">
+                            ${product.price ? product.price.toFixed(2) : 'N/A'}
+                        </span>
+                    )}
                 </div>
-            ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-                    {products.map((product) => (
-                        <div
-                            key={product._id}
-                            className={`bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col transform hover:-translate-y-1 relative
-                                ${product.user && product.user.isPremium ? 'border-4 border-yellow-400 ring-4 ring-yellow-200' : 'border border-gray-200'}`}
-                        >
-                            {product.user && product.user.isPremium && (
-                                <span className="absolute top-3 right-3 bg-yellow-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md z-10">
-                                    ⭐ Vendedor Premium
-                                </span>
-                            )}
-                            {product.imageUrl && (
-                                <div className="w-full h-48 bg-gray-100 flex items-center justify-center flex-shrink-0">
-                                    <img
-                                        src={product.imageUrl}
-                                        alt={product.name}
-                                        className="w-full h-full object-cover rounded-t-xl"
-                                        onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/200?text=No+Image'; }}
-                                    />
-                                </div>
-                            )}
-                            <div className="p-5 flex flex-col flex-grow min-h-[200px]">
-                                <h2 className="text-2xl font-bold text-gray-900 mb-2 leading-tight">{product.name}</h2>
-                                <p className="text-gray-600 text-sm mb-4 flex-grow line-clamp-3">{product.description}</p>
-                                
-                                <div className="flex justify-between items-center mb-3">
-                                    <p className="text-md font-semibold text-gray-700">
-                                        <span className="text-green-700">Categoría:</span> {product.category}
-                                    </p>
-                                    <p className="text-md font-semibold text-gray-700">
-                                        <span className="text-green-700">Stock:</span> {product.stock === 0 ? 'Agotado' : `${product.stock} ${product.unit}`}
-                                    </p>
-                                </div>
-                                <p className="text-xl font-extrabold text-green-700 mb-4">
-                                    {product.isTradable ? (
-                                        <span className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-lg">♻️ Truequeable</span>
-                                    ) : (
-                                        `$${product.price ? product.price.toFixed(2) : 'N/A'} por ${product.unit}`
-                                    )}
-                                </p>
-                                {product.user && (
-                                    <p className="text-sm text-gray-500 mb-4">
-                                        Publicado por: <span className="font-medium text-gray-700">{product.user.name ? product.user.name : 'Desconocido'}</span>
-                                    </p>
-                                )}
-                                <div className="mt-auto flex flex-col space-y-3 w-full">
+
+                <p className="text-gray-600 text-sm mb-4 flex-grow line-clamp-2">{product.description}</p>
+                
+                <div className="flex justify-between items-center mb-3 text-xs">
+                    <span className="bg-green-100 text-green-800 px-2 py-1 rounded">{product.category}</span>
+                    <span className={`px-2 py-1 rounded ${product.stock === 0 ? 'bg-red-100 text-red-800' : 'bg-blue-100 text-blue-800'}`}>
+                        {product.stock === 0 ? 'AGOTADO' : `STOCK: ${product.stock} ${product.unit}`}
+                    </span>
+                </div>
+
+                {product.user && (
+                    <div className="flex items-center text-xs text-gray-500 mb-4">
+                        <span className="font-medium text-gray-700">Vendedor: {product.user.name || 'Anónimo'}</span>
+                        {product.user.isPremium && <FiStar className="ml-1 text-yellow-500" />}
+                    </div>
+                )}
+
+                <div className="mt-auto flex flex-col space-y-2 w-full">
+                    <Link
+                        to={`/products/${product._id}`}
+                        className={`text-center py-2 px-4 rounded-lg transition duration-300 text-sm font-semibold
+                            ${isPremium ? 
+                                'bg-amber-600 hover:bg-amber-700 text-white' : 
+                                'bg-blue-600 hover:bg-blue-700 text-white'
+                            }`}
+                    >
+                        Ver Detalles
+                    </Link>
+
+                    {isAuthenticated && user && (
+                        <>
+                            {isMyProductsPage ? (
+                                <>
                                     <Link
-                                        to={`/products/${product._id}`}
-                                        className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-center transition duration-300 shadow-md hover:shadow-lg"
+                                        to={`/edit-product/${product._id}`}
+                                        className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold py-2 px-4 rounded-lg text-center transition duration-300"
                                     >
-                                        Ver Detalles
+                                        Editar Producto
                                     </Link>
-                                    {isAuthenticated && user && (
-                                        <>
-                                            {isMyProductsPage ? (
-                                                <>
-                                                    <Link
-                                                        to={`/edit-product/${product._id}`}
-                                                        className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-lg text-center transition duration-300 shadow-md hover:shadow-lg"
-                                                    >
-                                                        Editar Producto
-                                                    </Link>
-                                                    <button
-                                                        onClick={() => handleDeleteProduct(product._id)}
-                                                        className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md hover:shadow-lg"
-                                                    >
-                                                        Eliminar Producto
-                                                    </button>
-                                                </>
-                                            ) : (
-                                                product.user && user && product.user._id !== user._id && (
-                                                    <>
-                                                        {product.stock > 0 ? (
-                                                            <button
-                                                                onClick={() => handleAddToCart(product)}
-                                                                className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md hover:shadow-lg"
-                                                            >
-                                                                🛒 Añadir al Carrito
-                                                            </button>
-                                                        ) : (
-                                                            <button
-                                                                className="bg-gray-400 text-white font-bold py-3 px-6 rounded-lg cursor-not-allowed shadow-md"
-                                                                disabled
-                                                            >
-                                                                Agotado
-                                                            </button>
-                                                        )}
-                                                        
-                                                        {addedToCartMessages[product._id] && (
-                                                            <p className={`text-center text-sm font-semibold mt-1 animate-pulse
-                                                                ${addedToCartMessages[product._id].includes('❌') ? 'text-red-600' : 'text-green-600'}`}>
-                                                                {addedToCartMessages[product._id]}
-                                                            </p>
-                                                        )}
-                                                        {product.isTradable && (
-                                                            <Link
-                                                                to={`/create-barter-proposal/${product._id}`}
-                                                                className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg text-center transition duration-300 shadow-md hover:shadow-lg"
-                                                            >
-                                                                🤝 Proponer Trueque
-                                                            </Link>
-                                                        )}
-                                                    </>
-                                                )
-                                            )}
-                                            {!isMyProductsPage && product.user && user && product.user._id === user._id && (
-                                                <p className="text-gray-500 text-center text-sm font-medium pt-2">Este es tu producto. Visible para otros.</p>
-                                            )}
-                                        </>
-                                    )}
-                                    {!isAuthenticated && !isMyProductsPage && (
-                                        <p className="text-gray-500 text-center text-sm font-medium pt-2">Inicia sesión para interactuar.</p>
-                                    )}
+                                    <button
+                                        onClick={() => handleDeleteProduct(product._id)}
+                                        className="bg-red-500 hover:bg-red-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
+                                    >
+                                        Eliminar Producto
+                                    </button>
+                                </>
+                            ) : (
+                                product.user && user && product.user._id !== user._id && (
+                                    <>
+                                        {product.stock > 0 ? (
+                                            <button
+                                                onClick={() => handleAddToCart(product)}
+                                                className="flex items-center justify-center bg-green-600 hover:bg-green-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
+                                            >
+                                                <FiShoppingCart className="mr-2" /> Añadir al Carrito
+                                            </button>
+                                        ) : (
+                                            <button
+                                                className="bg-gray-400 text-white text-sm font-semibold py-2 px-4 rounded-lg cursor-not-allowed"
+                                                disabled
+                                            >
+                                                Producto Agotado
+                                            </button>
+                                        )}
+                                        
+                                        {addedToCartMessages[product._id] && (
+                                            <p className={`text-center text-xs font-semibold mt-1 animate-pulse
+                                                ${addedToCartMessages[product._id].includes('❌') ? 'text-red-600' : 'text-green-600'}`}>
+                                                {addedToCartMessages[product._id]}
+                                            </p>
+                                        )}
+                                        {product.isTradable && (
+                                            <Link
+                                                to={`/create-barter-proposal/${product._id}`}
+                                                className="flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
+                                            >
+                                                <FaExchangeAlt className="mr-2" /> Proponer Trueque
+                                            </Link>
+                                        )}
+                                    </>
+                                )
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+
+    return (
+        <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
+            {/* Hero Section */}
+            <div className={`relative bg-gradient-to-r from-green-600 to-emerald-700 text-white pt-24 pb-16 px-4 sm:px-6 lg:px-8 transition-all duration-300 ${isScrolled ? 'pt-16' : ''}`}>
+                <div className="max-w-7xl mx-auto">
+                    <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center drop-shadow-md">
+                        {isMyProductsPage ? "Mis Productos" : "Mercado Agrícola Premium"}
+                    </h1>
+                    <p className="text-xl text-center text-green-100 max-w-3xl mx-auto mb-8">
+                        {isMyProductsPage ? 
+                            "Administra tus productos publicados" : 
+                            "Productos frescos directamente del productor"}
+                    </p>
+
+                    {/* Search Bar */}
+                    {!isMyProductsPage && (
+                        <div className="max-w-3xl mx-auto relative">
+                            <div className="relative">
+                                <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl" />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar productos (ej. tomates orgánicos, miel pura...)"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full pl-12 pr-6 py-4 rounded-full border-none focus:ring-4 focus:ring-green-300 focus:outline-none text-gray-800 shadow-lg"
+                                />
+                                <button 
+                                    onClick={() => setShowFilters(!showFilters)}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-green-500 hover:bg-green-600 text-white p-2 rounded-full flex items-center justify-center"
+                                >
+                                    <FiFilter className="text-lg" />
+                                </button>
+                            </div>
+
+                            {/* Filters Panel */}
+                            {showFilters && (
+                                <div className="mt-4 bg-white rounded-xl shadow-xl p-6 animate-fadeIn">
+                                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                        <FiFilter className="mr-2" /> Filtros Avanzados
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+                                            <select
+                                                value={selectedCategory}
+                                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                                            >
+                                                <option value="">Todas las categorías</option>
+                                                {categories.map(cat => (
+                                                    <option key={cat} value={cat}>{cat}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="flex items-center justify-between pt-6">
+                                            <label className="flex items-center space-x-3 cursor-pointer">
+                                                <div className="relative">
+                                                    <input
+                                                        type="checkbox"
+                                                        className="sr-only"
+                                                        checked={isTradableFilter}
+                                                        onChange={(e) => setIsTradableFilter(e.target.checked)}
+                                                    />
+                                                    <div className={`block w-14 h-8 rounded-full transition ${isTradableFilter ? 'bg-purple-600' : 'bg-gray-300'}`}></div>
+                                                    <div className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition transform ${isTradableFilter ? 'translate-x-6' : ''}`}></div>
+                                                </div>
+                                                <span className="text-gray-700 font-medium">Solo truequeables</span>
+                                            </label>
+                                            <button 
+                                                onClick={() => {
+                                                    setSelectedCategory('');
+                                                    setIsTradableFilter(false);
+                                                }}
+                                                className="text-sm text-green-600 hover:text-green-800 flex items-center"
+                                            >
+                                                <FiRefreshCw className="mr-1" /> Limpiar filtros
+                                            </button>
+                                        </div>
+                                    </div>
                                 </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-20">
+                        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500 mb-4"></div>
+                        <p className="text-gray-700 text-lg">Cargando productos...</p>
+                    </div>
+                ) : error ? (
+                    <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded">
+                        <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                                <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-red-700 font-medium">Error: {error}</p>
                             </div>
                         </div>
-                    ))}
+                    </div>
+                ) : products.length === 0 ? (
+                    <div className="text-center py-16">
+                        <div className="mx-auto h-24 w-24 text-gray-400 mb-4">
+                            <FaLeaf className="w-full h-full" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron productos</h3>
+                        <p className="text-gray-500 mb-6">No hay productos que coincidan con tu búsqueda.</p>
+                        {!isMyProductsPage && (
+                            <Link
+                                to="/create-product"
+                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                            >
+                                Publicar un nuevo producto
+                            </Link>
+                        )}
+                    </div>
+                ) : (
+                    <>
+                        {/* VIP Premium Section */}
+                        {!isMyProductsPage && premiumProducts.length > 0 && (
+                            <div className="mb-12">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                                        <FiAward className="text-yellow-500 mr-2" /> Productos Premium
+                                    </h2>
+                                    <div className="flex items-center bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                                        <FiShield className="mr-1" /> Calidad Verificada
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    {premiumProducts.map(product => renderProductCard(product, true))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Regular Products Section */}
+                        {regularProducts.length > 0 && (
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                                    <FaLeaf className="text-green-500 mr-2" /> 
+                                    {isMyProductsPage ? 'Todos mis productos' : 'Todos los productos'}
+                                </h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    {regularProducts.map(product => renderProductCard(product))}
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
+            </div>
+
+            {/* Call to Action */}
+            {!isMyProductsPage && (
+                <div className="bg-gradient-to-r from-green-700 to-emerald-800 text-white py-12 px-4 sm:px-6 lg:px-8">
+                    <div className="max-w-4xl mx-auto text-center">
+                        <h2 className="text-3xl font-bold mb-4">¿Eres productor agrícola?</h2>
+                        <p className="text-xl text-green-100 mb-8">
+                            Únete a nuestra comunidad premium y destaca tus productos con beneficios exclusivos.
+                        </p>
+                        <Link
+                            to="/premium"
+                            className="inline-flex items-center px-8 py-3 border border-transparent text-lg font-bold rounded-full shadow-sm text-green-900 bg-yellow-400 hover:bg-yellow-300 transition duration-300 transform hover:scale-105"
+                        >
+                            <FaCrown className="mr-2" /> Conviértete en Premium
+                        </Link>
+                    </div>
                 </div>
             )}
         </div>

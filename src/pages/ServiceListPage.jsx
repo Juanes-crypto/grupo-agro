@@ -1,10 +1,9 @@
-// src/pages/ServiceListPage.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-import { ChatBubbleBottomCenterTextIcon, PhoneIcon } from '@heroicons/react/24/solid';
-
 import api from '../services/api';
+import { FiSearch, FiFilter, FiStar, FiShoppingCart, FiRefreshCw, FiPhone, FiMail, FiTrash2, FiEdit } from 'react-icons/fi';
+import { FaWhatsapp, FaCrown, FaSeedling, FaChalkboardTeacher } from 'react-icons/fa';
 
 function ServiceListPage() {
     const [services, setServices] = useState([]);
@@ -13,17 +12,42 @@ function ServiceListPage() {
     const { isAuthenticated, user, token } = useContext(AuthContext);
     const navigate = useNavigate();
     const location = useLocation();
-
     const isMyServicesPage = location.pathname === '/my-services';
+    const [searchTerm, setSearchTerm] = useState("");
+    const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+    const [selectedCategory, setSelectedCategory] = useState("");
+    const [showFilters, setShowFilters] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
 
-    const [searchTerm, setSearchTerm] = useState('');
-    const [selectedCategory, setSelectedCategory] = useState('');
+    // Separate premium and regular services
+    const premiumServices = services.filter(service => service.user?.isPremium);
+    const regularServices = services.filter(service => !service.user?.isPremium);
 
     const serviceCategories = [
         'Análisis de Suelos', 'Asesoría Agrícola', 'Transporte de Productos',
         'Mantenimiento de Maquinaria', 'Control de Plagas', 'Diseño de Paisajes',
         'Cursos y Capacitación', 'Servicios de Cosecha', 'Riego y Drenaje', 'Otros'
     ];
+
+    // Scroll effect for header
+    useEffect(() => {
+        const handleScroll = () => {
+            setIsScrolled(window.scrollY > 50);
+        };
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
+
+    // Debounce effect for search term
+    useEffect(() => {
+        const handler = setTimeout(() => {
+            setDebouncedSearchTerm(searchTerm);
+        }, 500);
+
+        return () => {
+            clearTimeout(handler);
+        };
+    }, [searchTerm]);
 
     useEffect(() => {
         const fetchServices = async () => {
@@ -41,8 +65,8 @@ function ServiceListPage() {
                     return;
                 }
             } else {
-                if (searchTerm) {
-                    params.append('search', searchTerm);
+                if (debouncedSearchTerm) {
+                    params.append('search', debouncedSearchTerm);
                 }
                 if (selectedCategory) {
                     params.append('category', selectedCategory);
@@ -61,7 +85,7 @@ function ServiceListPage() {
                 }
                 const response = await api.get(url, { headers });
 
-                // Ordenar los servicios por fecha de creación (createdAt) descendente
+                // Sort services by creation date (newest first)
                 const sortedServices = response.data.sort((a, b) => {
                     return new Date(b.createdAt) - new Date(a.createdAt);
                 });
@@ -69,7 +93,7 @@ function ServiceListPage() {
 
             } catch (err) {
                 console.error("Error fetching services:", err);
-                if (err.response && err.response.data && err.response.data.message) {
+                if (err.response?.data?.message) {
                     setError(err.response.data.message);
                 } else {
                     setError('Error desconocido al cargar los servicios.');
@@ -80,7 +104,7 @@ function ServiceListPage() {
         };
 
         fetchServices();
-    }, [isMyServicesPage, isAuthenticated, token, searchTerm, selectedCategory]);
+    }, [isMyServicesPage, isAuthenticated, token, debouncedSearchTerm, selectedCategory]);
 
     const handleContactMe = (service) => {
         if (!isAuthenticated) {
@@ -89,24 +113,20 @@ function ServiceListPage() {
             return;
         }
 
-        // ⭐ MODIFICADO: Lógica para el botón "WhatsApp" basada en showPhoneNumber ⭐
         if (service.user && service.user.phoneNumber && service.user.showPhoneNumber) {
             const whatsappMessage = `Hola, estoy interesado en tu servicio: ${service.name} (ID: ${service._id}). ¿Podrías darme más información?`;
             window.open(
-                `https://wa.me/${service.user.phoneNumber}?text=${encodeURIComponent(
-                    whatsappMessage
-                )}`,
+                `https://wa.me/${service.user.phoneNumber}?text=${encodeURIComponent(whatsappMessage)}`,
                 "_blank"
             );
         } else if (service.user && service.user.email) {
-            alert(`Simulando contacto con ${service.user.name || 'el proveedor'} al email: ${service.user.email}`);
-            // O podrías abrir un cliente de correo: window.location.href = `mailto:${service.user.email}?subject=Interés en ${service.name}`;
+            window.location.href = `mailto:${service.user.email}?subject=Interés en ${service.name}`;
         } else {
             alert('Funcionalidad de contacto no disponible públicamente para este proveedor.');
         }
     };
 
-    const handleAddToCart = async (service) => { // ⭐ MODIFICADO: Ahora es asíncrono y hace una llamada a la API ⭐
+    const handleAddToCart = async (service) => {
         if (!isAuthenticated) {
             alert("Debes iniciar sesión para añadir al carrito.");
             navigate("/login");
@@ -114,23 +134,19 @@ function ServiceListPage() {
         }
 
         try {
-            // Asegúrate de que tu backend tenga un endpoint para añadir servicios al carrito
-            // y que espere un body como { serviceId: '...' }
             const response = await api.post('/cart/add', {
-                itemId: service._id, // Usar 'itemId' o el nombre que espere tu backend
-                itemType: 'service', // Para diferenciar entre productos, servicios, rentas, etc.
-                quantity: 1, // La cantidad para un servicio puede ser 1 por defecto
-                // Puedes añadir más campos si tu modelo de carrito los necesita (e.g., priceAtTimeOfAdd)
+                itemId: service._id,
+                itemType: 'service',
+                quantity: 1,
             }, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
             });
             alert(response.data.message || `"${service.name}" ha sido añadido al carrito.`);
-            // Opcional: Actualizar el estado del carrito en el contexto si lo tienes
         } catch (err) {
             console.error("Error al añadir servicio al carrito:", err);
-            if (err.response && err.response.data && err.response.data.message) {
+            if (err.response?.data?.message) {
                 alert(`Error al añadir al carrito: ${err.response.data.message}`);
             } else {
                 alert('Error desconocido al añadir el servicio al carrito.');
@@ -155,160 +171,286 @@ function ServiceListPage() {
         }
     };
 
-    if (loading) {
-        return <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 text-gray-700 text-2xl animate-pulse">Cargando servicios...</div>;
-    }
-
-    if (error) {
-        return <div className="flex justify-center items-center min-h-screen bg-red-50 text-red-700 text-xl font-semibold">Error: {error}</div>;
-    }
-
-    if (services.length === 0) {
-        return (
-            <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 text-gray-700 text-xl p-4">
-                <p className="mb-4 text-2xl font-semibold">
-                    🌱 ¡No se encontraron servicios que coincidan con tu búsqueda!
-                    {isMyServicesPage && " Publica uno para que aparezca aquí."}
-                </p>
-                <Link to="/create-service" className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-300 shadow-lg hover:shadow-xl">
-                    Ofrece tu Servicio Ahora
-                </Link>
-            </div>
-        );
-    }
-
-    return (
-        <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-8 px-4 sm:px-6 lg:px-8">
-            <h1 className="text-4xl font-extrabold text-center text-green-800 mb-10 drop-shadow-md">
-                {isMyServicesPage ? "Mis Servicios Ofrecidos" : "Servicios Agrícolas Disponibles"}
-            </h1>
-
-            {!isMyServicesPage && (
-                <div className="max-w-4xl mx-auto mb-10 p-6 bg-white rounded-2xl shadow-xl border border-green-100">
-                    <h2 className="text-2xl font-bold text-green-700 mb-5 text-center">Filtra tus Servicios</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-                        <div>
-                            <label htmlFor="search" className="block text-sm font-medium text-gray-700 mb-1">Buscar por nombre o descripción</label>
-                            <input
-                                id="search"
-                                type="text"
-                                placeholder="Ej: Análisis de suelos..."
-                                value={searchTerm}
-                                onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full p-3 border border-green-300 rounded-lg focus:outline-none focus:ring-3 focus:ring-green-400 transition duration-200 text-gray-700 placeholder-gray-400 shadow-sm"
-                            />
-                        </div>
-                        <div>
-                            <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">Seleccionar Categoría</label>
-                            <div className="relative">
-                                <select
-                                    id="category"
-                                    value={selectedCategory}
-                                    onChange={(e) => setSelectedCategory(e.target.value)}
-                                    className="block w-full p-3 border border-green-300 rounded-lg focus:outline-none focus:ring-3 focus:ring-green-400 transition duration-200 bg-white text-gray-700 appearance-none pr-8 shadow-sm"
-                                >
-                                    <option value="">Todas las categorías</option>
-                                    {serviceCategories.map(cat => (
-                                        <option key={cat} value={cat}>{cat}</option>
-                                    ))}
-                                </select>
-                                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
-                                    <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 6.096 6.924 4.682 8.338z"/></svg>
-                                </div>
-                            </div>
-                        </div>
+    // Render service card with premium styling
+    const renderServiceCard = (service, isPremium = false) => (
+        <div
+            key={service._id}
+            className={`relative rounded-xl overflow-hidden flex flex-col transition-all duration-300 transform hover:scale-[1.02] group
+                ${isPremium ? 
+                    'bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-amber-300 shadow-xl' : 
+                    'bg-white border border-gray-200 shadow-md hover:shadow-lg'
+                }`}
+        >
+            {/* Premium badge */}
+            {isPremium && (
+                <div className="absolute top-3 left-3 z-10">
+                    <div className="flex items-center bg-gradient-to-r from-amber-500 to-yellow-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                        <FaCrown className="mr-1" /> PREMIUM
                     </div>
                 </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-                {services.map(service => (
-                    <div
-                        key={service._id}
-                        className={`bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col transform hover:-translate-y-1 relative
-                            ${service.user && service.user.isPremium ? 'border-4 border-yellow-400 ring-4 ring-yellow-200' : 'border border-gray-200'}`}
+            {/* Service image */}
+            <div className="relative w-full h-48 overflow-hidden">
+                <img
+                    src={service.imageUrl || 'https://via.placeholder.com/400x300?text=Servicio+Agro'}
+                    alt={service.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/400x300?text=Imagen+No+Disponible'; }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+            </div>
+
+            {/* Service details */}
+            <div className="p-5 flex flex-col flex-grow">
+                <div className="flex justify-between items-start mb-2">
+                    <h2 className="text-xl font-bold text-gray-900 leading-tight">{service.name}</h2>
+                    <span className="text-xl font-extrabold text-blue-700">
+                        ${service.price ? service.price.toLocaleString('es-CO') : 'N/A'}
+                    </span>
+                </div>
+
+                <p className="text-gray-600 text-sm mb-4 flex-grow line-clamp-2">{service.description}</p>
+                
+                <div className="flex justify-between items-center mb-3 text-xs">
+                    <span className="bg-green-100 text-green-800 px-2 py-1 rounded">{service.category}</span>
+                    <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                        {service.duration || 'FLEXIBLE'}
+                    </span>
+                </div>
+
+                {service.user && (
+                    <div className="flex items-center text-xs text-gray-500 mb-4">
+                        <span className="font-medium text-gray-700">Proveedor: {service.user.name || 'Anónimo'}</span>
+                        {service.user.isPremium && <FiStar className="ml-1 text-yellow-500" />}
+                    </div>
+                )}
+
+                <div className="mt-auto flex flex-col space-y-2 w-full">
+                    <Link
+                        to={`/services/${service._id}`}
+                        className={`text-center py-2 px-4 rounded-lg transition duration-300 text-sm font-semibold
+                            ${isPremium ? 
+                                'bg-amber-600 hover:bg-amber-700 text-white' : 
+                                'bg-blue-600 hover:bg-blue-700 text-white'
+                            }`}
                     >
-                        {service.user && service.user.isPremium && (
-                            <span className="absolute top-3 right-3 bg-yellow-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md z-10">
-                                ⭐ Proveedor Premium
-                            </span>
-                        )}
-                        <div className="w-full h-48 bg-gray-100 flex items-center justify-center flex-shrink-0">
-                            <img
-                                src={service.imageUrl || '/no-image.png'}
-                                alt={service.name}
-                                className="w-full h-full object-cover rounded-t-xl"
-                                onError={(e) => { e.target.onerror = null; e.target.src = '/no-image.png'; }}
-                            />
-                        </div>
-                        <div className="p-5 flex flex-col flex-grow min-h-[180px]">
-                            <h3 className="text-2xl font-bold text-gray-900 mb-2 leading-tight">{service.name}</h3>
-                            <p className="text-gray-600 text-sm mb-4 flex-grow line-clamp-3">{service.description.substring(0, 100)}{service.description.length > 100 ? '...' : ''}</p>
-                            <p className="text-lg font-semibold text-gray-700 mb-2">
-                                <span className="text-green-700">Categoría:</span> {service.category}
-                            </p>
-                            <p className="text-xl font-extrabold text-blue-700 mb-4">
-                                COP {service.price ? service.price.toLocaleString('es-CO') : 'N/A'}
-                            </p>
+                        Ver Detalles
+                    </Link>
 
-                            <div className="mt-auto flex flex-col space-y-3 w-full">
-                                <Link
-                                    to={`/services/${service._id}`}
-                                    className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-center transition duration-300 shadow-md hover:shadow-lg"
-                                >
-                                    Ver Detalles
-                                </Link>
-
-                                {isAuthenticated && user && service.user && service.user._id === user._id ? (
+                    {isAuthenticated && user && (
+                        <>
+                            {isMyServicesPage ? (
+                                <>
+                                    <Link
+                                        to={`/edit-service/${service._id}`}
+                                        className="flex items-center justify-center bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
+                                    >
+                                        <FiEdit className="mr-2" /> Editar
+                                    </Link>
+                                    <button
+                                        onClick={() => handleDeleteService(service._id)}
+                                        className="flex items-center justify-center bg-red-500 hover:bg-red-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
+                                    >
+                                        <FiTrash2 className="mr-2" /> Eliminar
+                                    </button>
+                                </>
+                            ) : (
+                                service.user && user && service.user._id !== user._id && (
                                     <>
-                                        <Link
-                                            to={`/edit-service/${service._id}`}
-                                            className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-lg text-center transition duration-300 shadow-md hover:shadow-lg"
-                                        >
-                                            Editar Servicio
-                                        </Link>
-                                        <button
-                                            onClick={() => handleDeleteService(service._id)}
-                                            className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md hover:shadow-lg"
-                                        >
-                                            Eliminar Servicio
-                                        </button>
-                                    </>
-                                ) : (
-                                    <>
-                                        {/* ⭐ MODIFICADO: Condición para mostrar el botón de WhatsApp ⭐ */}
                                         {service.user && service.user.phoneNumber && service.user.showPhoneNumber ? (
                                             <button
                                                 onClick={() => handleContactMe(service)}
-                                                className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md hover:shadow-lg flex items-center justify-center space-x-2"
+                                                className="flex items-center justify-center bg-green-600 hover:bg-green-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
                                             >
-                                                <PhoneIcon className="w-5 h-5" />
-                                                <span>WhatsApp</span>
+                                                <FaWhatsapp className="mr-2" /> WhatsApp
                                             </button>
                                         ) : (
                                             <button
                                                 onClick={() => handleContactMe(service)}
-                                                className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md hover:shadow-lg"
+                                                className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
                                             >
-                                                Comunícate Conmigo
+                                                <FiMail className="mr-2" /> Contactar
                                             </button>
                                         )}
-                                        {/* ⭐ MODIFICADO: Botón "Añadir al Carrito" condicional y funcional ⭐ */}
-                                        {!isMyServicesPage && ( // Solo mostrar "Añadir al Carrito" en la página principal
-                                            <button
-                                                onClick={() => handleAddToCart(service)}
-                                                className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md hover:shadow-lg"
-                                            >
-                                                Añadir al Carrito
-                                            </button>
-                                        )}
+
+                                        <button
+                                            onClick={() => handleAddToCart(service)}
+                                            className="flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
+                                        >
+                                            <FiShoppingCart className="mr-2" /> Añadir al Carrito
+                                        </button>
                                     </>
-                                )}
+                                )
+                            )}
+                        </>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+
+    return (
+        <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
+            {/* Hero Section */}
+            <div className={`relative bg-gradient-to-r from-teal-600 to-teal-800 text-white pt-24 pb-16 px-4 sm:px-6 lg:px-8 transition-all duration-300 ${isScrolled ? 'pt-16' : ''}`}>
+                <div className="max-w-7xl mx-auto">
+                    <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center drop-shadow-md">
+                        {isMyServicesPage ? "Mis Servicios" : "Servicios Agrícolas Profesionales"}
+                    </h1>
+                    <p className="text-xl text-teal-100 text-center max-w-3xl mx-auto mb-8">
+                        {isMyServicesPage ? 
+                            "Administra tus servicios ofrecidos" : 
+                            "Encuentra los mejores servicios para tu producción agrícola"}
+                    </p>
+
+                    {/* Search Bar */}
+                    {!isMyServicesPage && (
+                        <div className="max-w-3xl mx-auto relative">
+                            <div className="relative">
+                                <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl" />
+                                <input
+                                    type="text"
+                                    placeholder="Buscar servicios (ej. análisis de suelos, control de plagas...)"
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="w-full pl-12 pr-6 py-4 rounded-full border-none focus:ring-4 focus:ring-teal-300 focus:outline-none text-gray-800 shadow-lg"
+                                />
+                                <button 
+                                    onClick={() => setShowFilters(!showFilters)}
+                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-teal-500 hover:bg-teal-600 text-white p-2 rounded-full flex items-center justify-center"
+                                >
+                                    <FiFilter className="text-lg" />
+                                </button>
+                            </div>
+
+                            {/* Filters Panel */}
+                            {showFilters && (
+                                <div className="mt-4 bg-white rounded-xl shadow-xl p-6 animate-fadeIn">
+                                    <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                                        <FiFilter className="mr-2" /> Filtros Avanzados
+                                    </h3>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                        <div>
+                                            <label className="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+                                            <select
+                                                value={selectedCategory}
+                                                onChange={(e) => setSelectedCategory(e.target.value)}
+                                                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-teal-500 focus:border-teal-500"
+                                            >
+                                                <option value="">Todas las categorías</option>
+                                                {serviceCategories.map(cat => (
+                                                    <option key={cat} value={cat}>{cat}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                        <div className="flex items-center justify-between pt-6">
+                                            <button 
+                                                onClick={() => {
+                                                    setSelectedCategory('');
+                                                    setSearchTerm('');
+                                                }}
+                                                className="text-sm text-teal-600 hover:text-teal-800 flex items-center"
+                                            >
+                                                <FiRefreshCw className="mr-1" /> Limpiar filtros
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* Main Content */}
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+                {loading ? (
+                    <div className="flex flex-col items-center justify-center py-20">
+                        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-teal-500 mb-4"></div>
+                        <p className="text-gray-700 text-lg">Cargando servicios...</p>
+                    </div>
+                ) : error ? (
+                    <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded">
+                        <div className="flex items-center">
+                            <div className="flex-shrink-0">
+                                <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                                </svg>
+                            </div>
+                            <div className="ml-3">
+                                <p className="text-sm text-red-700 font-medium">Error: {error}</p>
                             </div>
                         </div>
                     </div>
-                ))}
+                ) : services.length === 0 ? (
+                    <div className="text-center py-16">
+                        <div className="mx-auto h-24 w-24 text-gray-400 mb-4">
+                            <FaSeedling className="w-full h-full" />
+                        </div>
+                        <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron servicios</h3>
+                        <p className="text-gray-500 mb-6">No hay servicios que coincidan con tu búsqueda.</p>
+                        {!isMyServicesPage && (
+                            <Link
+                                to="/create-service"
+                                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500"
+                            >
+                                Ofrecer un nuevo servicio
+                            </Link>
+                        )}
+                    </div>
+                ) : (
+                    <>
+                        {/* VIP Premium Section */}
+                        {!isMyServicesPage && premiumServices.length > 0 && (
+                            <div className="mb-12">
+                                <div className="flex items-center justify-between mb-6">
+                                    <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                                        <FaCrown className="text-yellow-500 mr-2" /> Servicios Premium
+                                    </h2>
+                                    <div className="flex items-center bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                                        <FiStar className="mr-1" /> Profesionales Certificados
+                                    </div>
+                                </div>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    {premiumServices.map(service => renderServiceCard(service, true))}
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Regular Services Section */}
+                        {regularServices.length > 0 && (
+                            <div>
+                                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                                    <FaChalkboardTeacher className="text-teal-500 mr-2" /> 
+                                    {isMyServicesPage ? 'Todos mis servicios' : 'Todos los servicios disponibles'}
+                                </h2>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                                    {regularServices.map(service => renderServiceCard(service))}
+                                </div>
+                            </div>
+                        )}
+                    </>
+                )}
             </div>
+
+            {/* Call to Action */}
+            {!isMyServicesPage && (
+                <div className="bg-gradient-to-r from-teal-700 to-teal-900 text-white py-12 px-4 sm:px-6 lg:px-8">
+                    <div className="max-w-4xl mx-auto text-center">
+                        <h2 className="text-3xl font-bold mb-4">¿Ofreces servicios agrícolas?</h2>
+                        <p className="text-xl text-teal-100 mb-8">
+                            Únete a nuestro programa premium y destaca tus servicios con beneficios exclusivos.
+                        </p>
+                        <Link
+                            to="/premium"
+                            className="inline-flex items-center px-8 py-3 border border-transparent text-lg font-bold rounded-full shadow-sm text-teal-900 bg-yellow-400 hover:bg-yellow-300 transition duration-300 transform hover:scale-105"
+                        >
+                            <FaCrown className="mr-2" /> Conviértete en Proveedor Premium
+                        </Link>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

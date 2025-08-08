@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
-import { ChatBubbleBottomCenterTextIcon, PhoneIcon } from '@heroicons/react/24/solid';
 import api from "../services/api";
+import { FiSearch, FiFilter, FiStar, FiShoppingCart, FiRefreshCw, FiPhone, FiMail, FiTrash2, FiEdit } from 'react-icons/fi';
+import { FaWhatsapp, FaCrown, FaTractor, FaTools } from 'react-icons/fa';
 
 function RentalListPage() {
   const [rentals, setRentals] = useState([]);
@@ -13,7 +14,14 @@ function RentalListPage() {
   const location = useLocation();
   const isMyRentalsPage = location.pathname === "/my-rentals";
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  // Separate premium and regular rentals
+  const premiumRentals = rentals.filter(rental => rental.owner?.isPremium);
+  const regularRentals = rentals.filter(rental => !rental.owner?.isPremium);
 
   const rentalCategories = [
     "Tractores",
@@ -27,6 +35,26 @@ function RentalListPage() {
     "Equipos de Fumigación",
     "Otros",
   ];
+
+  // Scroll effect for header
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Debounce effect for search term
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 500);
+
+    return () => {
+      clearTimeout(handler);
+    };
+  }, [searchTerm]);
 
   useEffect(() => {
     const fetchRentals = async () => {
@@ -44,8 +72,8 @@ function RentalListPage() {
           return;
         }
       } else {
-        if (searchTerm) {
-          params.append("search", searchTerm);
+        if (debouncedSearchTerm) {
+          params.append("search", debouncedSearchTerm);
         }
         if (selectedCategory) {
           params.append("category", selectedCategory);
@@ -70,7 +98,7 @@ function RentalListPage() {
         setRentals(sortedRentals);
       } catch (err) {
         console.error("Error fetching rentals:", err);
-        if (err.response && err.response.data && err.response.data.message) {
+        if (err.response?.data?.message) {
           setError(err.response.data.message);
         } else {
           setError("Error desconocido al cargar las rentas.");
@@ -81,7 +109,7 @@ function RentalListPage() {
     };
 
     fetchRentals();
-  }, [isMyRentalsPage, isAuthenticated, token, searchTerm, selectedCategory]);
+  }, [isMyRentalsPage, isAuthenticated, token, debouncedSearchTerm, selectedCategory]);
 
   const handleContactMe = (rental) => {
     if (!isAuthenticated) {
@@ -90,24 +118,14 @@ function RentalListPage() {
       return;
     }
 
-    // MODIFICADO: Cambiado rental.user por rental.owner y añadido showPhoneNumber
     if (rental.owner && rental.owner.phoneNumber && rental.owner.showPhoneNumber) {
-      // Abre WhatsApp si hay un número de teléfono Y showPhoneNumber es true
       const whatsappMessage = `Hola, estoy interesado en tu equipo en renta: ${rental.name} (ID: ${rental._id}). ¿Podrías darme más información?`;
       window.open(
-        `https://wa.me/${rental.owner.phoneNumber}?text=${encodeURIComponent(
-          whatsappMessage
-        )}`,
+        `https://wa.me/${rental.owner.phoneNumber}?text=${encodeURIComponent(whatsappMessage)}`,
         "_blank"
       );
     } else if (rental.owner && rental.owner.email) {
-      // Fallback a email si no hay número de teléfono o showPhoneNumber es false
-      alert(
-        `Simulando contacto con ${
-          rental.owner.name || "el proveedor"
-        } al email: ${rental.owner.email}`
-      );
-      // O podrías abrir un cliente de correo: window.location.href = `mailto:${rental.owner.email}?subject=Interés en ${rental.name}`;
+      window.location.href = `mailto:${rental.owner.email}?subject=Interés en ${rental.name}`;
     } else {
       alert("Funcionalidad de contacto en desarrollo o sin datos de contacto disponibles públicamente.");
     }
@@ -119,9 +137,6 @@ function RentalListPage() {
       navigate("/login");
       return;
     }
-    // Aquí iría la lógica real para añadir al carrito.
-    // Podrías usar un contexto de carrito, Redux, o una llamada a la API.
-    console.log(`Añadiendo ${rental.name} (ID: ${rental._id}) al carrito.`);
     alert(`"${rental.name}" ha sido añadido al carrito (funcionalidad en desarrollo).`);
   };
 
@@ -142,213 +157,286 @@ function RentalListPage() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 text-gray-700 text-2xl animate-pulse">
-        Cargando rentas...
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex justify-center items-center min-h-screen bg-red-50 text-red-700 text-xl font-semibold">
-        Error: {error}
-      </div>
-    );
-  }
-
-  if (rentals.length === 0) {
-    return (
-      <div className="flex flex-col justify-center items-center min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 text-gray-700 text-xl p-4">
-        <p className="mb-4 text-2xl font-semibold">
-          🌱 ¡No se encontraron equipos en renta que coincidan con tu búsqueda!
-          {isMyRentalsPage && " Publica uno para que aparezca aquí."}
-        </p>
-        <Link
-          to="/create-rental"
-          className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg text-lg transition duration-300 shadow-lg hover:shadow-xl"
-        >
-          Publica tu Maquinaria Ahora
-        </Link>
-      </div>
-    );
-  }
-
-  return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 to-emerald-100 py-8 px-4 sm:px-6 lg:px-8">
-      <h1 className="text-4xl font-extrabold text-center text-green-800 mb-10 drop-shadow-md">
-        {isMyRentalsPage
-          ? "Mi Maquinaria y Herramientas en Renta"
-          : "Maquinaria y Herramientas en Renta"}
-      </h1>
-
-      {!isMyRentalsPage && (
-        <div className="max-w-4xl mx-auto mb-10 p-6 bg-white rounded-2xl shadow-xl border border-green-100">
-          <h2 className="text-2xl font-bold text-green-700 mb-5 text-center">
-            Filtra tus Rentas
-          </h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-end">
-            <div>
-              <label
-                htmlFor="search"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Buscar por nombre o descripción
-              </label>
-              <input
-                id="search"
-                type="text"
-                placeholder="Ej: Tractor John Deere..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full p-3 border border-green-300 rounded-lg focus:outline-none focus:ring-3 focus:ring-green-400 transition duration-200 text-gray-700 placeholder-gray-400 shadow-sm"
-              />
-            </div>
-            <div>
-              <label
-                htmlFor="category"
-                className="block text-sm font-medium text-gray-700 mb-1"
-              >
-                Seleccionar Categoría
-              </label>
-              <div className="relative">
-                <select
-                  id="category"
-                  value={selectedCategory}
-                  onChange={(e) => setSelectedCategory(e.target.value)}
-                  className="block w-full p-3 border border-green-300 rounded-lg focus:outline-none focus:ring-3 focus:ring-green-400 transition duration-200 bg-white text-gray-700 appearance-none pr-8 shadow-sm"
-                >
-                  <option value="">Todas las categorías</option>
-                  {rentalCategories.map((cat) => (
-                    <option key={cat} value={cat}>
-                      {cat}
-                    </option>
-                  ))}
-                </select>
-                <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-700">
-                  <svg
-                    className="fill-current h-5 w-5"
-                    xmlns="http://www.w3.org/2000/svg"
-                    viewBox="0 0 20 20"
-                  >
-                    <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 6.096 6.924 4.682 8.338z" />
-                  </svg>
-                </div>
-              </div>
-            </div>
+  // Render rental card with premium styling
+  const renderRentalCard = (rental, isPremium = false) => (
+    <div
+      key={rental._id}
+      className={`relative rounded-xl overflow-hidden flex flex-col transition-all duration-300 transform hover:scale-[1.02] group
+          ${isPremium ? 
+              'bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-amber-300 shadow-xl' : 
+              'bg-white border border-gray-200 shadow-md hover:shadow-lg'
+          }`}
+    >
+      {/* Premium badge */}
+      {isPremium && (
+        <div className="absolute top-3 left-3 z-10">
+          <div className="flex items-center bg-gradient-to-r from-amber-500 to-yellow-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+            <FaCrown className="mr-1" /> PREMIUM
           </div>
         </div>
       )}
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 max-w-7xl mx-auto">
-        {rentals.map((rental) => (
-          <div
-            key={rental._id}
-            className={`bg-white rounded-xl shadow-lg hover:shadow-xl transition-all duration-300 overflow-hidden flex flex-col transform hover:-translate-y-1 relative
-            ${
-              rental.owner && rental.owner.isPremium // MODIFICADO: rental.user.isPremium por rental.owner.isPremium
-                ? "border-4 border-yellow-400 ring-4 ring-yellow-200"
-                : "border border-gray-200"
-            }`}
+      {/* Rental image */}
+      <div className="relative w-full h-48 overflow-hidden">
+        <img
+          src={rental.imageUrl || 'https://via.placeholder.com/400x300?text=Maquinaria+Agro'}
+          alt={rental.name}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+          onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/400x300?text=Imagen+No+Disponible'; }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
+      </div>
+
+      {/* Rental details */}
+      <div className="p-5 flex flex-col flex-grow">
+        <div className="flex justify-between items-start mb-2">
+          <h2 className="text-xl font-bold text-gray-900 leading-tight">{rental.name}</h2>
+          <span className="text-xl font-extrabold text-blue-700">
+            ${rental.pricePerDay ? rental.pricePerDay.toLocaleString('es-CO') : 'N/A'} <span className="text-sm font-normal">/día</span>
+          </span>
+        </div>
+
+        <p className="text-gray-600 text-sm mb-4 flex-grow line-clamp-2">{rental.description}</p>
+        
+        <div className="flex justify-between items-center mb-3 text-xs">
+          <span className="bg-green-100 text-green-800 px-2 py-1 rounded">{rental.category}</span>
+          <span className="bg-blue-100 text-blue-800 px-2 py-1 rounded">
+            {rental.availability || 'DISPONIBLE'}
+          </span>
+        </div>
+
+        {rental.owner && (
+          <div className="flex items-center text-xs text-gray-500 mb-4">
+            <span className="font-medium text-gray-700">Proveedor: {rental.owner.name || 'Anónimo'}</span>
+            {rental.owner.isPremium && <FiStar className="ml-1 text-yellow-500" />}
+          </div>
+        )}
+
+        <div className="mt-auto flex flex-col space-y-2 w-full">
+          <Link
+            to={`/rentals/${rental._id}`}
+            className={`text-center py-2 px-4 rounded-lg transition duration-300 text-sm font-semibold
+                ${isPremium ? 
+                    'bg-amber-600 hover:bg-amber-700 text-white' : 
+                    'bg-blue-600 hover:bg-blue-700 text-white'
+                }`}
           >
-            {rental.owner && rental.owner.isPremium && ( // MODIFICADO: rental.user.isPremium por rental.owner.isPremium
-              <span className="absolute top-3 right-3 bg-yellow-500 text-white text-sm font-bold px-3 py-1 rounded-full shadow-md z-10">
-                ⭐ Proveedor Premium
-              </span>
-            )}
-            <div className="w-full h-48 bg-gray-100 flex items-center justify-center flex-shrink-0">
-              <img
-                src={rental.imageUrl || "/no-image.png"} // Usar la ruta relativa para la imagen por defecto
-                alt={rental.name}
-                className="w-full h-full object-cover rounded-t-xl"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src = "/no-image.png"; // Fallback final si la imagen es inaccesible
-                }}
-              />
-            </div>
-            <div className="p-5 flex flex-col flex-grow min-h-[180px]">
-              <h3 className="text-2xl font-bold text-gray-900 mb-2 leading-tight">
-                {rental.name}
-              </h3>
-              <p className="text-gray-600 text-sm mb-4 flex-grow line-clamp-3">
-                {rental.description.substring(0, 100)}
-                {rental.description.length > 100 ? "..." : ""}
-              </p>
-              <p className="text-lg font-semibold text-gray-700 mb-2">
-                <span className="text-green-700">Categoría:</span>{" "}
-                {rental.category}
-              </p>
-              <p className="text-xl font-extrabold text-blue-700 mb-4">
-                COP{" "}
-                {rental.pricePerDay
-                  ? rental.pricePerDay.toLocaleString("es-CO")
-                  : "N/A"}{" "}
-                / día
-              </p>
+            Ver Detalles
+          </Link>
 
-              <div className="mt-auto flex flex-col space-y-3 w-full">
-                <Link
-                  to={`/rentals/${rental._id}`}
-                  className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-center transition duration-300 shadow-md hover:shadow-lg"
-                >
-                  Ver Detalles
-                </Link>
-
-                {isAuthenticated &&
-                user &&
-                rental.owner && // MODIFICADO: rental.user por rental.owner
-                rental.owner._id === user._id ? ( // MODIFICADO: rental.user._id por rental.owner._id
+          {isAuthenticated && user && (
+            <>
+              {isMyRentalsPage ? (
+                <>
+                  <Link
+                    to={`/edit-rental/${rental._id}`}
+                    className="flex items-center justify-center bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
+                  >
+                    <FiEdit className="mr-2" /> Editar
+                  </Link>
+                  <button
+                    onClick={() => handleDeleteRental(rental._id)}
+                    className="flex items-center justify-center bg-red-500 hover:bg-red-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
+                  >
+                    <FiTrash2 className="mr-2" /> Eliminar
+                  </button>
+                </>
+              ) : (
+                rental.owner && user && rental.owner._id !== user._id && (
                   <>
-                    <Link
-                      to={`/edit-rental/${rental._id}`}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white font-bold py-3 px-6 rounded-lg text-center transition duration-300 shadow-md hover:shadow-lg"
-                    >
-                      Editar Renta
-                    </Link>
-                    <button
-                      onClick={() => handleDeleteRental(rental._id)}
-                      className="bg-red-500 hover:bg-red-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md hover:shadow-lg"
-                    >
-                      Eliminar Renta
-                    </button>
-                  </>
-                ) : (
-                  <>
-                    {/* MODIFICADO: rental.user.phoneNumber por rental.owner.phoneNumber Y añadido rental.owner.showPhoneNumber */}
                     {rental.owner && rental.owner.phoneNumber && rental.owner.showPhoneNumber ? (
                       <button
                         onClick={() => handleContactMe(rental)}
-                        className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md hover:shadow-lg flex items-center justify-center space-x-2"
+                        className="flex items-center justify-center bg-green-600 hover:bg-green-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
                       >
-                        <PhoneIcon className="w-5 h-5" />
-                        <span>WhatsApp</span>
+                        <FaWhatsapp className="mr-2" /> WhatsApp
                       </button>
                     ) : (
                       <button
                         onClick={() => handleContactMe(rental)}
-                        className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md hover:shadow-lg"
+                        className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
                       >
-                        Comunícate Conmigo
+                        <FiMail className="mr-2" /> Contactar
                       </button>
                     )}
 
-                    {!isMyRentalsPage && ( // Mostrar "Añadir al Carrito" solo en la página principal, no en "Mis Rentas"
-                      <button
-                        onClick={() => handleAddToCart(rental)}
-                        className="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md hover:shadow-lg"
-                      >
-                        Añadir al Carrito
-                      </button>
-                    )}
+                    <button
+                      onClick={() => handleAddToCart(rental)}
+                      className="flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
+                    >
+                      <FiShoppingCart className="mr-2" /> Añadir al Carrito
+                    </button>
                   </>
-                )}
+                )
+              )}
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
+      {/* Hero Section */}
+      <div className={`relative bg-gradient-to-r from-blue-600 to-blue-800 text-white pt-24 pb-16 px-4 sm:px-6 lg:px-8 transition-all duration-300 ${isScrolled ? 'pt-16' : ''}`}>
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center drop-shadow-md">
+            {isMyRentalsPage ? "Mis Rentas" : "Maquinaria Agrícola en Renta"}
+          </h1>
+          <p className="text-xl text-blue-100 text-center max-w-3xl mx-auto mb-8">
+            {isMyRentalsPage ? 
+              "Administra tus equipos en renta" : 
+              "Encuentra la mejor maquinaria agrícola para tus necesidades"}
+          </p>
+
+          {/* Search Bar */}
+          {!isMyRentalsPage && (
+            <div className="max-w-3xl mx-auto relative">
+              <div className="relative">
+                <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl" />
+                <input
+                  type="text"
+                  placeholder="Buscar maquinaria (ej. tractor, sistema de riego...)"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-12 pr-6 py-4 rounded-full border-none focus:ring-4 focus:ring-blue-300 focus:outline-none text-gray-800 shadow-lg"
+                />
+                <button 
+                  onClick={() => setShowFilters(!showFilters)}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-blue-500 hover:bg-blue-600 text-white p-2 rounded-full flex items-center justify-center"
+                >
+                  <FiFilter className="text-lg" />
+                </button>
+              </div>
+
+              {/* Filters Panel */}
+              {showFilters && (
+                <div className="mt-4 bg-white rounded-xl shadow-xl p-6 animate-fadeIn">
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <FiFilter className="mr-2" /> Filtros Avanzados
+                  </h3>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">Categoría</label>
+                      <select
+                        value={selectedCategory}
+                        onChange={(e) => setSelectedCategory(e.target.value)}
+                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      >
+                        <option value="">Todas las categorías</option>
+                        {rentalCategories.map(cat => (
+                          <option key={cat} value={cat}>{cat}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="flex items-center justify-between pt-6">
+                      <button 
+                        onClick={() => {
+                          setSelectedCategory('');
+                          setSearchTerm('');
+                        }}
+                        className="text-sm text-blue-600 hover:text-blue-800 flex items-center"
+                      >
+                        <FiRefreshCw className="mr-1" /> Limpiar filtros
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-20">
+            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mb-4"></div>
+            <p className="text-gray-700 text-lg">Cargando maquinaria en renta...</p>
+          </div>
+        ) : error ? (
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-red-700 font-medium">Error: {error}</p>
               </div>
             </div>
           </div>
-        ))}
+        ) : rentals.length === 0 ? (
+          <div className="text-center py-16">
+            <div className="mx-auto h-24 w-24 text-gray-400 mb-4">
+              <FaTractor className="w-full h-full" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No se encontraron equipos en renta</h3>
+            <p className="text-gray-500 mb-6">No hay maquinaria que coincida con tu búsqueda.</p>
+            {!isMyRentalsPage && (
+              <Link
+                to="/create-rental"
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+              >
+                Publicar un nuevo equipo
+              </Link>
+            )}
+          </div>
+        ) : (
+          <>
+            {/* VIP Premium Section */}
+            {!isMyRentalsPage && premiumRentals.length > 0 && (
+              <div className="mb-12">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold text-gray-900 flex items-center">
+                    <FaCrown className="text-yellow-500 mr-2" /> Rentas Premium
+                  </h2>
+                  <div className="flex items-center bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
+                    <FiStar className="mr-1" /> Proveedores Verificados
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {premiumRentals.map(rental => renderRentalCard(rental, true))}
+                </div>
+              </div>
+            )}
+
+            {/* Regular Rentals Section */}
+            {regularRentals.length > 0 && (
+              <div>
+                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+                  <FaTools className="text-blue-500 mr-2" /> 
+                  {isMyRentalsPage ? 'Todos mis equipos' : 'Todos los equipos en renta'}
+                </h2>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                  {regularRentals.map(rental => renderRentalCard(rental))}
+                </div>
+              </div>
+            )}
+          </>
+        )}
       </div>
+
+      {/* Call to Action */}
+      {!isMyRentalsPage && (
+        <div className="bg-gradient-to-r from-blue-700 to-blue-900 text-white py-12 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-4xl mx-auto text-center">
+            <h2 className="text-3xl font-bold mb-4">¿Tienes maquinaria agrícola?</h2>
+            <p className="text-xl text-blue-100 mb-8">
+              Únete a nuestro programa premium y destaca tus equipos con beneficios exclusivos.
+            </p>
+            <Link
+              to="/premium"
+              className="inline-flex items-center px-8 py-3 border border-transparent text-lg font-bold rounded-full shadow-sm text-blue-900 bg-yellow-400 hover:bg-yellow-300 transition duration-300 transform hover:scale-105"
+            >
+              <FaCrown className="mr-2" /> Conviértete en Proveedor Premium
+            </Link>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
