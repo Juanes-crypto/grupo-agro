@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -40,28 +40,26 @@ import BarterProposalPage from './pages/BarterProposalPage';
 import SubscriptionPlansPage from './pages/SubscriptionPlansPage';
 
 function App() {
+    // Estado para controlar la visibilidad del Navbar en móviles
+    const [isNavbarOpen, setIsNavbarOpen] = useState(false);
+
+    // Función para alternar el estado
+    const toggleNavbar = () => {
+        setIsNavbarOpen(!isNavbarOpen);
+    };
+
     return (
         <Router>
             <AuthProvider>
                 <NotificationProvider>
-                    {/* Contenedor principal que usa flexbox para el layout. */}
-                    {/* En pantallas grandes, Navbar (el sidebar) y el contenido principal se muestran uno al lado del otro. */}
                     <div className="flex min-h-screen bg-gradient-to-br from-primary-50 to-primary-100">
+                        {/* El Navbar ahora recibe su estado y una función para cerrarse */}
+                        <Navbar isNavbarOpen={isNavbarOpen} setIsNavbarOpen={setIsNavbarOpen} />
                         
-                        {/* El Navbar lateral. Este componente debe tener su propia lógica
-                            para ser visible en `md` y ocultarse en `sm`. */}
-                        <Navbar />
-
-                        {/* Contenedor para el contenido principal (TopNavbar + rutas de la página). */}
-                        {/* 'flex-1' permite que este div ocupe el espacio restante. */}
-                        {/* 'md:ml-64' empuja este div a la derecha, dejando espacio para el Navbar lateral en pantallas grandes. */}
-                        {/* En móviles, el 'ml-64' no se aplica y el div ocupa todo el ancho. */}
                         <div className="flex-1 md:ml-64">
-                            {/* El TopNavbar está fijo en la parte superior de su contenedor padre. */}
-                            <TopNavbar />
+                            {/* El TopNavbar ahora recibe la función para abrir/cerrar el menú */}
+                            <TopNavbar onMenuClick={toggleNavbar} />
 
-                            {/* La etiqueta 'main' contiene el contenido de la página. */}
-                            {/* 'pt-16' (padding-top: 4rem) añade espacio arriba para que el contenido no quede detrás del TopNavbar. */}
                             <main className="p-8 pt-16 overflow-y-auto">
                                 <div className="max-w-7xl mx-auto">
                                     <Routes>

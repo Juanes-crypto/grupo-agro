@@ -11,9 +11,10 @@ import {
   UserCircleIcon,
   ChevronRightIcon,
   HomeIcon,
+  Bars3Icon, // Importamos el icono del menú de hamburguesa
 } from "@heroicons/react/24/outline";
 
-function TopNavbar() {
+function TopNavbar({ onMenuClick }) { // Recibimos la prop onMenuClick
   const { isAuthenticated, user, cartItems } = useContext(AuthContext);
   const { unreadCount } = useContext(NotificationContext);
   const navigate = useNavigate();
@@ -63,8 +64,16 @@ function TopNavbar() {
   return (
     <header className="fixed top-0 left-0 right-0 z-40 bg-stone-50 shadow-sm border-b border-amber-200 md:ml-64">
       <div className="flex items-center justify-between h-16 px-4">
-        {/* Logo, breadcrumbs y navegación */}
+        {/* Menú de hamburguesa para móviles */}
         <div className="flex items-center space-x-4">
+          <button
+            onClick={onMenuClick} // Llamamos a la función pasada por prop
+            className="p-1.5 rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-900 md:hidden"
+            title="Abrir menú"
+          >
+            <Bars3Icon className="h-6 w-6" />
+          </button>
+
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <img
@@ -76,7 +85,7 @@ function TopNavbar() {
 
           {/* Breadcrumbs */}
           {breadcrumbs.length > 0 && (
-            <div className="flex items-center text-sm text-gray-600">
+            <div className="hidden md:flex items-center text-sm text-gray-600">
               <Link to="/" className="text-green-600 hover:text-green-700">
                 <HomeIcon className="h-4 w-4" />
               </Link>
