@@ -37,12 +37,12 @@ function CreateBarterProposalPage() {
             setError(null);
             try {
                 // 1. Obtener detalles del producto deseado (el que el usuario quiere)
-                const desiredProductRes = await api.get(`http://localhost:5000/api/products/${productId}`);
+                const desiredProductRes = await api.get(`https://grupo-agro-backend.onrender.com/api/products/${productId}`);
                 const fetchedDesiredProduct = desiredProductRes.data;
                 setDesiredProduct(fetchedDesiredProduct);
 
                 // 2. Obtener productos del usuario logueado que son truequeables y tienen stock
-                const userProductsRes = await api.get(`http://localhost:5000/api/products?user=${user._id}&isTradable=true&stock_gt=0`); // Usando 'stock_gt=0' para filtrar
+                const userProductsRes = await api.get(`https://grupo-agro-backend.onrender.com/api/products?user=${user._id}&isTradable=true&stock_gt=0`); // Usando 'stock_gt=0' para filtrar
                 
                 // Filtrar productos del usuario para que no incluyan el producto deseado (si por alguna razón lo fuera)
                 const filteredUserProducts = userProductsRes.data.filter(p => p._id !== fetchedDesiredProduct._id);

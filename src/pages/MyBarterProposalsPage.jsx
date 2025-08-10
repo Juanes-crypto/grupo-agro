@@ -205,8 +205,8 @@ function MyBarterProposalsPage() {
                                                     {/* ⭐ CAMBIO CLAVE AQUÍ: Usar item.image y comprobación de item.product ⭐ */}
                                                     {item.image ? (
                                                         <img
-                                                            src={item.image.startsWith('http') ? item.image : `http://localhost:5000/${item.image}`}
-                                                            alt={item.name}
+                                                             src={item.image.startsWith('http') ? item.image : `https://grupo-agro-backend.onrender.com/${item.image}`}
+                                                             alt={item.name}
                                                             className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-md shadow-sm"
                                                         />
                                                     ) : (
@@ -233,8 +233,8 @@ function MyBarterProposalsPage() {
                                                     {/* ⭐ CAMBIO CLAVE AQUÍ: Usar item.image y comprobación de item.product ⭐ */}
                                                     {item.image ? (
                                                         <img
-                                                            src={item.image.startsWith('http') ? item.image : `http://localhost:5000/${item.image}`}
-                                                            alt={item.name}
+                                                         src={item.image.startsWith('http') ? item.image : `https://grupo-agro-backend.onrender.com/${item.image}`}
+                                                         alt={item.name}
                                                             className="w-12 h-12 sm:w-14 sm:h-14 object-cover rounded-md shadow-sm"
                                                         />
                                                     ) : (

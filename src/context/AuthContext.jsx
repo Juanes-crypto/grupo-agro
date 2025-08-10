@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
                     // Si el token decodificado tiene un 'id' (que es el _id del usuario),
                     // intentamos cargar el perfil completo desde el backend.
                     if (decoded.id) {
-                        const response = await fetch('http://localhost:5000/api/users/profile', {
+                        const response = await fetch('https://grupo-agro-backend.onrender.com/api/users/profile', {
                             headers: {
                                 'Authorization': `Bearer ${token}` // Usamos el token para la autorización
                             }

@@ -33,13 +33,13 @@ function BarterProposalPage() {
             setError(null);
             try {
                 // 1. Obtener detalles del producto deseado
-                const desiredProductRes = await api.get(`http://localhost:5000/api/products/${productId}`);
+                const desiredProductRes = await api.get(`https://grupo-agro-backend.onrender.com/api/products/${productId}`);
                 setDesiredProduct(desiredProductRes.data);
 
                 // 2. Obtener productos del usuario logueado que son truequeables
                 // Asumiendo que el backend tiene un endpoint para esto, o que `api.get('/products')`
                 // puede filtrar por el usuario autenticado y `is_truequeable`.
-                const userProductsRes = await api.get(`http://localhost:5000/api/products?user=${user._id}&is_truequeable=true&inventory_gt=0`);
+                const userProductsRes = await api.get(`https://grupo-agro-backend.onrender.com/api/products?user=${user._id}&is_truequeable=true&inventory_gt=0`);
                 
                 // Filtrar productos del usuario para que no incluyan el producto deseado (si fuera el caso)
                 const filteredUserProducts = userProductsRes.data.filter(p => p._id !== desiredProductRes.data._id);

@@ -65,7 +65,7 @@ function CreateCounterProposalPage() {
 
                 console.log('DEBUG: Obteniendo mis productos...');
                 // 2. Obtener mis productos (los que puedo ofrecer en la contrapropuesta)
-                const myProductsResponse = await api.get('http://localhost:5000/api/products/myproducts');
+                const myProductsResponse = await api.get('https://grupo-agro-backend.onrender.com/api/products/myproducts');
                 const fetchedMyProducts = Array.isArray(myProductsResponse.data) ? myProductsResponse.data : [];
                 setMyProducts(fetchedMyProducts);
                 console.log('DEBUG: Mis productos obtenidos:', myProductsResponse.data.length, 'productos.');
@@ -73,7 +73,7 @@ function CreateCounterProposalPage() {
                 console.log(`DEBUG: Obteniendo productos de ${prop.proposer.username}...`);
                 // 3. Obtener los productos del proponente original (los que puedo solicitar en la contrapropuesta)
                 // Usamos el ID del proponente original de la propuesta que acabamos de cargar
-                const otherUserProductsResponse = await api.get(`http://localhost:5000/api/products/user/${prop.proposer._id}`);
+                const otherUserProductsResponse = await api.get(`https://grupo-agro-backend.onrender.com/api/products/user/${prop.proposer._id}`);
                 setOtherUserProducts(otherUserProductsResponse.data);
 
                 console.log('DEBUG: Productos del otro usuario obtenidos:', otherUserProductsResponse.data.length, 'productos.');

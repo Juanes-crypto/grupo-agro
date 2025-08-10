@@ -52,11 +52,11 @@ function ProductListPage() {
             setLoading(true);
             setError(null);
 
-            let url = 'http://localhost:5000/api/products';
+            let url = 'https://grupo-agro-backend.onrender.com/api/products';
             const params = new URLSearchParams();
 
             if (isMyProductsPage) {
-                url = 'http://localhost:5000/api/products/my-products';
+                url = 'https://grupo-agro-backend.onrender.com/api/products/my-products';
                 if (!isAuthenticated || !token) {
                     setError('Debes iniciar sesión para ver tus productos.');
                     setLoading(false);
