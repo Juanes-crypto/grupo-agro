@@ -18,7 +18,7 @@ function MyBarterProposalsPage() {
         setLoading(true);
         setError(null);
         try {
-            const response = await api.get('http://localhost:5000/api/barter/myproposals');
+            const response = await api.get('https://grupo-agro-backend.onrender.com/api/barter/myproposals');
             // Asegúrate de que response.data sea un array, si no, usa un array vacío
             setProposals(Array.isArray(response.data) ? response.data : []);
         } catch (err) {
@@ -52,7 +52,7 @@ function MyBarterProposalsPage() {
 
     const handleAcceptOriginalProposal = async (proposalId) => {
         try {
-            await api.put(`http://localhost:5000/api/barter/${proposalId}/status`, { status: 'accepted' });
+            await api.put(`https://grupo-agro-backend.onrender.com/api/barter/${proposalId}/status`, { status: 'accepted' });
             toast.success('¡Propuesta aceptada con éxito!');
             fetchProposals(); // Recargar propuestas para actualizar el estado
         } catch (err) {
@@ -63,7 +63,7 @@ function MyBarterProposalsPage() {
 
     const handleRejectOriginalProposal = async (proposalId) => {
         try {
-            await api.put(`http://localhost:5000/api/barter/${proposalId}/status`, { status: 'rejected' });
+            await api.put(`https://grupo-agro-backend.onrender.com/api/barter/${proposalId}/status`, { status: 'rejected' });
             toast.info('Propuesta rechazada.');
             fetchProposals();
         } catch (err) {
@@ -74,7 +74,7 @@ function MyBarterProposalsPage() {
 
     const handleAcceptCounterProposal = async (proposalId) => {
         try {
-            await api.put(`http://localhost:5000/api/barter/${proposalId}/counter/accept`);
+            await api.put(`https://grupo-agro-backend.onrender.com/api/barter/${proposalId}/counter/accept`);
             toast.success('¡Contraoferta aceptada! Trueque completado. 🎉');
             fetchProposals();
         } catch (err) {
@@ -85,7 +85,7 @@ function MyBarterProposalsPage() {
 
     const handleRejectCounterProposal = async (proposalId) => {
         try {
-            await api.put(`http://localhost:5000/api/barter/${proposalId}/counter/reject`);
+            await api.put(`https://grupo-agro-backend.onrender.com/api/barter/${proposalId}/counter/reject`);
             toast.info('Contraoferta rechazada.');
             fetchProposals();
         } catch (err) {
@@ -96,7 +96,7 @@ function MyBarterProposalsPage() {
 
     const handleCancelProposal = async (proposalId) => {
         try {
-            await api.put(`http://localhost:5000/api/barter/${proposalId}/cancel`);
+            await api.put(`https://grupo-agro-backend.onrender.com/api/barter/${proposalId}/cancel`);
             toast.warn('Propuesta cancelada.');
             fetchProposals();
         } catch (err) {

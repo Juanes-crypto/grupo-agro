@@ -87,7 +87,7 @@ function CreateBarterProposalPage() {
                 const product1Id = selectedOfferedProductIds[0]; // Asume que el primer producto ofrecido es el principal para la comparación
                 const product2Id = desiredProduct._id;
 
-                const response = await api.get(`http://localhost:5000/api/barter/value-comparison?product1Id=${product1Id}&product2Id=${product2Id}`);
+                const response = await api.get(`https://grupo-agro-backend.onrender.com/api/barter/value-comparison?product1Id=${product1Id}&product2Id=${product2Id}`);
                 setBarterEquity(response.data); // { isFair: boolean, message: string, difference: object, differencePercentage: number }
             } catch (err) {
                 console.error("Error fetching barter equity:", err);
@@ -131,7 +131,7 @@ function CreateBarterProposalPage() {
                 requestedProductIds: [desiredProduct._id], // El producto deseado es el único solicitado
                 message: message || `¡Hola! Me gustaría intercambiar mi(s) producto(s) por tu ${desiredProduct.name}. ¿Qué te parece esta oferta?`
             };
-            const response = await api.post('http://localhost:5000/api/barter', proposalData);
+            const response = await api.post('https://grupo-agro-backend.onrender.com/api/barter', proposalData);
             setSuccessMessage('¡Propuesta de trueque enviada con éxito! Espera la respuesta del otro usuario.');
             console.log('Propuesta creada:', response.data);
             setCurrentStep(3); // Avanzar al paso de acuerdo

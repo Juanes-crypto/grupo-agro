@@ -54,11 +54,11 @@ function ServiceListPage() {
             setLoading(true);
             setError(null);
 
-            let url = 'http://localhost:5000/api/services';
+            let url = 'https://grupo-agro-backend.onrender.com/api/services';
             const params = new URLSearchParams();
 
             if (isMyServicesPage) {
-                url = 'http://localhost:5000/api/services/my-services';
+                url = 'https://grupo-agro-backend.onrender.com/api/services/my-services';
                 if (!isAuthenticated || !token) {
                     setError('Debes iniciar sesión para ver tus servicios.');
                     setLoading(false);

@@ -61,11 +61,11 @@ function RentalListPage() {
       setLoading(true);
       setError(null);
 
-      let url = "http://localhost:5000/api/rentals";
+      let url = "https://grupo-agro-backend.onrender.com/api/rentals";
       const params = new URLSearchParams();
 
       if (isMyRentalsPage) {
-        url = "http://localhost:5000/api/rentals/my-rentals";
+        url = "https://grupo-agro-backend.onrender.com/api/rentals/my-rentals";
         if (!isAuthenticated || !token) {
           setError("Debes iniciar sesión para ver tus rentas.");
           setLoading(false);

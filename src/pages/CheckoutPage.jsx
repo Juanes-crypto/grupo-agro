@@ -79,7 +79,7 @@ function CheckoutPage() {
             };
 
             const { data } = await axios.post(
-                'http://localhost:5000/api/orders',
+                'https://grupo-agro-backend.onrender.com/api/orders',
                 orderData,
                 config
             );

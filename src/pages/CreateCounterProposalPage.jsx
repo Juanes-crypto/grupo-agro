@@ -39,7 +39,7 @@ function CreateCounterProposalPage() {
                 setError('');
                 console.log(`DEBUG: Intentando obtener propuesta original con ID: ${originalProposalId}`);
                 // 1. Obtener la propuesta original
-                const originalResponse = await api.get(`http://localhost:5000/api/barter/${originalProposalId}`);
+                const originalResponse = await api.get(`https://grupo-agro-backend.onrender.com/api/barter/${originalProposalId}`);
                 const prop = originalResponse.data;
                 console.log('DEBUG: Propuesta original obtenida:', prop);
 
@@ -216,7 +216,7 @@ function CreateCounterProposalPage() {
                 message,
             };
 
-            const response = await api.post(`http://localhost:5000/api/barter/${originalProposalId}/counter`, counterProposalData);
+            const response = await api.post(`https://grupo-agro-backend.onrender.com/api/barter/${originalProposalId}/counter`, counterProposalData);
             toast.success('¡Contrapropuesta enviada exitosamente! 🎉');
             console.log('Contrapropuesta creada:', response.data);
 

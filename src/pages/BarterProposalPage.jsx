@@ -75,7 +75,7 @@ function BarterProposalPage() {
     // Función para obtener la valoración de equidad del backend
     const getBarterEquityFromBackend = async (offeredProdId, desiredProdId) => {
         try {
-            const response = await api.get(`http://localhost:5000/api/barter/value-comparison?product1Id=${offeredProdId}&product2Id=${desiredProdId}`);
+            const response = await api.get(`https://grupo-agro-backend.onrender.com/api/barter/value-comparison?product1Id=${offeredProdId}&product2Id=${desiredProdId}`);
             setBarterEquity(response.data); // { isFair: boolean, message: string, difference: object, differencePercentage: number }
         } catch (err) {
             console.error("Error fetching barter equity:", err);
@@ -115,7 +115,7 @@ function BarterProposalPage() {
                 requestedProductIds: [desiredProduct._id], // Por ahora, solo un producto solicitado
                 message: "¡Hola! Me gustaría intercambiar mi producto por el tuyo. ¿Qué te parece esta oferta?" // Mensaje por defecto
             };
-            const response = await api.post('http://localhost:5000/api/barter', proposalData);
+            const response = await api.post('https://grupo-agro-backend.onrender.com/api/barter', proposalData);
             console.log('Propuesta de trueque enviada:', response.data);
             alert('¡Propuesta de trueque enviada con éxito! Espera la respuesta del otro usuario.');
             setCurrentStep(3); // Avanzar al paso de acuerdo
