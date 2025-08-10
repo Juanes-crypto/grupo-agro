@@ -274,73 +274,7 @@ function WelcomePage() {
         </div>
       </div>
 
-      {/* Testimonials Section */}
-      <div className="py-20 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Lo que dicen nuestros usuarios
-            </h2>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              Agricultores que ya están transformando sus negocios con AgroApp
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {[
-              {
-                name: "Carlos Mendoza",
-                role: "Productor de frutas",
-                quote:
-                  "Gracias a AgroApp he duplicado mis ventas y encontrado clientes confiables",
-                image: "/images/user1.jpg",
-              },
-              {
-                name: "María González",
-                role: "Dueña de vivero",
-                quote:
-                  "El sistema de trueques me ha permitido obtener insumos que necesitaba sin gastar dinero",
-                image: "/images/user2.jpg",
-              },
-              {
-                name: "Jorge Ramírez",
-                role: "Dueño de maquinaria",
-                quote:
-                  "Ahora mis equipos están trabajando incluso cuando yo no los uso, generando ingresos extras",
-                image: "/images/user3.jpg",
-              },
-            ].map((testimonial, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.4, delay: index * 0.1 }}
-                className="bg-white rounded-xl shadow-lg p-8 border border-gray-100"
-              >
-                <div className="flex items-center mb-6">
-                  <img
-                    src={testimonial.image}
-                    alt={testimonial.name}
-                    className="w-12 h-12 rounded-full object-cover mr-4"
-                  />
-                  <div>
-                    <h4 className="font-bold text-gray-900">
-                      {testimonial.name}
-                    </h4>
-                    <p className="text-sm text-gray-500">{testimonial.role}</p>
-                  </div>
-                </div>
-                <p className="text-gray-600 italic">"{testimonial.quote}"</p>
-                <div className="mt-4 flex items-center">
-                  {[...Array(5)].map((_, i) => (
-                    <StarIcon key={i} className="h-5 w-5 text-yellow-400" />
-                  ))}
-                </div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </div>
+      
 
       {/* CTA Section */}
       <div className="py-20 bg-gradient-to-r from-emerald-600 to-green-700">
