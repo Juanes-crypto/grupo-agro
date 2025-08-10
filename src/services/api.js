@@ -3,10 +3,23 @@ import axios from 'axios';
 const api = axios.create({
   baseURL: 'https://grupo-agro-backend.onrender.com/api',
   headers: {
-    'Content-Type': 'application/json'
+    'Content-Type': 'application/json',
+    'Accept' : 'application/json'
   },
   withCredentials: true // Añade esto para enviar cookies
 });
+
+//interceptor para errores CORS especificos
+api.interceptors.response.use(
+  response => response,
+  error => {
+    if (error.message === 'Network Error' && !error.response) {
+      // Probable error CORS
+      window.location.reload(); // Fuerza recarga como último recurso
+    }
+    return Promise.reject(error);
+  }
+);
 
 // Interceptor para añadir token
 api.interceptors.request.use((config) => {
