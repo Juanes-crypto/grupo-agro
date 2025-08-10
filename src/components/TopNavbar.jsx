@@ -12,14 +12,6 @@ import {
   ChevronRightIcon,
   HomeIcon,
 } from "@heroicons/react/24/outline";
-import {
-  ArrowLeftIcon as ArrowLeftSolid,
-  ArrowRightIcon as ArrowRightSolid,
-  PlusIcon as PlusSolid,
-  BellIcon as BellSolid,
-  ShoppingCartIcon as ShoppingCartSolid,
-  UserCircleIcon as UserCircleSolid,
-} from "@heroicons/react/24/solid";
 
 function TopNavbar() {
   const { isAuthenticated, user, cartItems } = useContext(AuthContext);
@@ -69,7 +61,7 @@ function TopNavbar() {
   const breadcrumbs = generateBreadcrumbs();
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-40 bg-stone-50 shadow-sm border-b border-amber-200">
+    <header className="fixed top-0 left-0 right-0 z-40 bg-stone-50 shadow-sm border-b border-amber-200 md:ml-64">
       <div className="flex items-center justify-between h-16 px-4">
         {/* Logo, breadcrumbs y navegación */}
         <div className="flex items-center space-x-4">

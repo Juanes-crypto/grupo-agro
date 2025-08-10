@@ -44,11 +44,25 @@ function App() {
         <Router>
             <AuthProvider>
                 <NotificationProvider>
-                    <div className="min-h-screen bg-gradient-to-br from-primary-50 to-primary-100">
-                        <TopNavbar />
-                        <div className="flex pt-16"> {/* Añadido pt-16 para el espacio del TopNavbar */}
-                            <Navbar />
-                            <main className="flex-1 ml-72 p-8 transition-all duration-300 overflow-y-auto">
+                    {/* Contenedor principal que usa flexbox para el layout. */}
+                    {/* En pantallas grandes, Navbar (el sidebar) y el contenido principal se muestran uno al lado del otro. */}
+                    <div className="flex min-h-screen bg-gradient-to-br from-primary-50 to-primary-100">
+                        
+                        {/* El Navbar lateral. Este componente debe tener su propia lógica
+                            para ser visible en `md` y ocultarse en `sm`. */}
+                        <Navbar />
+
+                        {/* Contenedor para el contenido principal (TopNavbar + rutas de la página). */}
+                        {/* 'flex-1' permite que este div ocupe el espacio restante. */}
+                        {/* 'md:ml-64' empuja este div a la derecha, dejando espacio para el Navbar lateral en pantallas grandes. */}
+                        {/* En móviles, el 'ml-64' no se aplica y el div ocupa todo el ancho. */}
+                        <div className="flex-1 md:ml-64">
+                            {/* El TopNavbar está fijo en la parte superior de su contenedor padre. */}
+                            <TopNavbar />
+
+                            {/* La etiqueta 'main' contiene el contenido de la página. */}
+                            {/* 'pt-16' (padding-top: 4rem) añade espacio arriba para que el contenido no quede detrás del TopNavbar. */}
+                            <main className="p-8 pt-16 overflow-y-auto">
                                 <div className="max-w-7xl mx-auto">
                                     <Routes>
                                         <Route path="/" element={<HomePage />} />
@@ -94,20 +108,20 @@ function App() {
                                 </div>
                             </main>
                         </div>
-                        <ToastContainer
-                            position="bottom-right"
-                            autoClose={5000}
-                            hideProgressBar={false}
-                            newestOnTop={false}
-                            closeOnClick
-                            rtl={false}
-                            pauseOnFocusLoss
-                            draggable
-                            pauseOnHover
-                            toastClassName="bg-white text-gray-800 shadow-xl rounded-xl"
-                            progressClassName="bg-primary-500"
-                        />
                     </div>
+                    <ToastContainer
+                        position="bottom-right"
+                        autoClose={5000}
+                        hideProgressBar={false}
+                        newestOnTop={false}
+                        closeOnClick
+                        rtl={false}
+                        pauseOnFocusLoss
+                        draggable
+                        pauseOnHover
+                        toastClassName="bg-white text-gray-800 shadow-xl rounded-xl"
+                        progressClassName="bg-primary-500"
+                    />
                 </NotificationProvider>
             </AuthProvider>
         </Router>
