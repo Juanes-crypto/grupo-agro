@@ -146,7 +146,7 @@ function WelcomePage() {
             <div className="absolute -inset-4 bg-emerald-500/20 rounded-xl blur-lg"></div>
             <div className="relative bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200">
               <img
-                src="./public/images/dashboard-preview.jpg"
+                src="/images/dashboard-preview.jpg"
                 alt="Vista previa de AgroApp"
                 className="w-full h-auto"
               />
