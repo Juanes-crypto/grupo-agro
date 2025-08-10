@@ -20,52 +20,33 @@ export const AuthProvider = ({ children }) => {
 
     // Efecto para cargar el estado del usuario/autenticación a partir del token al cargar la app
     useEffect(() => {
-        const loadUserFromToken = async () => { // Marcamos como async porque haremos un fetch
-            setLoading(true); // Inicia la carga
-            if (token) {
-                try {
-                    const decoded = jwtDecode(token);
-
-                    // Si el token decodificado tiene un 'id' (que es el _id del usuario),
-                    // intentamos cargar el perfil completo desde el backend.
-                    if (decoded.id) {
-                        const response = await fetch('https://grupo-agro-backend.onrender.com/api/users/profile', {
-                            headers: {
-                                'Authorization': `Bearer ${token}` // Usamos el token para la autorización
-                            }
-                        });
-                        const data = await response.json();
-
-                        if (response.ok) {
-                            setUser(data); // data es el objeto de usuario completo del backend
-                            setUserId(data._id); // Usamos el _id del usuario
-                            setIsAuthenticated(true);
-                            setIsPremium(data.isPremium || false); // Obtenemos el estado premium real
-                            console.log('AuthContext: Perfil de usuario cargado desde el backend.');
-                        } else {
-                            console.error('AuthContext: Error al cargar perfil:', data.message);
-                            logout(); // Si hay error al cargar el perfil, cerrar sesión
-                        }
-                    } else {
-                        // Si el token no tiene un ID válido en su payload, cerrar sesión
-                        console.error('AuthContext: Token no contiene un ID de usuario válido.');
-                        logout();
-                    }
-                } catch (error) {
-                    console.error('AuthContext: Error al decodificar o verificar token:', error);
-                    logout(); // Si el token es inválido o hay otro error, cerrar sesión
-                } finally {
-                    setLoading(false); // Termina la carga, independientemente del resultado
-                }
-            } else {
-                // No hay token, no hay usuario autenticado
-                setIsAuthenticated(false);
-                setUser(null);
-                setUserId(null);
-                setIsPremium(false);
-                setLoading(false); // Termina la carga
-            }
-        };
+        // Cambia esto en el useEffect:
+const loadUserFromToken = async () => {
+  setLoading(true);
+  if (token) {
+    try {
+      const decoded = jwtDecode(token);
+      if (decoded.id) {
+        const response = await api.get('/users/profile'); // Usa api en lugar de fetch
+        setUser(response.data);
+        setUserId(response.data._id);
+        setIsAuthenticated(true);
+        setIsPremium(response.data.isPremium || false);
+      }
+    } catch (error) {
+      console.error('Error al cargar perfil:', error);
+      logout();
+    } finally {
+      setLoading(false);
+    }
+  } else {
+    setIsAuthenticated(false);
+    setUser(null);
+    setUserId(null);
+    setIsPremium(false);
+    setLoading(false);
+  }
+};
 
         loadUserFromToken();
     }, [token]); // Se ejecuta cuando el token cambia
