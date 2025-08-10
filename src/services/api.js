@@ -1,9 +1,10 @@
 import axios from 'axios';
 
 const api = axios.create({
-  baseURL: 'https://grupo-agro-backend.onrender.com', // URL exacta
+  baseURL: 'https://grupo-agro-backend.onrender.com/api',
   headers: {
-    'Content-Type': 'application/json',
+    'Content-Type': 'application/json'
+    // Quita el Authorization de aquí, el interceptor lo manejará
   },
 });
 
