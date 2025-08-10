@@ -2,7 +2,7 @@
 
 import React, { createContext, useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode'; // Asegúrate de haber instalado jwt-decode: npm install jwt-decode
-
+import api from '../services/api';
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -20,33 +20,34 @@ export const AuthProvider = ({ children }) => {
 
     // Efecto para cargar el estado del usuario/autenticación a partir del token al cargar la app
     useEffect(() => {
-        // Cambia esto en el useEffect:
-const loadUserFromToken = async () => {
-  setLoading(true);
-  if (token) {
-    try {
-      const decoded = jwtDecode(token);
-      if (decoded.id) {
-        const response = await api.get('/users/profile'); // Usa api en lugar de fetch
-        setUser(response.data);
-        setUserId(response.data._id);
-        setIsAuthenticated(true);
-        setIsPremium(response.data.isPremium || false);
-      }
-    } catch (error) {
-      console.error('Error al cargar perfil:', error);
-      logout();
-    } finally {
-      setLoading(false);
-    }
-  } else {
-    setIsAuthenticated(false);
-    setUser(null);
-    setUserId(null);
-    setIsPremium(false);
-    setLoading(false);
-  }
-};
+        const loadUserFromToken = async () => {
+            setLoading(true);
+            if (token) {
+                try {
+                    const decoded = jwtDecode(token);
+                    if (decoded.id) {
+                        // Usa la instancia de api importada
+                        const response = await api.get('/users/profile');
+                        setUser(response.data);
+                        setUserId(response.data._id);
+                        setIsAuthenticated(true);
+                        setIsPremium(response.data.isPremium || false);
+                        console.log('Perfil de usuario cargado correctamente');
+                    }
+                } catch (error) {
+                    console.error('Error al cargar perfil:', error);
+                    logout();
+                } finally {
+                    setLoading(false);
+                }
+            } else {
+                setIsAuthenticated(false);
+                setUser(null);
+                setUserId(null);
+                setIsPremium(false);
+                setLoading(false);
+            }
+        };
 
         loadUserFromToken();
     }, [token]); // Se ejecuta cuando el token cambia

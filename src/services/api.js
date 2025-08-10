@@ -4,7 +4,6 @@ const api = axios.create({
   baseURL: 'https://grupo-agro-backend.onrender.com/api',
   headers: {
     'Content-Type': 'application/json',
-    'Accept' : 'application/json'
   },
   withCredentials: true // Añade esto para enviar cookies
 });
