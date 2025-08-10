@@ -293,21 +293,21 @@ function WelcomePage() {
                 role: "Productor de frutas",
                 quote:
                   "Gracias a AgroApp he duplicado mis ventas y encontrado clientes confiables",
-                image: "/user1.jpg",
+                image: "./public/images/user1.jpg",
               },
               {
                 name: "María González",
                 role: "Dueña de vivero",
                 quote:
                   "El sistema de trueques me ha permitido obtener insumos que necesitaba sin gastar dinero",
-                image: "/user2.jpg",
+                image: "./public/images/user2.jpg",
               },
               {
                 name: "Jorge Ramírez",
                 role: "Dueño de maquinaria",
                 quote:
                   "Ahora mis equipos están trabajando incluso cuando yo no los uso, generando ingresos extras",
-                image: "/user3.jpg",
+                image: "./public/images/user3.jpg",
               },
             ].map((testimonial, index) => (
               <motion.div

@@ -76,7 +76,7 @@ function TopNavbar() {
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <img
-              src="/AgroApp-logo.png"
+              src="./public/images/AgroApp-logo.png"
               alt="AgroApp Logo"
               className="h-8 w-auto"
             />
