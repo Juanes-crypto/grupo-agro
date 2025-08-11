@@ -122,35 +122,7 @@ function ServiceListPage() {
         } else if (service.user && service.user.email) {
             window.location.href = `mailto:${service.user.email}?subject=Interés en ${service.name}`;
         } else {
-            alert('Funcionalidad de contacto no disponible públicamente para este proveedor.');
-        }
-    };
-
-    const handleAddToCart = async (service) => {
-        if (!isAuthenticated) {
-            alert("Debes iniciar sesión para añadir al carrito.");
-            navigate("/login");
-            return;
-        }
-
-        try {
-            const response = await api.post('/cart/add', {
-                itemId: service._id,
-                itemType: 'service',
-                quantity: 1,
-            }, {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
-            });
-            alert(response.data.message || `"${service.name}" ha sido añadido al carrito.`);
-        } catch (err) {
-            console.error("Error al añadir servicio al carrito:", err);
-            if (err.response?.data?.message) {
-                alert(`Error al añadir al carrito: ${err.response.data.message}`);
-            } else {
-                alert('Error desconocido al añadir el servicio al carrito.');
-            }
+            alert('El proveedor no ha habilitado opciones de contacto público. Por favor revisa los detalles del servicio para más información.');
         }
     };
 
@@ -266,20 +238,15 @@ function ServiceListPage() {
                                                 <FaWhatsapp className="mr-2" /> WhatsApp
                                             </button>
                                         ) : (
-                                            <button
-                                                onClick={() => handleContactMe(service)}
-                                                className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
-                                            >
-                                                <FiMail className="mr-2" /> Contactar
-                                            </button>
+                                            service.user && service.user.email && (
+                                                <button
+                                                    onClick={() => handleContactMe(service)}
+                                                    className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
+                                                >
+                                                    <FiMail className="mr-2" /> Contactar por Email
+                                                </button>
+                                            )
                                         )}
-
-                                        <button
-                                            onClick={() => handleAddToCart(service)}
-                                            className="flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
-                                        >
-                                            <FiShoppingCart className="mr-2" /> Añadir al Carrito
-                                        </button>
                                     </>
                                 )
                             )}
