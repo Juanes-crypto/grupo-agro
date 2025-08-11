@@ -22,7 +22,7 @@ api.interceptors.response.use(
 
 // Interceptor para añadir token
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('agroapp_token');
+  const token = localStorage.getItem('AgroNet_token');
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
   }
@@ -37,7 +37,7 @@ api.interceptors.response.use(
   response => response,
   error => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('agroapp_token');
+      localStorage.removeItem('AgroNet_token');
       window.location.href = '/login';
     }
     return Promise.reject(error);

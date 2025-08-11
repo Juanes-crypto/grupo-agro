@@ -5,10 +5,10 @@ function SubscriptionPlansPage() {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-green-50 to-lime-100 p-8 rounded-lg shadow-xl text-center animate-fade-in">
             <h1 className="text-5xl font-extrabold text-green-800 mb-6 leading-tight">
-                ¡Desbloquea el Verdadero Poder de tu Cosecha con AgroApp Premium! 🚀
+                ¡Desbloquea el Verdadero Poder de tu Cosecha con AgroNet Premium! 🚀
             </h1>
             <p className="text-xl text-gray-700 mb-10 max-w-3xl">
-                Deja atrás las limitaciones y maximiza el potencial de tu negocio agrícola. Con AgroApp Premium, no solo gestionas, ¡prosperas!
+                Deja atrás las limitaciones y maximiza el potencial de tu negocio agrícola. Con AgroNet Premium, no solo gestionas, ¡prosperas!
             </p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-10 mb-12 w-full max-w-5xl">
@@ -21,7 +21,7 @@ function SubscriptionPlansPage() {
                         Control Total: Tu Inventario sin Límites
                     </h2>
                     <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-                        Imagina una base de datos exclusiva para **TODOS tus productos**. Con AgroApp Premium, obtienes un **inventario ilimitado y centralizado** donde puedes:
+                        Imagina una base de datos exclusiva para **TODOS tus productos**. Con AgroNet Premium, obtienes un **inventario ilimitado y centralizado** donde puedes:
                     </p>
                     <ul className="list-none space-y-3 text-lg text-gray-800 mb-8 text-left w-full px-4">
                         <li className="flex items-start">
@@ -93,7 +93,7 @@ function SubscriptionPlansPage() {
             </button>
 
             <p className="mt-8 text-md text-gray-600">
-                Tu éxito es nuestra prioridad. Únete a la élite de AgroApp.
+                Tu éxito es nuestra prioridad. Únete a la élite de AgroNet.
             </p>
         </div>
     );

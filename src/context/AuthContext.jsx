@@ -10,11 +10,11 @@ export const AuthProvider = ({ children }) => {
     const [userId, setUserId] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
-    const [token, setToken] = useState(localStorage.getItem('agroapp_token') || null);
+    const [token, setToken] = useState(localStorage.getItem('AgroNet_token') || null);
     const [loading, setLoading] = useState(true); // Estado de carga para la verificación inicial del token/usuario
 
     const [cartItems, setCartItems] = useState(() => {
-        const savedCart = localStorage.getItem('agroapp_cart');
+        const savedCart = localStorage.getItem('AgroNet_cart');
         return savedCart ? JSON.parse(savedCart) : [];
     });
 
@@ -55,15 +55,15 @@ export const AuthProvider = ({ children }) => {
     // Efecto para guardar/eliminar el token de localStorage
     useEffect(() => {
         if (token) {
-            localStorage.setItem('agroapp_token', token);
+            localStorage.setItem('AgroNet_token', token);
         } else {
-            localStorage.removeItem('agroapp_token');
+            localStorage.removeItem('AgroNet_token');
         }
     }, [token]);
 
     // Efecto para guardar el carrito en localStorage (se mantiene local por ahora)
     useEffect(() => {
-        localStorage.setItem('agroapp_cart', JSON.stringify(cartItems));
+        localStorage.setItem('AgroNet_cart', JSON.stringify(cartItems));
     }, [cartItems]);
 
     // Función de login: ahora espera un objeto userData y el token del backend

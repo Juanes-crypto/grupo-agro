@@ -77,8 +77,8 @@ function TopNavbar({ onMenuClick }) { // Recibimos la prop onMenuClick
           {/* Logo */}
           <Link to="/" className="flex items-center">
             <img
-              src="/images/AgroApp-logo.png"
-              alt="AgroApp Logo"
+              src="/images/AgroNet-logo.png"
+              alt="AgroNet Logo"
               className="h-8 w-auto"
             />
           </Link>

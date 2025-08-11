@@ -1,4 +1,4 @@
-// AGROAPP-UI/src/pages/MyBarterProposalsPage.jsx
+// AgroNet-UI/src/pages/MyBarterProposalsPage.jsx
 
 import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';

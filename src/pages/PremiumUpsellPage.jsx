@@ -9,7 +9,7 @@ function PremiumUpsellPage() {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-green-50 to-lime-100 p-8 rounded-lg shadow-xl text-center animate-fade-in">
             <h2 className="text-4xl font-extrabold text-green-800 mb-6">
-                ¡Desbloquea tu Potencial con AgroApp Premium! 🌟
+                ¡Desbloquea tu Potencial con AgroNet Premium! 🌟
             </h2>
             <p className="text-lg text-gray-700 mb-8 max-w-2xl">
                 El Inventario Premium es solo una de las muchas herramientas exclusivas diseñadas para transformar

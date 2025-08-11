@@ -71,12 +71,12 @@ function LoginPage() {
                 {/* Columna del Formulario de Inicio de Sesión */}
                 <div className="space-y-8 flex flex-col justify-center">
                     <div className="text-center">
-                        <img className="mx-auto h-16 w-auto mb-4" src="/images/AgroApp-logo.png" alt="AgroApp Logo" />
+                        <img className="mx-auto h-16 w-auto mb-4" src="/images/AgroNet-logo.png" alt="AgroNet Logo" />
                         <h2 className="mt-2 text-center text-3xl font-extrabold text-green-800">
                             Bienvenido de nuevo
                         </h2>
                         <p className="mt-2 text-center text-sm text-gray-600">
-                            Inicia sesión para acceder a tu cuenta de AgroApp.
+                            Inicia sesión para acceder a tu cuenta de AgroNet.
                         </p>
                     </div>
                     <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
@@ -159,7 +159,7 @@ function LoginPage() {
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm.707-10.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
                             <path d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2h3.382l-.788 1.576a1 1 0 001.789.894L9 8h2l1.191-2.382a1 1 0 00-1.789-.894L11 4h-3.382l.894-1.789A1 1 0 009 2z" opacity=".25"></path>
                         </svg>
-                        <h3 className="text-3xl font-extrabold mb-3 leading-tight">¡Lleva tu experiencia al siguiente nivel con AgroApp Premium!</h3>
+                        <h3 className="text-3xl font-extrabold mb-3 leading-tight">¡Lleva tu experiencia al siguiente nivel con AgroNet Premium!</h3>
                         <p className="text-lg mb-6 opacity-90">Desbloquea funciones exclusivas y maximiza tus beneficios:</p>
                         <ul className="text-left space-y-2 mb-6 text-lg list-disc list-inside">
                             <li>Optimiza tus precios, maximiza ingresos.</li>
