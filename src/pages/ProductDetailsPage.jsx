@@ -517,7 +517,7 @@ function ProductDetailsPage() {
                     {!isOwner && (
                       <div className="ml-auto">
                         <Link
-                          to={`/seller-products/${product.user._id}`}
+                          to={`/products`}
                           className="text-sm font-medium text-green-600 hover:text-green-800"
                         >
                           Ver más productos

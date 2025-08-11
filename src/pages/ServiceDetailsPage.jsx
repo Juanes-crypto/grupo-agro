@@ -317,7 +317,7 @@ function ServiceDetailsPage() {
                                         {!isMyService && (
                                             <div className="ml-auto">
                                                 <Link
-                                                    to={`/provider-services/${service.user._id}`}
+                                                    to={`/services`}
                                                     className="text-sm font-medium text-green-600 hover:text-green-800"
                                                 >
                                                     Ver más servicios
