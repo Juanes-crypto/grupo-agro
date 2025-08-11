@@ -169,7 +169,7 @@ function LoginPage() {
                         </ul>
                     </div>
                     <Link 
-                        to="/premium" // Puedes cambiar esta ruta a donde tengas la página de información premium
+                        to="/premium-upsell" // Puedes cambiar esta ruta a donde tengas la página de información premium
                         className="w-full bg-white text-yellow-700 hover:bg-yellow-100 py-3 px-6 rounded-lg text-lg font-bold shadow-md transition-all duration-300 transform hover:-translate-y-1"
                     >
                         Saber Más
