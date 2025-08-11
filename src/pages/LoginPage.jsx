@@ -71,7 +71,7 @@ function LoginPage() {
                 {/* Columna del Formulario de Inicio de Sesión */}
                 <div className="space-y-8 flex flex-col justify-center">
                     <div className="text-center">
-                        <img className="mx-auto h-16 w-auto mb-4" src="./public/AgroApp-logo.png" alt="AgroApp Logo" />
+                        <img className="mx-auto h-16 w-auto mb-4" src="/images/AgroApp-logo.png" alt="AgroApp Logo" />
                         <h2 className="mt-2 text-center text-3xl font-extrabold text-green-800">
                             Bienvenido de nuevo
                         </h2>

@@ -88,7 +88,7 @@ function RegisterPage() {
             <div className="max-w-md w-full space-y-8 p-8 bg-white rounded-xl shadow-2xl border border-green-100 transition-all duration-300 transform hover:scale-[1.01]">
                 <div className="text-center">
                     {/* Puedes reemplazar este SVG con tu logo si lo tienes */}
-                    <img className="mx-auto h-20 w-auto" src="./public/AgroApp-logo.png" alt="AgroApp Logo" />
+                    <img className="mx-auto h-20 w-auto" src="/images/AgroApp-logo.png" alt="AgroApp Logo" />
                     <h2 className="mt-6 text-center text-4xl font-extrabold text-green-800">
                         ¡Únete a la comunidad AgroApp!
                     </h2>
