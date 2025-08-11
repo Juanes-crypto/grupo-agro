@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../services/api";
-import { FiSearch, FiFilter, FiStar, FiShoppingCart, FiRefreshCw, FiPhone, FiMail, FiTrash2, FiEdit } from 'react-icons/fi';
+import { FiSearch, FiFilter, FiStar, FiRefreshCw, FiMail, FiTrash2, FiEdit } from 'react-icons/fi';
 import { FaWhatsapp, FaCrown, FaTractor, FaTools } from 'react-icons/fa';
 
 function RentalListPage() {
@@ -127,17 +127,8 @@ function RentalListPage() {
     } else if (rental.owner && rental.owner.email) {
       window.location.href = `mailto:${rental.owner.email}?subject=Interés en ${rental.name}`;
     } else {
-      alert("Funcionalidad de contacto en desarrollo o sin datos de contacto disponibles públicamente.");
+      alert("El proveedor no ha habilitado opciones de contacto público. Por favor revisa los detalles del equipo para más información.");
     }
-  };
-
-  const handleAddToCart = (rental) => {
-    if (!isAuthenticated) {
-      alert("Debes iniciar sesión para añadir al carrito.");
-      navigate("/login");
-      return;
-    }
-    alert(`"${rental.name}" ha sido añadido al carrito (funcionalidad en desarrollo).`);
   };
 
   const handleDeleteRental = async (rentalId) => {
@@ -252,20 +243,15 @@ function RentalListPage() {
                         <FaWhatsapp className="mr-2" /> WhatsApp
                       </button>
                     ) : (
-                      <button
-                        onClick={() => handleContactMe(rental)}
-                        className="flex items-center justify-center bg-green-500 hover:bg-green-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
-                      >
-                        <FiMail className="mr-2" /> Contactar
-                      </button>
+                      rental.owner && rental.owner.email && (
+                        <button
+                          onClick={() => handleContactMe(rental)}
+                          className="flex items-center justify-center bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
+                        >
+                          <FiMail className="mr-2" /> Contactar por Email
+                        </button>
+                      )
                     )}
-
-                    <button
-                      onClick={() => handleAddToCart(rental)}
-                      className="flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
-                    >
-                      <FiShoppingCart className="mr-2" /> Añadir al Carrito
-                    </button>
                   </>
                 )
               )}
