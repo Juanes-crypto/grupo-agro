@@ -167,7 +167,7 @@ function RegisterPage() {
 
                         {/* ⭐ NUEVO CAMPO: Número de Teléfono (WhatsApp) ⭐ */}
                         <div className="sm:col-span-2"> {/* Ocupa ambas columnas en pantallas grandes */}
-                            <label htmlFor="phoneNumber" className="block text-sm font-semibold text-gray-700 mb-1">Número de WhatsApp (Opcional)</label>
+                            <label htmlFor="phoneNumber" className="block text-sm font-semibold text-gray-700 mb-1">Número de WhatsApp</label>
                             <input
                                 id="phoneNumber"
                                 name="phoneNumber"
@@ -196,7 +196,7 @@ function RegisterPage() {
                         </div>
                         <div className="ml-3 text-sm">
                             <label htmlFor="showPhoneNumber" className="font-medium text-gray-700 cursor-pointer">
-                                Compartir mi número de WhatsApp públicamente
+                                Compartir mi número de WhatsApp (Recomendado para servicios y rentas)
                             </label>
                             <p className="text-gray-500">Permite que otros usuarios vean tu número de WhatsApp en tu perfil.</p>
                         </div>

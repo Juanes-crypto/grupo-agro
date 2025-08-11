@@ -235,7 +235,7 @@ function CreateRentalPage() {
                     {/* Imagen del Equipo/Espacio con Vista Previa */}
                     <div>
                         <label htmlFor="image" className="block text-lg font-semibold text-gray-800 mb-2 flex items-center">
-                            <PhotoIcon className="h-6 w-6 text-blue-500 mr-2" /> Imagen del Equipo o Espacio (Opcional)
+                            <PhotoIcon className="h-6 w-6 text-blue-500 mr-2" /> Imagen del Equipo o Espacio
                         </label>
                         <p className="text-sm text-gray-500 mb-2">Una buena imagen atrae más interesados. Sube una foto clara de lo que ofreces.</p>
                         <input

@@ -232,7 +232,7 @@ function CreateServicePage() {
                     {/* Imagen del Servicio con Vista Previa */}
                     <div>
                         <label htmlFor="image" className="block text-lg font-semibold text-gray-800 mb-2 flex items-center">
-                            <PhotoIcon className="h-6 w-6 text-green-500 mr-2" /> Imagen del Servicio (Opcional)
+                            <PhotoIcon className="h-6 w-6 text-green-500 mr-2" /> Imagen del Servicio
                         </label>
                         <p className="text-sm text-gray-500 mb-2">Una buena imagen ayuda a mostrar tu servicio. Sube una foto clara.</p>
                         <input
