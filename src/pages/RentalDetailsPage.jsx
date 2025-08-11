@@ -313,7 +313,7 @@ function RentalDetailsPage() {
                                         {!isMyRental && (
                                             <div className="ml-auto">
                                                 <Link
-                                                    to={`/seller-rentals/${rental.owner._id}`}
+                                                    to={`/rentals`}
                                                     className="text-sm font-medium text-green-600 hover:text-green-800"
                                                 >
                                                     Ver más rentas
