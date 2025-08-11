@@ -1,24 +1,21 @@
-// frontend/src/pages/ServiceDetailsPage.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, Link, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
+import { FaWhatsapp } from 'react-icons/fa';
 
 function ServiceDetailsPage() {
     const { id } = useParams();
-    const { isAuthenticated, user, token, addToCart } = useContext(AuthContext);
+    const { isAuthenticated, user, token } = useContext(AuthContext);
     const navigate = useNavigate();
 
     const [service, setService] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const [contactMessage, setContactMessage] = useState('');
-    const [addedToCartMessage, setAddedToCartMessage] = useState('');
-    const [quantity, setQuantity] = useState(1);
     const [providerServices, setProviderServices] = useState([]);
     const [categoryServices, setCategoryServices] = useState([]);
     const [showDeleteModal, setShowDeleteModal] = useState(false);
-    const [addedToCartMessages, setAddedToCartMessages] = useState({});
 
     useEffect(() => {
         const fetchService = async () => {
@@ -55,25 +52,6 @@ function ServiceDetailsPage() {
         fetchService();
     }, [id, token]);
 
-    const handleAddToCart = () => {
-        if (!isAuthenticated) {
-            setAddedToCartMessage('❌ Debes iniciar sesión para añadir al carrito');
-            setTimeout(() => setAddedToCartMessage(''), 3000);
-            navigate('/login');
-            return;
-        }
-
-        const serviceToAdd = { 
-            ...service, 
-            quantity,
-            isService: true
-        };
-        addToCart(serviceToAdd);
-
-        setAddedToCartMessage('✔️ ¡Añadido al carrito!');
-        setTimeout(() => setAddedToCartMessage(''), 3000);
-    };
-
     const handleContactMe = () => {
         if (!isAuthenticated) {
             setContactMessage('Debes iniciar sesión para contactar al proveedor.');
@@ -90,21 +68,24 @@ function ServiceDetailsPage() {
             );
             setContactMessage('');
         } else if (service && service.user && service.user.email) {
-            setContactMessage(`Puedes contactar a ${service.user.name || 'el proveedor'} al email: ${service.user.email}.`);
-            setTimeout(() => setContactMessage(''), 5000);
+            window.location.href = `mailto:${service.user.email}?subject=Interés en ${service.name}`;
         } else {
-            setContactMessage('Funcionalidad de contacto no disponible públicamente para este proveedor.');
+            setContactMessage('El proveedor no ha habilitado opciones de contacto público.');
             setTimeout(() => setContactMessage(''), 5000);
         }
     };
 
-    const incrementQuantity = () => {
-        setQuantity(prev => prev + 1);
-    };
-
-    const decrementQuantity = () => {
-        if (quantity > 1) {
-            setQuantity(prev => prev - 1);
+    const handleDeleteService = async () => {
+        try {
+            await api.delete(`/services/${id}`, {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+            navigate('/my-services');
+        } catch (err) {
+            console.error("Error eliminando servicio:", err);
+            setError('Error al eliminar el servicio.');
         }
     };
 
@@ -148,35 +129,13 @@ function ServiceDetailsPage() {
                         </p>
                     )}
                     
-                    <div className="mt-auto flex flex-col space-y-3 w-full">
+                    <div className="mt-auto">
                         <Link
                             to={`/services/${serviceItem._id}`}
-                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-center transition duration-300 shadow-md hover:shadow-lg"
+                            className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-center block transition duration-300 shadow-md hover:shadow-lg"
                         >
                             Ver Detalles
                         </Link>
-                        
-                        {isAuthenticated && user && serviceItem.user && serviceItem.user._id !== user._id && (
-                            <>
-                                <button
-                                    onClick={() => {
-                                        const serviceToAdd = { ...serviceItem, quantity: 1, isService: true };
-                                        addToCart(serviceToAdd);
-                                        setAddedToCartMessages(prev => ({ ...prev, [serviceItem._id]: '✔️ ¡Añadido al carrito!' }));
-                                        setTimeout(() => setAddedToCartMessages(prev => ({ ...prev, [serviceItem._id]: '' })), 2000);
-                                    }}
-                                    className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 shadow-md hover:shadow-lg"
-                                >
-                                    🛒 Añadir al Carrito
-                                </button>
-                                
-                                {addedToCartMessages[serviceItem._id] && (
-                                    <p className="text-center text-sm font-semibold text-green-600 animate-pulse">
-                                        {addedToCartMessages[serviceItem._id]}
-                                    </p>
-                                )}
-                            </>
-                        )}
                     </div>
                 </div>
             </div>
@@ -330,13 +289,17 @@ function ServiceDetailsPage() {
                                     <div className="flex items-center">
                                         <div className="flex-shrink-0">
                                             <img
-                                                className="h-10 w-10 rounded-full"
-                                                src={service.user.avatar || 'https://via.placeholder.com/40?text=P'}
+                                                className="h-12 w-12 rounded-full object-cover"
+                                                src={service.user.avatar || '/images/default-profile.png'}
                                                 alt={service.user.name}
+                                                onError={(e) => {
+                                                    e.target.onerror = null;
+                                                    e.target.src = '/images/default-profile.png';
+                                                }}
                                             />
                                         </div>
                                         <div className="ml-4">
-                                            <h4 className="text-sm font-semibold text-gray-900">
+                                            <h4 className="text-lg font-semibold text-gray-900">
                                                 {service.user.name}
                                                 {service.user.isPremium && (
                                                     <span className="ml-2 text-yellow-500">⭐</span>
@@ -345,6 +308,11 @@ function ServiceDetailsPage() {
                                             <p className="text-sm text-gray-500">
                                                 {service.user.email}
                                             </p>
+                                            {service.user.phoneNumber && service.user.showPhoneNumber && (
+                                                <p className="text-sm text-gray-500">
+                                                    Teléfono: {service.user.phoneNumber}
+                                                </p>
+                                            )}
                                         </div>
                                         {!isMyService && (
                                             <div className="ml-auto">
@@ -379,64 +347,29 @@ function ServiceDetailsPage() {
                                     </div>
                                 ) : (
                                     <div className="mt-auto space-y-4">
-                                        <div className="flex items-center justify-between mb-4">
-                                            <div className="flex items-center border border-gray-300 rounded-lg">
-                                                <button
-                                                    onClick={decrementQuantity}
-                                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-l-lg"
-                                                    disabled={quantity <= 1}
-                                                >
-                                                    -
-                                                </button>
-                                                <span className="px-4 py-2 text-gray-900 font-medium">
-                                                    {quantity}
-                                                </span>
-                                                <button
-                                                    onClick={incrementQuantity}
-                                                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-r-lg"
-                                                >
-                                                    +
-                                                </button>
-                                            </div>
-                                            <button
-                                                onClick={handleAddToCart}
-                                                className="bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-6 rounded-lg transition duration-300 flex-1 ml-4"
-                                            >
-                                                🛒 Añadir al Carrito
-                                            </button>
-                                        </div>
-
                                         {service.user && service.user.phoneNumber && service.user.showPhoneNumber ? (
                                             <button
                                                 onClick={handleContactMe}
                                                 className="w-full bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-lg text-lg font-semibold transition-colors duration-300 flex items-center justify-center space-x-2"
                                             >
-                                                <svg
-                                                    className="w-6 h-6"
-                                                    fill="currentColor"
-                                                    viewBox="0 0 24 24"
-                                                    xmlns="http://www.w3.org/2000/svg"
-                                                >
-                                                    <path d="M12.035 1.5C6.065 1.5 1.25 6.31 1.25 12.28c0 2.21.655 4.31 1.83 6.13l-1.31 4.77 4.9-1.29c1.78.97 3.8.7 5.51.7 5.97 0 10.79-4.81 10.79-10.78C22.75 6.31 17.94 1.5 12.035 1.5zm-.01 19.5c-1.63 0-3.2-.42-4.57-1.2L5 20l.96-3.56c-.95-1.3-1.48-2.83-1.48-4.46C4.48 7.6 8.01 4.07 12.02 4.07c3.96 0 7.23 3.25 7.23 7.23 0 4-3.27 7.23-7.23 7.23zm3.17-5.11c-.18-.09-.96-.48-1.11-.53-.15-.05-.26-.07-.37.07-.12.15-.46.53-.56.64-.09.12-.18.12-.34.05-.15-.07-.63-.23-1.2-.74-.45-.4-.75-.67-.89-.92-.15-.26-.01-.22.1-.33.09-.09.2-.23.3-.34.09-.09.12-.15.18-.26.07-.1.04-.18-.02-.26-.05-.07-.37-.9-.51-1.22-.12-.26-.26-.23-.37-.23-.12 0-.26-.03-.4-.03-.15 0-.34.05-.51.23-.15.15-.57.56-.57 1.36 0 .8.59 1.57.67 1.68.09.12 1.16 1.77 2.82 2.45.38.15.68.23.91.28.37.07.96.34 1.16.2.19-.15.26-.18.3-.28.05-.09.18-.53.26-.99.09-.45.09-.84.07-.92z" />
-                                                </svg>
+                                                <FaWhatsapp className="text-xl" />
                                                 <span>Contactar por WhatsApp</span>
                                             </button>
-                                        ) : (
+                                        ) : service.user && service.user.email ? (
                                             <button
                                                 onClick={handleContactMe}
-                                                className="w-full bg-blue-600 text-white px-6 py-3 rounded-lg text-lg font-semibold hover:bg-blue-700 transition-colors duration-300"
+                                                className="w-full bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg text-lg font-semibold transition-colors duration-300"
                                             >
-                                                Comunícate Conmigo
+                                                Contactar por Email
                                             </button>
-                                        )}
-
-                                        {addedToCartMessage && (
-                                            <p className={`text-center font-semibold ${addedToCartMessage.includes('❌') ? 'text-red-600' : 'text-green-600'}`}>
-                                                {addedToCartMessage}
+                                        ) : (
+                                            <p className="text-center text-gray-500">
+                                                El proveedor no ha habilitado opciones de contacto
                                             </p>
                                         )}
+
                                         {contactMessage && (
-                                            <p className={`text-center font-medium ${contactMessage.includes('Debes iniciar sesión') || contactMessage.includes('no disponible') ? 'text-red-600' : 'text-green-600'}`}>
+                                            <p className={`text-center font-medium ${contactMessage.includes('Debes iniciar sesión') ? 'text-red-600' : 'text-green-600'}`}>
                                                 {contactMessage}
                                             </p>
                                         )}
@@ -445,7 +378,7 @@ function ServiceDetailsPage() {
                             ) : (
                                 <div className="mt-auto">
                                     <p className="text-center text-gray-500 mb-4">
-                                        Inicia sesión para interactuar con este servicio
+                                        Inicia sesión para contactar al proveedor
                                     </p>
                                     <Link
                                         to="/login"
@@ -514,10 +447,7 @@ function ServiceDetailsPage() {
                                     Cancelar
                                 </button>
                                 <button
-                                    onClick={() => {
-                                        // Implementar lógica de eliminación
-                                        setShowDeleteModal(false);
-                                    }}
+                                    onClick={handleDeleteService}
                                     className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition duration-300"
                                 >
                                     Eliminar
