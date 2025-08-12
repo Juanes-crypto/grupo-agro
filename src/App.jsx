@@ -38,6 +38,7 @@ import ServiceDetailsPage from './pages/ServiceDetailsPage';
 import RentalDetailsPage from './pages/RentalDetailsPage';
 import BarterProposalPage from './pages/BarterProposalPage';
 import SubscriptionPlansPage from './pages/SubscriptionPlansPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
     // Estado para controlar la visibilidad del Navbar en móviles
@@ -95,6 +96,7 @@ function App() {
                                             <Route path="/create-service" element={<CreateServicePage />} />
                                             <Route path="/create-product" element={<CreateProductPage />} />
                                             <Route path="/premium-upsell" element={<PremiumUpsellPage />} />
+                                            <Route path="*" element={<NotFoundPage />} />
                                         </Route>
 
                                         <Route element={<PrivateRoute />}>
