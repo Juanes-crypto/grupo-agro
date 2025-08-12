@@ -21,31 +21,31 @@ function SubscriptionPlansPage() {
                         Control Total: Tu Inventario sin Límites
                     </h2>
                     <p className="text-lg text-gray-700 mb-6 leading-relaxed">
-                        Imagina una base de datos exclusiva para **TODOS tus productos**. Con AgroNet Premium, obtienes un **inventario ilimitado y centralizado** donde puedes:
+                        Imagina una base de datos exclusiva para TODOS tus productos. Con AgroNet Premium, obtienes un inventario ilimitado y centralizado donde puedes:
                     </p>
                     <ul className="list-none space-y-3 text-lg text-gray-800 mb-8 text-left w-full px-4">
                         <li className="flex items-start">
                             <span className="text-green-500 mr-3 text-2xl">✔</span>
                             <span className="flex-1">
-                                **Registra y Gestiona sin Esfuerzo:** Añade cada uno de tus productos agrícolas con todos sus detalles, sin restricciones de cantidad.
+                                Registra y Gestiona sin Esfuerzo: Añade cada uno de tus productos agrícolas con todos sus detalles, sin restricciones de cantidad.
                             </span>
                         </li>
                         <li className="flex items-start">
                             <span className="text-green-500 mr-3 text-2xl">✔</span>
                             <span className="flex-1">
-                                **Publica y Despublica al Instante:** Ten el poder de mostrar u ocultar tus ofertas con un solo clic, adaptándote a la demanda del mercado.
+                                Publica y Despublica al Instante: Ten el poder de mostrar u ocultar tus ofertas con un solo clic, adaptándote a la demanda del mercado.
                             </span>
                         </li>
                         <li className="flex items-start">
                             <span className="text-green-500 mr-3 text-2xl">✔</span>
                             <span className="flex-1">
-                                **Edita y Actualiza en Tiempo Real:** Mantén tu inventario siempre al día con facilidad, modificando precios, cantidades o descripciones.
+                                Edita y Actualiza en Tiempo Real: Mantén tu inventario siempre al día con facilidad, modificando precios, cantidades o descripciones.
                             </span>
                         </li>
                         <li className="flex items-start">
                             <span className="text-green-500 mr-3 text-2xl">✔</span>
                             <span className="flex-1">
-                                **Elimina lo que ya no está:** Mantén tu base de datos limpia y eficiente, retirando productos que ya no ofreces.
+                                Elimina lo que ya no está: Mantén tu base de datos limpia y eficiente, retirando productos que ya no ofreces.
                             </span>
                         </li>
                     </ul>
@@ -66,19 +66,19 @@ function SubscriptionPlansPage() {
                         <li className="flex items-start">
                             <span className="text-yellow-500 mr-3 text-2xl">🚀</span>
                             <span className="flex-1">
-                                **Primeros en la Lista:** Tus productos publicados obtendrán una **prioridad de renderizado** exclusiva, apareciendo en los primeros lugares de búsqueda y listados.
+                                Primeros en la Lista: Tus productos publicados obtendrán una prioridad de renderizado exclusiva, apareciendo en los primeros lugares de búsqueda y listados.
                             </span>
                         </li>
                         <li className="flex items-start">
                             <span className="text-yellow-500 mr-3 text-2xl">🚀</span>
                             <span className="flex-1">
-                                **Mayor Visibilidad, Más Ventas:** Al estar más visibles, tus productos atraerán más miradas, generando más interés y, en consecuencia, **más oportunidades de venta y trueque**.
+                                Mayor Visibilidad, Más Ventas: Al estar más visibles, tus productos atraerán más miradas, generando más interés y, en consecuencia, más oportunidades de venta y trueque.
                             </span>
                         </li>
                         <li className="flex items-start">
                             <span className="text-yellow-500 mr-3 text-2xl">🚀</span>
                             <span className="flex-1">
-                                **Conecta con Compradores Rápidamente:** Aumenta las interacciones y acelera tus transacciones al asegurarte de que tus ofertas lleguen primero a quienes las buscan.
+                                Conecta con Compradores Rápidamente: Aumenta las interacciones y acelera tus transacciones al asegurarte de que tus ofertas lleguen primero a quienes las buscan.
                             </span>
                         </li>
                     </ul>
