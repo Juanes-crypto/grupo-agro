@@ -50,7 +50,7 @@ function App() {
     };
 
     return (
-        <Router>
+        
             <AuthProvider>
                 <NotificationProvider>
                     <div className="flex min-h-screen bg-gradient-to-br from-primary-50 to-primary-100">
@@ -124,7 +124,7 @@ function App() {
                     />
                 </NotificationProvider>
             </AuthProvider>
-        </Router>
+        
     );
 }
 
