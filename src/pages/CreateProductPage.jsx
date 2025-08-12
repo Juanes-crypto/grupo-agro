@@ -13,7 +13,7 @@ import {
     CubeIcon,              // Para stock y unidad
     DocumentTextIcon,      // Para descripción
     ArrowsRightLeftIcon    // Para el campo de truequeable
-} from '@heroicons/react/24/outline'; // Usamos outline para un estilo más ligero
+} from '@heroicons/react/outline'; // Usamos outline para un estilo más ligero
 
 function CreateProductPage() {
     const { token, isAuthenticated, loading: authLoading } = useContext(AuthContext);

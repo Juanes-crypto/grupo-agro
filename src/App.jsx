@@ -38,6 +38,9 @@ import RentalDetailsPage from './pages/RentalDetailsPage';
 import BarterProposalPage from './pages/BarterProposalPage';
 import SubscriptionPlansPage from './pages/SubscriptionPlansPage';
 import NotFoundPage from './pages/NotFoundPage';
+import TermsPage from './pages/TermsPage';
+import PrivacyPage from './pages/PrivacyPage';
+import CookiesPage from './pages/CookiesPage';
 
 function App() {
     const [isNavbarOpen, setIsNavbarOpen] = useState(false);
@@ -71,6 +74,9 @@ function App() {
                             <Route path="/rentals/:id" element={<RentalDetailsPage />} />
                             <Route path="/barter/:productId" element={<BarterProposalPage />} />
                             <Route path="/subscription-plans" element={<SubscriptionPlansPage />} />
+                            <Route path="/terms" element={<TermsPage />} />
+                            <Route path="/privacy" element={<PrivacyPage />} />
+                            <Route path="/cookies" element={<CookiesPage />} />
 
                             {/* Rutas Privadas */}
                             <Route element={<PrivateRoute />}>

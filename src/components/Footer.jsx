@@ -9,7 +9,7 @@ import {
   BuildingOffice2Icon,
   ShieldCheckIcon,
   HeartIcon
-} from '@heroicons/react/24/outline';
+} from '@heroicons/react/outline';
 
 const Footer = () => {
   return (

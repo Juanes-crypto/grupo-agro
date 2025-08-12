@@ -12,7 +12,7 @@ import {
   ChevronRightIcon,
   HomeIcon,
   Bars3Icon, // Importamos el icono del menú de hamburguesa
-} from "@heroicons/react/24/outline";
+} from "@heroicons/react/outline";
 
 function TopNavbar({ onMenuClick }) { // Recibimos la prop onMenuClick
   const { isAuthenticated, user, cartItems } = useContext(AuthContext);
