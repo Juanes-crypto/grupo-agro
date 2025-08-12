@@ -17,8 +17,8 @@ import {
   ArrowsRightLeftIcon,
   PlusIcon,
   StarIcon,
-} from "@heroicons/react/outline";
-import { StarIcon as StarIconSolid } from "@heroicons/react/solid";
+} from "@heroicons/react/24/outline";
+import { StarIcon as StarIconSolid } from "@heroicons/react/24/solid";
 function WelcomePage() {
   const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();

@@ -12,7 +12,7 @@ import {
     LightBulbIcon,   // Para experiencia
     BookOpenIcon,    // Para descripción
     SparklesIcon     // Para el nombre del servicio
-} from '@heroicons/react/outline'; // Usamos outline para un estilo más ligero
+} from '@heroicons/react/24/outline'; // Usamos outline para un estilo más ligero
 
 function CreateServicePage() {
     const { isAuthenticated, loading: authLoading } = useContext(AuthContext);

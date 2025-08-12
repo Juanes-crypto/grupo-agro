@@ -13,7 +13,7 @@ import {
     DocumentTextIcon,      // Para descripción
     CalendarDaysIcon,      // Para precio por día
     BuildingStorefrontIcon // Para el título principal
-} from '@heroicons/react/outline'; // O @heroicons/react/24/solid si prefieres rellenos
+} from '@heroicons/react/24/outline'; // O @heroicons/react/24/solid si prefieres rellenos
 
 function CreateRentalPage() {
     const { token, isAuthenticated, loading: authLoading } = useContext(AuthContext);

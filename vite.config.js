@@ -4,32 +4,27 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
   build: {
-    outDir: 'dist',
-    assetsInlineLimit: 4096, // Cambiado a valor recomendado
     rollupOptions: {
+      external: [], // Vacío, no externalizamos nada
       output: {
-        entryFileNames: `assets/[name].[hash].js`, // Añade hash
-        chunkFileNames: `assets/[name].[hash].js`,
-        assetFileNames: `assets/[name].[hash].[ext]`
+        // Mantén tu configuración actual de output
       }
     }
   },
-  server: {
-    https: true,
-    proxy: {
-      '/api': {
-        target: 'https://grupo-agro-backend.onrender.com',
-        changeOrigin: true,
-        secure: true
-      }
+  resolve: {
+    alias: {
+      // Añade estos alias para asegurar la resolución
+      '@heroicons/react/outline': '@heroicons/react/24/outline',
+      '@heroicons/react/solid': '@heroicons/react/24/solid'
     }
   },
   optimizeDeps: {
     include: [
-      '@heroicons/react/outline',
-      '@heroicons/react/solid', // Añadido para v2
+      '@heroicons/react/24/outline',
+      '@heroicons/react/24/solid',
       'react',
       'react-dom'
-    ]
+    ],
+    exclude: ['@heroicons/react'] // Excluye la versión genérica
   }
 });

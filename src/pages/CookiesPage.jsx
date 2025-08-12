@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
 import { 
-  CookieIcon,
+  DocumentTextIcon,
   NoSymbolIcon
-} from '@heroicons/react/outline';
+} from '@heroicons/react/24/outline';
 
 const CookiesPage = () => {
   useEffect(() => {
@@ -13,7 +13,7 @@ const CookiesPage = () => {
     <div className="max-w-4xl mx-auto p-6">
       <div className="text-center mb-12">
         <div className="inline-flex items-center gap-2 bg-amber-100 text-amber-800 px-4 py-2 rounded-full mb-4">
-          <CookieIcon className="h-5 w-5" />
+          <DocumentTextIcon className="h-5 w-5" />
           <span className="font-medium">Cookies</span>
         </div>
         <h1 className="text-3xl font-bold text-gray-900 mb-3">Política de Cookies</h1>

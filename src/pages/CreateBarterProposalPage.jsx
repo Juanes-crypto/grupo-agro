@@ -4,7 +4,7 @@ import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
-import { CurrencyDollarIcon, CheckCircleIcon, ExclamationCircleIcon, ArrowPathIcon, HandThumbUpIcon, ShieldCheckIcon, UsersIcon } from '@heroicons/react/outline';
+import { CurrencyDollarIcon, CheckCircleIcon, ExclamationCircleIcon, ArrowPathIcon, HandThumbUpIcon, ShieldCheckIcon, UsersIcon } from '@heroicons/react/24/outline';
 
 function CreateBarterProposalPage() {
     const { productId } = useParams(); // ID del producto que el usuario quiere obtener

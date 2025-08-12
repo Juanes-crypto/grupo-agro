@@ -18,7 +18,7 @@ import {
   ChevronDownIcon,
   Bars3Icon,
   XMarkIcon,
-} from "@heroicons/react/outline";
+} from "@heroicons/react/24/outline";
 
 function Navbar() {
   const { isAuthenticated, isPremium, logout, cartItems } = useContext(AuthContext);

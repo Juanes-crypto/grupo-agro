@@ -4,7 +4,7 @@ import {
   ExclamationCircleIcon,
   UserIcon,
   MapIcon
-} from '@heroicons/react/outline';
+} from '@heroicons/react/24/outline';
 
 const TermsPage = () => {
   useEffect(() => {
