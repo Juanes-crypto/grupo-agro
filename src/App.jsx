@@ -1,15 +1,13 @@
 import React, { useState } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom'; // Eliminamos BrowserRouter de aquí
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import { AuthProvider } from './context/AuthContext';
-import { NotificationProvider } from './context/NotificationContext';
 import TopNavbar from "./components/TopNavbar";
 import Navbar from './components/Navbar';
 import PrivateRoute from './components/PrivateRoute';
 import PremiumRoute from './components/PremiumRoute';
 
-// Páginas
+// Importación de todas las páginas
 import HomePage from './pages/HomePage';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
@@ -38,96 +36,83 @@ import ServiceDetailsPage from './pages/ServiceDetailsPage';
 import RentalDetailsPage from './pages/RentalDetailsPage';
 import BarterProposalPage from './pages/BarterProposalPage';
 import SubscriptionPlansPage from './pages/SubscriptionPlansPage';
-import NotFoundPage from './pages/NotFoundPage'; // Se agregó el import de NotFoundPage
+import NotFoundPage from './pages/NotFoundPage';
 
 function App() {
-    // Estado para controlar la visibilidad del Navbar en móviles
     const [isNavbarOpen, setIsNavbarOpen] = useState(false);
 
-    // Función para alternar el estado
-    const toggleNavbar = () => {
-        setIsNavbarOpen(!isNavbarOpen);
-    };
+    const toggleNavbar = () => setIsNavbarOpen(!isNavbarOpen);
 
     return (
-        <Router>
-            <AuthProvider>
-                <NotificationProvider>
-                    {/* Contenedor principal que usa flexbox para el layout. */}
-                    {/* En pantallas grandes, Navbar (el sidebar) y el contenido principal se muestran uno al lado del otro. */}
-                    <div className="flex min-h-screen bg-gradient-to-br from-primary-50 to-primary-100">
-                        {/* El Navbar ahora recibe su estado y una función para cerrarse */}
-                        <Navbar isNavbarOpen={isNavbarOpen} setIsNavbarOpen={setIsNavbarOpen} />
-                        
-                        <div className="flex-1 md:ml-64">
-                            {/* El TopNavbar ahora recibe la función para abrir/cerrar el menú */}
-                            <TopNavbar onMenuClick={toggleNavbar} />
+        <div className="flex min-h-screen bg-gradient-to-br from-primary-50 to-primary-100">
+            <Navbar isNavbarOpen={isNavbarOpen} setIsNavbarOpen={setIsNavbarOpen} />
+            
+            <div className="flex-1 md:ml-64">
+                <TopNavbar onMenuClick={toggleNavbar} />
 
-                            <main className="p-8 pt-16 overflow-y-auto">
-                                <div className="max-w-7xl mx-auto">
-                                    <Routes>
-                                        <Route path="/" element={<HomePage />} />
-                                        <Route path="/register" element={<RegisterPage />} />
-                                        <Route path="/login" element={<LoginPage />} />
-                                        <Route path="/welcome" element={<WelcomePage />} />
-                                        <Route path="/products" element={<ProductListPage />} />
-                                        <Route path="/products/:id" element={<ProductDetailsPage />} />
-                                        <Route path="/services" element={<ServiceListPage />} />
-                                        <Route path="/rentals" element={<RentalListPage />} />
-                                        <Route path="/services/:id" element={<ServiceDetailsPage />} />
-                                        <Route path="/rentals/:id" element={<RentalDetailsPage />} />
-                                        <Route path="/barter/:productId" element={<BarterProposalPage />} />
-                                        <Route path="/subscription-plans" element={<SubscriptionPlansPage />} />
+                <main className="p-8 pt-16 overflow-y-auto">
+                    <div className="max-w-7xl mx-auto">
+                        <Routes>
+                            <Route path="/" element={<HomePage />} />
+                            <Route path="/register" element={<RegisterPage />} />
+                            <Route path="/login" element={<LoginPage />} />
+                            <Route path="/welcome" element={<WelcomePage />} />
+                            <Route path="/products" element={<ProductListPage />} />
+                            <Route path="/products/:id" element={<ProductDetailsPage />} />
+                            <Route path="/services" element={<ServiceListPage />} />
+                            <Route path="/rentals" element={<RentalListPage />} />
+                            <Route path="/services/:id" element={<ServiceDetailsPage />} />
+                            <Route path="/rentals/:id" element={<RentalDetailsPage />} />
+                            <Route path="/barter/:productId" element={<BarterProposalPage />} />
+                            <Route path="/subscription-plans" element={<SubscriptionPlansPage />} />
 
-                                        <Route element={<PrivateRoute />}>
-                                            <Route path="/cart" element={<CartPage />} />
-                                            <Route path="/checkout" element={<CheckoutPage />} />
-                                            <Route path="/my-orders" element={<MyOrdersPage />} />
-                                            <Route path="/order-details/:id" element={<OrderDetailsPage />} />
-                                            <Route path="/dashboard" element={<DashboardPage />} />
-                                            <Route path="/notifications" element={<NotificationsPage />} />
-                                            <Route path="/edit-product/:id" element={<EditProductPage />} />
-                                            <Route path="/my-products" element={<ProductListPage />} />
-                                            <Route path="/my-services" element={<ServiceListPage />} />
-                                            <Route path="/my-rentals" element={<RentalListPage />} />
-                                            <Route path="/barter-details/:id" element={<BarterDetailsPage />} />
-                                            <Route path="/create-barter-proposal/:productId" element={<CreateBarterProposalPage />} />
-                                            <Route path="/create-counter-proposal/:proposalId" element={<CreateCounterProposalPage />} />
-                                            <Route path="/my-barter-proposals" element={<MyBarterProposalsPage />} />
-                                            <Route path="/create-rental" element={<CreateRentalPage />} />
-                                            <Route path="/create-service" element={<CreateServicePage />} />
-                                            <Route path="/create-product" element={<CreateProductPage />} />
-                                            <Route path="/premium-upsell" element={<PremiumUpsellPage />} />
-                                        </Route>
+                            <Route element={<PrivateRoute />}>
+                                <Route path="/cart" element={<CartPage />} />
+                                <Route path="/checkout" element={<CheckoutPage />} />
+                                <Route path="/my-orders" element={<MyOrdersPage />} />
+                                <Route path="/order-details/:id" element={<OrderDetailsPage />} />
+                                <Route path="/dashboard" element={<DashboardPage />} />
+                                <Route path="/notifications" element={<NotificationsPage />} />
+                                <Route path="/edit-product/:id" element={<EditProductPage />} />
+                                <Route path="/my-products" element={<ProductListPage />} />
+                                <Route path="/my-services" element={<ServiceListPage />} />
+                                <Route path="/my-rentals" element={<RentalListPage />} />
+                                <Route path="/barter-details/:id" element={<BarterDetailsPage />} />
+                                <Route path="/create-barter-proposal/:productId" element={<CreateBarterProposalPage />} />
+                                <Route path="/create-counter-proposal/:proposalId" element={<CreateCounterProposalPage />} />
+                                <Route path="/my-barter-proposals" element={<MyBarterProposalsPage />} />
+                                <Route path="/create-rental" element={<CreateRentalPage />} />
+                                <Route path="/create-service" element={<CreateServicePage />} />
+                                <Route path="/create-product" element={<CreateProductPage />} />
+                                <Route path="/premium-upsell" element={<PremiumUpsellPage />} />
+                            </Route>
 
-                                        <Route element={<PrivateRoute />}>
-                                            <Route element={<PremiumRoute />}>
-                                                <Route path="/premium-inventory" element={<PremiumInventoryPage />} />
-                                            </Route>
-                                        </Route>
-                                        
-                                        <Route path="*" element={<NotFoundPage />} />
-                                    </Routes>
-                                </div>
-                            </main>
-                        </div>
+                            <Route element={<PrivateRoute />}>
+                                <Route element={<PremiumRoute />}>
+                                    <Route path="/premium-inventory" element={<PremiumInventoryPage />} />
+                                </Route>
+                            </Route>
+                            
+                            <Route path="*" element={<NotFoundPage />} />
+                        </Routes>
                     </div>
-                    <ToastContainer
-                        position="bottom-right"
-                        autoClose={5000}
-                        hideProgressBar={false}
-                        newestOnTop={false}
-                        closeOnClick
-                        rtl={false}
-                        pauseOnFocusLoss
-                        draggable
-                        pauseOnHover
-                        toastClassName="bg-white text-gray-800 shadow-xl rounded-xl"
-                        progressClassName="bg-primary-500"
-                    />
-                </NotificationProvider>
-            </AuthProvider>
-        </Router>
+                </main>
+            </div>
+
+            <ToastContainer
+                position="bottom-right"
+                autoClose={5000}
+                hideProgressBar={false}
+                newestOnTop={false}
+                closeOnClick
+                rtl={false}
+                pauseOnFocusLoss
+                draggable
+                pauseOnHover
+                toastClassName="bg-white text-gray-800 shadow-xl rounded-xl"
+                progressClassName="bg-primary-500"
+            />
+        </div>
     );
 }
 
