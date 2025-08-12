@@ -38,7 +38,7 @@ import ServiceDetailsPage from './pages/ServiceDetailsPage';
 import RentalDetailsPage from './pages/RentalDetailsPage';
 import BarterProposalPage from './pages/BarterProposalPage';
 import SubscriptionPlansPage from './pages/SubscriptionPlansPage';
-import NotFoundPage from './pages/NotFoundPage';
+import NotFoundPage from './pages/NotFoundPage'; // Se agregó el import de NotFoundPage
 
 function App() {
     // Estado para controlar la visibilidad del Navbar en móviles
@@ -50,9 +50,11 @@ function App() {
     };
 
     return (
-        
+        <Router>
             <AuthProvider>
                 <NotificationProvider>
+                    {/* Contenedor principal que usa flexbox para el layout. */}
+                    {/* En pantallas grandes, Navbar (el sidebar) y el contenido principal se muestran uno al lado del otro. */}
                     <div className="flex min-h-screen bg-gradient-to-br from-primary-50 to-primary-100">
                         {/* El Navbar ahora recibe su estado y una función para cerrarse */}
                         <Navbar isNavbarOpen={isNavbarOpen} setIsNavbarOpen={setIsNavbarOpen} />
@@ -96,7 +98,6 @@ function App() {
                                             <Route path="/create-service" element={<CreateServicePage />} />
                                             <Route path="/create-product" element={<CreateProductPage />} />
                                             <Route path="/premium-upsell" element={<PremiumUpsellPage />} />
-                                            <Route path="*" element={<NotFoundPage />} />
                                         </Route>
 
                                         <Route element={<PrivateRoute />}>
@@ -104,6 +105,8 @@ function App() {
                                                 <Route path="/premium-inventory" element={<PremiumInventoryPage />} />
                                             </Route>
                                         </Route>
+                                        
+                                        <Route path="*" element={<NotFoundPage />} />
                                     </Routes>
                                 </div>
                             </main>
@@ -124,7 +127,7 @@ function App() {
                     />
                 </NotificationProvider>
             </AuthProvider>
-        
+        </Router>
     );
 }
 
