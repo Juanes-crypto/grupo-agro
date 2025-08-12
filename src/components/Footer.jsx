@@ -35,10 +35,10 @@ const Footer = () => {
                 <div>
                   <h4 className="font-semibold text-amber-200">Correo Electrónico</h4>
                   <a 
-                    href="mailto:soporte@agroapp.com" 
+                    href="mailto:soporte@agronet.com" 
                     className="text-amber-100/80 hover:text-amber-300 transition-colors"
                   >
-                    soporte@agroapp.com
+                    soporte@agronet.com
                   </a>
                 </div>
               </div>
@@ -48,10 +48,10 @@ const Footer = () => {
                 <div>
                   <h4 className="font-semibold text-amber-200">Teléfono</h4>
                   <a 
-                    href="tel:+573001234567" 
+                    href="tel:+573108950792" 
                     className="text-amber-100/80 hover:text-amber-300 transition-colors"
                   >
-                    +57 300 123 4567
+                    +57 310 895 07 92
                   </a>
                 </div>
               </div>
@@ -60,7 +60,7 @@ const Footer = () => {
                 <MapPinIcon className="h-5 w-5 mt-1 text-amber-200/80" />
                 <div>
                   <h4 className="font-semibold text-amber-200">Ubicación</h4>
-                  <p className="text-amber-100/80">Bogotá, Colombia</p>
+                  <p className="text-amber-100/80">Medellin, Colombia</p>
                 </div>
               </div>
             </div>
@@ -79,27 +79,28 @@ const Footer = () => {
                 <ShieldCheckIcon className="h-8 w-8 text-amber-300" />
               </div>
               <div>
-                <h4 className="font-bold text-lg">[Tu Nombre o Empresa]</h4>
+                <h4 className="font-bold text-lg">Juan Esteban Garcia</h4>
                 <p className="text-amber-100/80">Desarrollador Full Stack</p>
               </div>
             </div>
             
             <p className="text-amber-100/90">
-              Especializado en soluciones digitales para el sector agrícola con más de X años de experiencia.
+              Especializado en soluciones digitales para el sector agrícola, amplio conocimiento en Backend, Frontend y Bases de datos.
+              Manejo exponencial de herramientas digitales y de la productividad.
             </p>
             
             <div className="flex flex-wrap gap-4 pt-2">
               <a 
-                href="https://linkedin.com/in/tuperfil" 
+                href="https://www.instagram.com/juanes_00.2/" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="bg-green-700/40 hover:bg-green-700/60 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
               >
-                <span>LinkedIn</span>
+                <span>Instagram</span>
               </a>
               
               <a 
-                href="https://github.com/tuperfil" 
+                href="https://github.com/Juanes-crypto/" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="bg-green-700/40 hover:bg-green-700/60 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
@@ -107,14 +108,16 @@ const Footer = () => {
                 <span>GitHub</span>
               </a>
               
-              <a 
+              {/* <a 
                 href="https://tusitio.com" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 className="bg-amber-600/80 hover:bg-amber-600 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
               >
                 <span>Portafolio</span>
-              </a>
+              </a> */}
+              <span>Correo: juanesgarciaarboleda06@gmail.com</span>
+              <span>Contacto: 3108950792</span>
             </div>
           </div>
         </div>
@@ -123,7 +126,7 @@ const Footer = () => {
         <div className="border-t border-amber-100/10 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2 text-amber-100/70">
             <HeartIcon className="h-5 w-5 text-amber-300/70" />
-            <span>© {new Date().getFullYear()} AgroApp. Todos los derechos reservados.</span>
+            <span>© {new Date().getFullYear()} AgroNet. Todos los derechos reservados.</span>
           </div>
           
           <div className="flex gap-6">
