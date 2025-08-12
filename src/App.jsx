@@ -1,13 +1,14 @@
 import React, { useState } from 'react';
-import { Routes, Route } from 'react-router-dom'; // Eliminamos BrowserRouter de aquí
+import { Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import TopNavbar from "./components/TopNavbar";
 import Navbar from './components/Navbar';
 import PrivateRoute from './components/PrivateRoute';
 import PremiumRoute from './components/PremiumRoute';
+import Footer from './components/Footer';
 
-// Importación de todas las páginas
+// Páginas
 import HomePage from './pages/HomePage';
 import RegisterPage from './pages/RegisterPage';
 import LoginPage from './pages/LoginPage';
@@ -44,15 +45,20 @@ function App() {
     const toggleNavbar = () => setIsNavbarOpen(!isNavbarOpen);
 
     return (
-        <div className="flex min-h-screen bg-gradient-to-br from-primary-50 to-primary-100">
+        <div className="flex min-h-screen flex-col bg-gradient-to-br from-primary-50 to-primary-100">
+            {/* Navbar Lateral */}
             <Navbar isNavbarOpen={isNavbarOpen} setIsNavbarOpen={setIsNavbarOpen} />
             
-            <div className="flex-1 md:ml-64">
+            {/* Contenido Principal */}
+            <div className="flex-1 md:ml-64 flex flex-col">
+                {/* TopNavbar */}
                 <TopNavbar onMenuClick={toggleNavbar} />
 
-                <main className="p-8 pt-16 overflow-y-auto">
+                {/* Contenido Dinámico */}
+                <main className="flex-1 p-8 pt-16 overflow-y-auto">
                     <div className="max-w-7xl mx-auto">
                         <Routes>
+                            {/* Rutas Públicas */}
                             <Route path="/" element={<HomePage />} />
                             <Route path="/register" element={<RegisterPage />} />
                             <Route path="/login" element={<LoginPage />} />
@@ -66,6 +72,7 @@ function App() {
                             <Route path="/barter/:productId" element={<BarterProposalPage />} />
                             <Route path="/subscription-plans" element={<SubscriptionPlansPage />} />
 
+                            {/* Rutas Privadas */}
                             <Route element={<PrivateRoute />}>
                                 <Route path="/cart" element={<CartPage />} />
                                 <Route path="/checkout" element={<CheckoutPage />} />
@@ -87,18 +94,24 @@ function App() {
                                 <Route path="/premium-upsell" element={<PremiumUpsellPage />} />
                             </Route>
 
+                            {/* Rutas Premium */}
                             <Route element={<PrivateRoute />}>
                                 <Route element={<PremiumRoute />}>
                                     <Route path="/premium-inventory" element={<PremiumInventoryPage />} />
                                 </Route>
                             </Route>
                             
+                            {/* Ruta 404 */}
                             <Route path="*" element={<NotFoundPage />} />
                         </Routes>
                     </div>
                 </main>
+
+                {/* Footer */}
+                <Footer />
             </div>
 
+            {/* Toast Notifications */}
             <ToastContainer
                 position="bottom-right"
                 autoClose={5000}
