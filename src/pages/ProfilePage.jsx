@@ -1,3 +1,4 @@
+// src/pages/ProfilePage.jsx
 import React, { useState, useContext } from 'react';
 import { UserCircleIcon, Cog6ToothIcon, BellIcon, HomeIcon, ShoppingCartIcon, TagIcon } from '@heroicons/react/24/outline';
 import { AuthContext } from '../context/AuthContext';
@@ -5,6 +6,7 @@ import DashboardOverview from '../components/DashboardOverview';
 import MisPublicaciones from '../components/MisPublicaciones';
 import MisPedidos from '../components/MisPedidos';
 import MisNotificaciones from '../components/MisNotificaciones';
+import Configuracion from '../components/Configuracion'; // Nuevo componente para la configuración
 
 // Un componente de ejemplo para la sección de Mi Perfil
 const MiPerfil = () => {
@@ -81,7 +83,6 @@ const ProfilePage = () => {
     const [activeSection, setActiveSection] = useState('overview');
     const { user } = useContext(AuthContext);
 
-    // Renderiza el componente de la sección activa
     const renderContent = () => {
         switch (activeSection) {
             case 'overview':
@@ -94,6 +95,8 @@ const ProfilePage = () => {
                 return <MisPedidos />;
             case 'notifications':
                 return <MisNotificaciones />;
+            case 'settings':
+                return <Configuracion />; // Ahora renderiza el componente de configuración
             default:
                 return <DashboardOverview />;
         }
