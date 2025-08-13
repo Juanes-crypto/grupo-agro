@@ -42,6 +42,10 @@ import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import CookiesPage from './pages/CookiesPage';
 import ProfilePage from './pages/ProfilePage';
+import MyServicesPage from './pages/MyServicesPage'; // Nuevo componente
+import MyRentalsPage from './pages/MyRentalsPage'; // Nuevo componente
+import EditServicePage from './pages/EditServicePage'; // Nuevo componente
+import EditRentalPage from './pages/EditRentalPage'; // Nuevo componente
 
 function App() {
     const [isNavbarOpen, setIsNavbarOpen] = useState(false);
@@ -79,7 +83,6 @@ function App() {
                             <Route path="/privacy" element={<PrivacyPage />} />
                             <Route path="/cookies" element={<CookiesPage />} />
                             
-
                             {/* Rutas Privadas */}
                             <Route element={<PrivateRoute />}>
                                 <Route path="/cart" element={<CartPage />} />
@@ -89,9 +92,11 @@ function App() {
                                 <Route path="/dashboard" element={<DashboardPage />} />
                                 <Route path="/notifications" element={<NotificationsPage />} />
                                 <Route path="/edit-product/:id" element={<EditProductPage />} />
+                                <Route path="/edit-service/:id" element={<EditServicePage />} />
+                                <Route path="/edit-rental/:id" element={<EditRentalPage />} />
                                 <Route path="/my-products" element={<ProductListPage />} />
-                                <Route path="/my-services" element={<ServiceListPage />} />
-                                <Route path="/my-rentals" element={<RentalListPage />} />
+                                <Route path="/my-services" element={<MyServicesPage />} />
+                                <Route path="/my-rentals" element={<MyRentalsPage />} />
                                 <Route path="/barter-details/:id" element={<BarterDetailsPage />} />
                                 <Route path="/create-barter-proposal/:productId" element={<CreateBarterProposalPage />} />
                                 <Route path="/create-counter-proposal/:proposalId" element={<CreateCounterProposalPage />} />
