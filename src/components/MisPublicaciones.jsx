@@ -39,9 +39,9 @@ const MisPublicaciones = () => {
 
     // Rutas de creación para cada tipo
     const createRoutes = {
-        productos: '/crear-producto',
-        servicios: '/crear-servicio',
-        rentas: '/crear-renta'
+        productos: '/create-product',
+        servicios: '/create-service',
+        rentas: '/create-rental'
     };
 
     useEffect(() => {

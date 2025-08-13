@@ -1,71 +1,70 @@
-// src/pages/EditProductPage.jsx
+// src/pages/EditRentalPage.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import PublicationForm from '../components/PublicationForm';
 
-const EditProductPage = () => {
+const EditRentalPage = () => {
     const { id } = useParams();
     const navigate = useNavigate();
     const { token } = useContext(AuthContext);
-    const [product, setProduct] = useState(null);
+    const [rental, setRental] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [submitting, setSubmitting] = useState(false);
 
     const categories = [
-        'Frutas', 'Verduras', 'Granos', 'Lácteos', 'Carnes',
-        'Cereales', 'Legumbres', 'Pescados', 'Huevos', 'Miel',
-        'Plantas', 'Semillas', 'Fitosanitarios', 'Fertilizantes', 'Maquinaria', 'Otros'
+        "Tractores", "Arados", "Sembradoras", "Cosechadoras", "Sistemas de Riego",
+        "Herramientas Manuales", "Vehículos Utilitarios", "Drones Agrícolas", 
+        "Equipos de Fumigación", "Otros"
     ];
 
     useEffect(() => {
-        const fetchProduct = async () => {
+        const fetchRental = async () => {
             try {
-                const response = await api.get(`/products/${id}`, {
+                const response = await api.get(`/rentals/${id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
                 });
-                setProduct({
+                setRental({
                     ...response.data,
                     specificData: {
-                        stock: response.data.stock,
-                        unit: response.data.unit
+                        pricePerDay: response.data.pricePerDay
                     }
                 });
             } catch (err) {
-                setError('No se pudo cargar el producto');
-                console.error('Error fetching product:', err);
+                setError('No se pudo cargar la renta');
+                console.error('Error fetching rental:', err);
             } finally {
                 setLoading(false);
             }
         };
 
-        fetchProduct();
+        fetchRental();
     }, [id, token]);
 
     const handleSubmit = async (formData) => {
         setSubmitting(true);
         try {
-            await api.put(`/products/${id}`, formData, {
+            await api.put(`/rentals/${id}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     Authorization: `Bearer ${token}`
                 }
             });
-            navigate('/mis-productos', { state: { message: 'Producto actualizado correctamente' } });
+            navigate('/mis-rentas', { state: { message: 'Renta actualizada correctamente' } });
         } catch (err) {
-            setError(err.response?.data?.message || 'Error al actualizar el producto');
-            console.error('Error updating product:', err);
+            setError(err.response?.data?.message || 'Error al actualizar la renta');
+            console.error('Error updating rental:', err);
         } finally {
             setSubmitting(false);
         }
     };
 
     if (loading) {
-        return <div className="text-center py-8">Cargando producto...</div>;
+        return <div className="text-center py-8">Cargando renta...</div>;
     }
 
     if (error) {
@@ -75,10 +74,10 @@ const EditProductPage = () => {
     return (
         <div className="container mx-auto px-4 py-8">
             <PublicationForm
-                type="producto"
-                publication={product}
+                type="renta"
+                publication={rental}
                 onSubmit={handleSubmit}
-                onCancel={() => navigate('/mis-productos')}
+                onCancel={() => navigate('/mis-rentas')}
                 loading={submitting}
                 categories={categories}
             />
@@ -86,4 +85,4 @@ const EditProductPage = () => {
     );
 };
 
-export default EditProductPage;
+export default EditRentalPage;
