@@ -2,17 +2,16 @@ import React, { useState, useContext } from 'react';
 import { UserCircleIcon, Cog6ToothIcon, BellIcon, HomeIcon, ShoppingCartIcon, TagIcon } from '@heroicons/react/24/outline';
 import { AuthContext } from '../context/AuthContext';
 import DashboardOverview from '../components/DashboardOverview';
-import MisPublicaciones from '../components/MisPublicaciones'; // Asume que tienes este componente
-import MisPedidos from '../components/MisPedidos'; // Asume que tienes este componente
+import MisPublicaciones from '../components/MisPublicaciones';
+import MisPedidos from '../components/MisPedidos';
 import MisNotificaciones from '../components/MisNotificaciones';
 
 // Un componente de ejemplo para la sección de Mi Perfil
 const MiPerfil = () => {
-    const { user, setUser } = useContext(AuthContext); // Asume que AuthContext tiene una función para actualizar el usuario
+    const { user, setUser } = useContext(AuthContext);
     const [formData, setFormData] = useState({
         name: user?.name || '',
         email: user?.email || '',
-        // Aquí podrías agregar más campos como dirección, teléfono, etc.
     });
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState('');
@@ -26,37 +25,11 @@ const MiPerfil = () => {
         setLoading(true);
         setMessage('');
 
-        // Simulación de una llamada a la API para actualizar el perfil
-        // Reemplaza esto con tu lógica real de API
         console.log("Datos a actualizar:", formData);
 
-        // Aquí iría tu fetch al backend, por ejemplo:
-        // try {
-        //     const token = localStorage.getItem('token');
-        //     const response = await fetch('/api/users/profile', {
-        //         method: 'PUT',
-        //         headers: {
-        //             'Content-Type': 'application/json',
-        //             'Authorization': `Bearer ${token}`
-        //         },
-        //         body: JSON.stringify(formData),
-        //     });
-        //     if (!response.ok) {
-        //         throw new Error('No se pudo actualizar el perfil');
-        //     }
-        //     const updatedUser = await response.json();
-        //     setUser(updatedUser); // Actualiza el estado del usuario en el contexto
-        //     setMessage('Perfil actualizado con éxito!');
-        // } catch (error) {
-        //     setMessage(`Error: ${error.message}`);
-        // } finally {
-        //     setLoading(false);
-        // }
-
-        // Simulación de éxito después de 1 segundo
         setTimeout(() => {
             setMessage('¡Perfil actualizado con éxito!');
-            setUser({ ...user, ...formData }); // Actualiza el contexto con los nuevos datos
+            setUser({ ...user, ...formData });
             setLoading(false);
         }, 1000);
     };
@@ -87,7 +60,6 @@ const MiPerfil = () => {
                         className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
                     />
                 </div>
-                {/* Aquí podrías agregar un campo para cambiar la contraseña */}
                 <button
                     type="submit"
                     className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
@@ -107,7 +79,9 @@ const MiPerfil = () => {
 
 const ProfilePage = () => {
     const [activeSection, setActiveSection] = useState('overview');
+    const { user } = useContext(AuthContext);
 
+    // Renderiza el componente de la sección activa
     const renderContent = () => {
         switch (activeSection) {
             case 'overview':

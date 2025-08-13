@@ -1,36 +1,8 @@
 import React, { useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import MisPublicaciones from './MisPublicaciones'; // Asume que este componente existe
-import MisPedidos from './MisPedidos'; // Componente que creamos
-import MisNotificaciones from './MisNotificaciones'; // Componente que creamos
-
-// Componente de ejemplo para las publicaciones, ya que no tenemos un archivo MisPublicaciones.jsx
-const MisPublicacionesEjemplo = () => {
-    // Datos simulados para demostración
-    const publicaciones = [
-        { id: '1', title: 'Tomates Orgánicos', status: 'Activa' },
-        { id: '2', title: 'Manzanas Verdes', status: 'Activa' },
-        { id: '3', title: 'Lechuga Fresca', status: 'Inactiva' },
-    ];
-
-    return (
-        <div className="bg-white rounded-lg shadow-md p-6">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Mis Publicaciones</h3>
-            <div className="space-y-3">
-                {publicaciones.map(pub => (
-                    <div key={pub.id} className="flex justify-between items-center bg-gray-50 p-3 rounded-md border border-gray-200">
-                        <span className="text-gray-700 font-medium">{pub.title}</span>
-                        <span className={`px-2 py-1 text-xs font-semibold rounded-full ${
-                            pub.status === 'Activa' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-                        }`}>
-                            {pub.status}
-                        </span>
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
-};
+import MisPublicaciones from './MisPublicaciones';
+import MisPedidos from './MisPedidos';
+import MisNotificaciones from './MisNotificaciones';
 
 const DashboardOverview = () => {
     const { user } = useContext(AuthContext);
@@ -82,14 +54,13 @@ const DashboardOverview = () => {
             {/* Contenedor principal de las secciones */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Notificaciones */}
-                <div>
+                <div className="lg:col-span-1">
                     <MisNotificaciones />
                 </div>
 
                 {/* Publicaciones y Pedidos */}
-                <div className="space-y-8">
-                    {/* He agregado un componente de ejemplo aquí. Deberías reemplazarlo con tu componente real de MisPublicaciones. */}
-                    <MisPublicacionesEjemplo /> 
+                <div className="lg:col-span-1 space-y-8">
+                    <MisPublicaciones />
                     <MisPedidos />
                 </div>
             </div>
