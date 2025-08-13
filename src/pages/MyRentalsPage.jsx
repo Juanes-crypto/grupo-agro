@@ -1,16 +1,26 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
-import { FiEdit, FiTrash2, FiEye, FiToggleLeft, FiToggleRight } from 'react-icons/fi';
+import { FiEdit, FiTrash2, FiEye, FiToggleLeft, FiToggleRight, FiPlus, FiRefreshCw } from 'react-icons/fi';
+import { FaCrown, FaTractor, FaWarehouse } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 const MyRentalsPage = () => {
-  const { user, token } = useContext(AuthContext);
+  const { user, token, isAuthenticated } = useContext(AuthContext);
   const navigate = useNavigate();
   const [rentals, setRentals] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isScrolled, setIsScrolled] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   useEffect(() => {
     const fetchRentals = async () => {
@@ -29,10 +39,12 @@ const MyRentalsPage = () => {
       }
     };
 
-    if (user && token) {
+    if (isAuthenticated && token) {
       fetchRentals();
+    } else {
+      navigate('/login');
     }
-  }, [user, token]);
+  }, [isAuthenticated, token, navigate]);
 
   const handleDelete = async (rentalId) => {
     if (window.confirm('¿Estás seguro de eliminar esta renta?')) {
@@ -76,117 +88,158 @@ const MyRentalsPage = () => {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-500"></div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4">
-        <p>{error}</p>
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500"></div>
       </div>
     );
   }
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold text-gray-800">Mis Rentas</h1>
-        <button
-          onClick={() => navigate('/create-rental')}
-          className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg flex items-center"
-        >
-          <span>+ Nueva Renta</span>
-        </button>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100">
+      {/* Hero Section */}
+      <div className={`relative bg-gradient-to-r from-blue-600 to-blue-800 text-white pt-24 pb-16 px-4 sm:px-6 lg:px-8 transition-all duration-300 ${isScrolled ? 'pt-16' : ''}`}>
+        <div className="max-w-7xl mx-auto text-center">
+          <h1 className="text-4xl md:text-5xl font-bold mb-4 drop-shadow-md">
+            Mis Rentas de Equipos y Espacios
+          </h1>
+          <p className="text-xl text-blue-100 max-w-3xl mx-auto">
+            Administra tus equipos y espacios disponibles para renta
+          </p>
+        </div>
       </div>
 
-      {rentals.length === 0 ? (
-        <div className="bg-blue-50 p-8 rounded-lg text-center">
-          <p className="text-blue-800">Aún no has creado ninguna renta</p>
-          <button
-            onClick={() => navigate('/create-rental')}
-            className="mt-4 bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg"
+      {/* Main Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="flex justify-between items-center mb-8">
+          <h2 className="text-2xl font-bold text-gray-800 flex items-center">
+            <FaTractor className="text-blue-500 mr-2" /> Todas mis rentas
+          </h2>
+          <Link
+            to="/create-rental"
+            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-full shadow-lg flex items-center transition duration-300 transform hover:scale-105"
           >
-            Crear mi primera renta
-          </button>
+            <FiPlus className="mr-2" /> Nueva Renta
+          </Link>
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {rentals.map(rental => (
-            <div key={rental._id} className="bg-white rounded-lg shadow-md overflow-hidden border border-gray-200">
-              {rental.imageUrl && (
-                <img 
-                  src={rental.imageUrl} 
-                  alt={rental.name}
-                  className="w-full h-48 object-cover"
-                />
-              )}
-              <div className="p-4">
-                <div className="flex justify-between items-start">
-                  <h3 className="font-bold text-lg">{rental.name}</h3>
-                  <span className="bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full">
-                    ${rental.pricePerDay?.toLocaleString('es-CO')}/día
-                  </span>
+
+        {error ? (
+          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded">
+            <div className="flex items-center">
+              <div className="ml-3">
+                <p className="text-sm text-red-700 font-medium">Error: {error}</p>
+              </div>
+            </div>
+          </div>
+        ) : rentals.length === 0 ? (
+          <div className="text-center py-16 bg-white rounded-xl shadow-md p-8">
+            <div className="mx-auto h-24 w-24 text-blue-400 mb-4">
+              <FaWarehouse className="w-full h-full" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900 mb-2">No tienes rentas publicadas</h3>
+            <p className="text-gray-500 mb-6">Comienza ofreciendo en renta tus equipos o espacios agrícolas</p>
+            <Link
+              to="/create-rental"
+              className="inline-flex items-center px-6 py-3 border border-transparent text-base font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            >
+              <FiPlus className="mr-2" /> Crear mi primera renta
+            </Link>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {rentals.map(rental => (
+              <div
+                key={rental._id}
+                className={`relative rounded-xl overflow-hidden flex flex-col transition-all duration-300 transform hover:scale-[1.02] group
+                  ${rental.user?.isPremium ? 
+                    'bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-amber-300 shadow-xl' : 
+                    'bg-white border border-gray-200 shadow-md hover:shadow-lg'
+                  }`}
+              >
+                {/* Premium badge */}
+                {rental.user?.isPremium && (
+                  <div className="absolute top-3 left-3 z-10">
+                    <div className="flex items-center bg-gradient-to-r from-amber-500 to-yellow-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
+                      <FaCrown className="mr-1" /> PREMIUM
+                    </div>
+                  </div>
+                )}
+
+                {/* Rental image */}
+                <div className="relative w-full h-48 overflow-hidden">
+                  <img
+                    src={rental.imageUrl || 'https://via.placeholder.com/400x300?text=Renta+Agro'}
+                    alt={rental.name}
+                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://via.placeholder.com/400x300?text=Imagen+No+Disponible'; }}
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
                 </div>
-                <p className="text-gray-600 text-sm mt-2 line-clamp-2">{rental.description}</p>
-                
-                <div className="flex flex-wrap gap-2 mt-3">
-                  <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded-full">
-                    {rental.category}
-                  </span>
-                  {rental.availability && (
-                    <span className="bg-purple-100 text-purple-800 text-xs px-2 py-1 rounded-full">
-                      {rental.availability}
+
+                {/* Rental details */}
+                <div className="p-5 flex flex-col flex-grow">
+                  <div className="flex justify-between items-start mb-2">
+                    <h2 className="text-xl font-bold text-gray-900 leading-tight">{rental.name}</h2>
+                    <span className="text-xl font-extrabold text-blue-700">
+                      ${rental.pricePerDay?.toLocaleString('es-CO')}/día
                     </span>
-                  )}
-                </div>
+                  </div>
 
-                <div className="flex justify-between items-center mt-4 pt-4 border-t border-gray-200">
-                  <button
-                    onClick={() => togglePublishStatus(rental._id, rental.isPublished)}
-                    className={`flex items-center text-sm ${
-                      rental.isPublished ? 'text-green-600' : 'text-gray-500'
-                    }`}
-                  >
-                    {rental.isPublished ? (
-                      <FiToggleRight className="mr-1 text-green-500" size={18} />
-                    ) : (
-                      <FiToggleLeft className="mr-1 text-gray-500" size={18} />
-                    )}
-                    {rental.isPublished ? 'Publicado' : 'Oculto'}
-                  </button>
+                  <p className="text-gray-600 text-sm mb-4 flex-grow line-clamp-2">{rental.description}</p>
+                  
+                  <div className="flex justify-between items-center mb-3 text-xs">
+                    <span className="bg-green-100 text-green-800 px-2 py-1 rounded">{rental.category}</span>
+                    <span className={`px-2 py-1 rounded ${rental.isPublished ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-800'}`}>
+                      {rental.isPublished ? 'PUBLICADO' : 'OCULTO'}
+                    </span>
+                  </div>
 
-                  <div className="flex space-x-2">
-                    <button
-                      onClick={() => navigate(`/rentals/${rental._id}`)}
-                      className="text-blue-500 hover:text-blue-700"
-                      title="Ver detalles"
+                  <div className="mt-auto flex flex-col space-y-2 w-full">
+                    <Link
+                      to={`/rentals/${rental._id}`}
+                      className="text-center py-2 px-4 rounded-lg transition duration-300 text-sm font-semibold bg-blue-600 hover:bg-blue-700 text-white"
                     >
-                      <FiEye size={18} />
-                    </button>
-                    <button
-                      onClick={() => navigate(`/edit-rental/${rental._id}`)}
-                      className="text-yellow-500 hover:text-yellow-700"
-                      title="Editar"
-                    >
-                      <FiEdit size={18} />
-                    </button>
-                    <button
-                      onClick={() => handleDelete(rental._id)}
-                      className="text-red-500 hover:text-red-700"
-                      title="Eliminar"
-                    >
-                      <FiTrash2 size={18} />
-                    </button>
+                      Ver Detalles
+                    </Link>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <button
+                        onClick={() => togglePublishStatus(rental._id, rental.isPublished)}
+                        className={`flex items-center justify-center py-2 px-4 rounded-lg transition duration-300 text-sm font-semibold
+                          ${rental.isPublished ? 
+                            'bg-green-100 hover:bg-green-200 text-green-800' : 
+                            'bg-gray-100 hover:bg-gray-200 text-gray-800'
+                          }`}
+                      >
+                        {rental.isPublished ? (
+                          <FiToggleRight className="mr-1 text-green-500" />
+                        ) : (
+                          <FiToggleLeft className="mr-1 text-gray-500" />
+                        )}
+                        {rental.isPublished ? 'Publicado' : 'Oculto'}
+                      </button>
+
+                      <div className="flex space-x-2">
+                        <Link
+                          to={`/edit-rental/${rental._id}`}
+                          className="flex-1 flex items-center justify-center bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
+                        >
+                          <FiEdit className="mr-1" /> Editar
+                        </Link>
+                        <button
+                          onClick={() => handleDelete(rental._id)}
+                          className="flex-1 flex items-center justify-center bg-red-500 hover:bg-red-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
+                        >
+                          <FiTrash2 className="mr-1" /> Eliminar
+                        </button>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-      )}
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };
