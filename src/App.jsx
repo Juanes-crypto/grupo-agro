@@ -41,6 +41,7 @@ import NotFoundPage from './pages/NotFoundPage';
 import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import CookiesPage from './pages/CookiesPage';
+import ProfilePage from './pages/ProfilePage';
 
 function App() {
     const [isNavbarOpen, setIsNavbarOpen] = useState(false);
@@ -77,6 +78,7 @@ function App() {
                             <Route path="/terms" element={<TermsPage />} />
                             <Route path="/privacy" element={<PrivacyPage />} />
                             <Route path="/cookies" element={<CookiesPage />} />
+                            
 
                             {/* Rutas Privadas */}
                             <Route element={<PrivateRoute />}>
@@ -98,6 +100,7 @@ function App() {
                                 <Route path="/create-service" element={<CreateServicePage />} />
                                 <Route path="/create-product" element={<CreateProductPage />} />
                                 <Route path="/premium-upsell" element={<PremiumUpsellPage />} />
+                                <Route path="/profile" element={<ProfilePage />} />                        
                             </Route>
 
                             {/* Rutas Premium */}
