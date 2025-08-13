@@ -3,8 +3,8 @@ import { AuthContext } from '../context/AuthContext';
 import { PlusCircleIcon, PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline';
 import moment from 'moment';
 import 'moment/locale/es';
-import axios from 'axios';
 import { toast } from 'react-toastify';
+import api from '../services/api';
 
 moment.locale('es');
 
@@ -13,54 +13,62 @@ const MisPublicaciones = () => {
     const [products, setProducts] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [activeTab, setActiveTab] = useState('productos'); // 'productos', 'servicios', 'rentas'
 
     useEffect(() => {
         const fetchUserProducts = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get('/products/my-products', {
+                setError(null);
+                
+                // Usamos el mismo endpoint que en PremiumInventoryPage pero para todos los usuarios
+                const response = await api.get('/products/my-products', {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
                 });
+                
                 setProducts(response.data);
-                setLoading(false);
             } catch (err) {
-                setError("Hubo un error al cargar tus productos.");
+                console.error('Error al cargar los productos:', err);
+                setError(err.response?.data?.message || 'No se pudieron cargar tus publicaciones.');
+                toast.error('Error al cargar tus publicaciones');
+            } finally {
                 setLoading(false);
-                toast.error('Error al cargar productos');
             }
         };
 
         if (user && token) {
             fetchUserProducts();
         }
-    }, [user, token]);
+    }, [user, token, activeTab]);
 
     const handleDelete = async (productId) => {
-        if (window.confirm('¿Estás seguro de que deseas eliminar este producto?')) {
+        if (window.confirm('¿Estás seguro de que deseas eliminar esta publicación?')) {
             try {
-                await axios.delete(`/api/products/${productId}`, {
+                await api.delete(`/products/${productId}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
                 });
                 setProducts(products.filter(product => product._id !== productId));
-                toast.success('Producto eliminado correctamente');
+                toast.success('Publicación eliminada correctamente');
             } catch (err) {
-                toast.error('Error al eliminar el producto');
+                console.error('Error al eliminar:', err);
+                toast.error(err.response?.data?.message || 'Error al eliminar la publicación');
             }
         }
     };
 
     const togglePublishStatus = async (productId, currentStatus) => {
         try {
-            const response = await axios.put(
-                `/api/products/${productId}`,
+            const response = await api.put(
+                `/products/${productId}`,
                 { isPublished: !currentStatus },
                 {
                     headers: {
-                        Authorization: `Bearer ${token}`
+                        Authorization: `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
                 }
             );
@@ -70,15 +78,16 @@ const MisPublicaciones = () => {
             ));
             
             toast.success(
-                `Producto ${!currentStatus ? 'publicado' : 'ocultado'} correctamente`
+                `Publicación ${!currentStatus ? 'publicada' : 'ocultada'} correctamente`
             );
         } catch (err) {
-            toast.error('Error al actualizar el estado del producto');
+            console.error('Error al cambiar estado:', err);
+            toast.error(err.response?.data?.message || 'Error al actualizar el estado');
         }
     };
 
     if (!user) {
-        return <div className="p-6 bg-white rounded-lg shadow-sm">Inicia sesión para ver tus productos.</div>;
+        return <div className="p-6 bg-white rounded-lg shadow-sm">Inicia sesión para ver tus publicaciones.</div>;
     }
 
     if (loading) {
@@ -96,14 +105,33 @@ const MisPublicaciones = () => {
     return (
         <div className="bg-white p-6 rounded-lg shadow-sm space-y-6">
             <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">Mis Productos Agrícolas</h2>
+                <h2 className="text-2xl font-bold text-gray-800">Mis Publicaciones</h2>
                 <button 
                     className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white font-medium rounded-lg shadow-md hover:bg-green-700 transition duration-200"
-                    onClick={() => window.location.href = '/publicar-producto'}
+                    onClick={() => window.location.href = '/crear-publicacion'}
                 >
                     <PlusCircleIcon className="h-5 w-5" />
-                    <span>Nuevo Producto</span>
+                    <span>Nueva Publicación</span>
                 </button>
+            </div>
+
+            {/* Pestañas para diferentes tipos de publicaciones */}
+            <div className="border-b border-gray-200">
+                <nav className="flex space-x-4">
+                    {['productos', 'servicios', 'rentas'].map((tab) => (
+                        <button
+                            key={tab}
+                            onClick={() => setActiveTab(tab)}
+                            className={`px-3 py-2 text-sm font-medium ${
+                                activeTab === tab
+                                    ? 'border-b-2 border-green-500 text-green-600'
+                                    : 'text-gray-500 hover:text-gray-700'
+                            }`}
+                        >
+                            {tab.charAt(0).toUpperCase() + tab.slice(1)}
+                        </button>
+                    ))}
+                </nav>
             </div>
             
             {products.length > 0 ? (
@@ -128,11 +156,13 @@ const MisPublicaciones = () => {
                                                     {product.category}
                                                 </span>
                                                 <span className="px-2 py-1 text-xs font-medium rounded-full bg-green-100 text-green-800">
-                                                    ${product.price.toLocaleString()}
+                                                    ${product.price?.toLocaleString('es-CO') || '0'}
                                                 </span>
-                                                <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
-                                                    Stock: {product.stock} {product.unit}
-                                                </span>
+                                                {product.stock && (
+                                                    <span className="px-2 py-1 text-xs font-medium rounded-full bg-purple-100 text-purple-800">
+                                                        {product.stock} {product.unit}
+                                                    </span>
+                                                )}
                                                 {product.isTradable && (
                                                     <span className="px-2 py-1 text-xs font-medium rounded-full bg-yellow-100 text-yellow-800">
                                                         Acepta trueque
@@ -175,19 +205,19 @@ const MisPublicaciones = () => {
                             </div>
                             <div className="mt-3 pt-3 border-t border-gray-200 flex justify-between items-center text-sm text-gray-500">
                                 <span>Publicado: {moment(product.createdAt).format('LL')}</span>
-                                <span>Última actualización: {moment(product.updatedAt).fromNow()}</span>
+                                <span>Actualizado: {moment(product.updatedAt).fromNow()}</span>
                             </div>
                         </div>
                     ))}
                 </div>
             ) : (
                 <div className="bg-blue-50 p-4 rounded-lg text-center text-blue-700">
-                    <p>Aún no has publicado ningún producto. ¡Crea uno para empezar a vender!</p>
+                    <p>Aún no tienes publicaciones. ¡Crea una para empezar!</p>
                     <button 
                         className="mt-2 px-4 py-2 bg-green-600 text-white font-medium rounded-lg shadow-md hover:bg-green-700 transition duration-200"
-                        onClick={() => window.location.href = '/publicar-producto'}
+                        onClick={() => window.location.href = '/crear-publicacion'}
                     >
-                        Crear mi primer producto
+                        Crear mi primera publicación
                     </button>
                 </div>
             )}
