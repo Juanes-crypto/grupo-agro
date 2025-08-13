@@ -1,17 +1,20 @@
 import React from 'react';
-import { Helmet } from 'react-helmet';
 import MissionVision from '../components/about/MissionVision';
 import Values from '../components/about/Values';
 import Objectives from '../components/about/Objectives';
 
 function AboutUsPage() {
+  // Esto establecerá el título cuando el componente se monte
+  React.useEffect(() => {
+    document.title = "Grupo Agro | Sobre Nosotros";
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) {
+      metaDesc.setAttribute('content', 'Conoce nuestra misión, visión y valores como plataforma agropecuaria líder');
+    }
+  }, []);
+
   return (
     <div className="bg-gradient-to-b from-green-50 to-white">
-      <Helmet>
-        <title>Grupo Agro | Sobre Nosotros</title>
-        <meta name="description" content="Conoce nuestra misión, visión y valores como plataforma agropecuaria líder" />
-      </Helmet>
-
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-green-600 to-emerald-800 text-white py-20 px-4 text-center">
         <h1 className="text-4xl md:text-5xl font-bold mb-6">Nuestra Esencia</h1>
