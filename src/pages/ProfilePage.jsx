@@ -1,11 +1,5 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import { UserCircleIcon, Cog6ToothIcon, BellIcon, HomeIcon, CurrencyDollarIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
-import TopNavbar from '../components/TopNavbar';
-import Navbar from '../components/Navbar';
-import DashboardOverview from '../components/DashboardOverview'; // Componente de ejemplo
-import MyProfileSettings from '../components/MyProfileSettings'; // Componente de ejemplo
-// Importa los demás componentes para cada sección
+import { UserCircleIcon, Cog6ToothIcon, BellIcon, HomeIcon, ShoppingCartIcon } from '@heroicons/react/24/outline';
 
 const ProfilePage = () => {
     const [activeSection, setActiveSection] = useState('overview'); // Estado para la sección activa
@@ -13,16 +7,44 @@ const ProfilePage = () => {
     const renderContent = () => {
         switch (activeSection) {
             case 'overview':
-                return <DashboardOverview />;
+                return (
+                    <div className="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 className="text-xl font-bold mb-4">Vista General del Perfil</h2>
+                        <p>Aquí verás un resumen de tu actividad reciente, pedidos y notificaciones.</p>
+                        {/* Aquí puedes agregar las tarjetas de resumen */}
+                    </div>
+                );
             case 'profile':
-                return <MyProfileSettings />;
-            // Agrega más casos para cada sección que crees
-            case 'notifications':
-                return <div>Página de Notificaciones</div>;
+                return (
+                    <div className="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 className="text-xl font-bold mb-4">Mi Perfil y Configuración</h2>
+                        <p>Edita tu información personal, cambia tu contraseña y gestiona tus direcciones.</p>
+                        {/* Aquí irán los formularios para editar */}
+                    </div>
+                );
             case 'orders':
-                return <div>Historial de Órdenes</div>;
+                return (
+                    <div className="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 className="text-xl font-bold mb-4">Mis Órdenes y Compras</h2>
+                        <p>Consulta el historial de tus pedidos simulados.</p>
+                        {/* Aquí se listarán los pedidos */}
+                    </div>
+                );
+            case 'publications':
+                return (
+                    <div className="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 className="text-xl font-bold mb-4">Mis Publicaciones</h2>
+                        <p>Gestiona todos tus productos, servicios y rentas publicadas.</p>
+                        {/* Aquí irán las pestañas para gestionar publicaciones */}
+                    </div>
+                );
             default:
-                return <DashboardOverview />;
+                return (
+                    <div className="bg-white p-6 rounded-lg shadow-sm">
+                        <h2 className="text-xl font-bold mb-4">Vista General del Perfil</h2>
+                        <p>Bienvenido de nuevo. Elige una opción del menú lateral.</p>
+                    </div>
+                );
         }
     };
 
@@ -33,31 +55,48 @@ const ProfilePage = () => {
                 <nav className="space-y-2">
                     <button
                         onClick={() => setActiveSection('overview')}
-                        className={`w-full text-left px-4 py-2 rounded-md transition duration-200 ${
+                        className={`w-full text-left px-4 py-2 rounded-md transition duration-200 flex items-center ${
                             activeSection === 'overview' ? 'bg-green-100 text-green-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'
                         }`}
                     >
-                        <HomeIcon className="h-5 w-5 inline-block mr-2" />
+                        <HomeIcon className="h-5 w-5 mr-2" />
                         Vista General
                     </button>
                     <button
                         onClick={() => setActiveSection('profile')}
-                        className={`w-full text-left px-4 py-2 rounded-md transition duration-200 ${
+                        className={`w-full text-left px-4 py-2 rounded-md transition duration-200 flex items-center ${
                             activeSection === 'profile' ? 'bg-green-100 text-green-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'
                         }`}
                     >
-                        <UserCircleIcon className="h-5 w-5 inline-block mr-2" />
+                        <UserCircleIcon className="h-5 w-5 mr-2" />
                         Mi Perfil
                     </button>
-                    {/* ... Más botones para cada sección ... */}
                     <button
+                        onClick={() => setActiveSection('publications')}
+                        className={`w-full text-left px-4 py-2 rounded-md transition duration-200 flex items-center ${
+                            activeSection === 'publications' ? 'bg-green-100 text-green-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                    >
+                        <ShoppingCartIcon className="h-5 w-5 mr-2" />
+                        Mis Publicaciones
+                    </button>
+                     <button
                         onClick={() => setActiveSection('orders')}
-                        className={`w-full text-left px-4 py-2 rounded-md transition duration-200 ${
+                        className={`w-full text-left px-4 py-2 rounded-md transition duration-200 flex items-center ${
                             activeSection === 'orders' ? 'bg-green-100 text-green-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'
                         }`}
                     >
-                        <ShoppingCartIcon className="h-5 w-5 inline-block mr-2" />
+                        <Cog6ToothIcon className="h-5 w-5 mr-2" />
                         Mis Órdenes
+                    </button>
+                     <button
+                        onClick={() => setActiveSection('notifications')}
+                        className={`w-full text-left px-4 py-2 rounded-md transition duration-200 flex items-center ${
+                            activeSection === 'notifications' ? 'bg-green-100 text-green-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'
+                        }`}
+                    >
+                        <BellIcon className="h-5 w-5 mr-2" />
+                        Notificaciones
                     </button>
                 </nav>
             </aside>
