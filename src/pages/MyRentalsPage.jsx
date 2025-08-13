@@ -202,21 +202,6 @@ const MyRentalsPage = () => {
                     </Link>
 
                     <div className="grid grid-cols-2 gap-2">
-                      <button
-                        onClick={() => togglePublishStatus(rental._id, rental.isPublished)}
-                        className={`flex items-center justify-center py-2 px-4 rounded-lg transition duration-300 text-sm font-semibold
-                          ${rental.isPublished ? 
-                            'bg-green-100 hover:bg-green-200 text-green-800' : 
-                            'bg-gray-100 hover:bg-gray-200 text-gray-800'
-                          }`}
-                      >
-                        {rental.isPublished ? (
-                          <FiToggleRight className="mr-1 text-green-500" />
-                        ) : (
-                          <FiToggleLeft className="mr-1 text-gray-500" />
-                        )}
-                        {rental.isPublished ? 'Publicado' : 'Oculto'}
-                      </button>
 
                       <div className="flex space-x-2">
                         <Link

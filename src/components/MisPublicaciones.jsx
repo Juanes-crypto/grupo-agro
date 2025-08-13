@@ -203,14 +203,6 @@ const MisPublicaciones = () => {
                         </div>
                     </div>
                     <div className="mt-4 md:mt-0 flex items-center space-x-3">
-                        <button
-                            onClick={() => togglePublishStatus(publication._id, publication.isPublished, publication.type)}
-                            className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                                publication.isPublished ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                            }`}
-                        >
-                            {publication.isPublished ? 'Publicado' : 'Oculto'}
-                        </button>
                         <div className="flex space-x-2">
                             <button 
                                 className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
