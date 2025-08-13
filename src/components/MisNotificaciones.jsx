@@ -1,150 +1,122 @@
+// src/components/MisNotificaciones.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { getToken } from '../utils/auth'; // Asume que tienes una función para obtener el token
-import moment from 'moment'; // Importar moment.js para formatear fechas
+import { BellAlertIcon } from '@heroicons/react/24/outline';
+import moment from 'moment';
 
-// Componente para mostrar una notificación individual
-const NotificationItem = ({ notification, onMarkAsRead }) => {
-    return (
-        <div 
-            key={notification._id} 
-            className={`flex items-center gap-4 p-4 rounded-lg transition-all duration-200 ${
-                !notification.isRead ? 'bg-indigo-50 border-l-4 border-indigo-500 shadow-md' : 'bg-gray-50 border border-gray-200'
-            }`}
-        >
-            <div className={`p-2 rounded-full ${!notification.isRead ? 'bg-indigo-200 text-indigo-700' : 'bg-gray-200 text-gray-500'}`}>
-                {/* Icono basado en el tipo de notificación. Aquí se usa un icono genérico. */}
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
-                </svg>
-            </div>
-            <div className="flex-1">
-                <h4 className={`text-lg font-semibold ${!notification.isRead ? 'text-gray-800' : 'text-gray-600'}`}>{notification.title}</h4>
-                <p className={`text-sm mt-1 ${!notification.isRead ? 'text-gray-700' : 'text-gray-500'}`}>{notification.message}</p>
-                <p className="text-xs text-gray-400 mt-1">
-                    {moment(notification.createdAt).fromNow()}
-                </p>
-            </div>
-            {!notification.isRead && (
-                <button 
-                    onClick={() => onMarkAsRead(notification._id)}
-                    className="flex-shrink-0 px-3 py-1 text-sm font-semibold text-white bg-indigo-600 rounded-full hover:bg-indigo-700 focus:outline-none"
-                >
-                    Marcar como leído
-                </button>
-            )}
-        </div>
-    );
-};
-
-// Componente principal
 const MisNotificaciones = () => {
-    const [notifications, setNotifications] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
     const { user } = useContext(AuthContext);
+    const [notificaciones, setNotificaciones] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
-    // Función para obtener las notificaciones del backend
-    const fetchMyNotifications = async () => {
-        if (!user) {
-            setIsLoading(false);
-            return;
-        }
-
-        const token = getToken();
-        if (!token) {
-            setError("No se encontró token de autenticación.");
-            setIsLoading(false);
-            return;
-        }
-
-        try {
-            const response = await fetch('/api/notifications/my', {
-                method: 'GET',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (!response.ok) {
-                throw new Error('No se pudo obtener las notificaciones.');
-            }
-
-            const data = await response.json();
-            setNotifications(data);
-        } catch (err) {
-            console.error("Error al obtener mis notificaciones:", err);
-            setError(err.message);
-        } finally {
-            setIsLoading(false);
-        }
-    };
-    
-    // Función para marcar una notificación como leída
-    const handleMarkAsRead = async (notificationId) => {
-        const token = getToken();
-        if (!token) {
-            console.error("No se encontró token de autenticación para marcar como leído.");
-            return;
-        }
-        
-        try {
-            const response = await fetch(`/api/notifications/${notificationId}/read`, {
-                method: 'PUT',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-            });
-
-            if (response.ok) {
-                // Actualizar el estado local para reflejar el cambio
-                setNotifications(prevNotifications => 
-                    prevNotifications.map(n => 
-                        n._id === notificationId ? { ...n, isRead: true } : n
-                    )
-                );
-            } else {
-                throw new Error('No se pudo marcar la notificación como leída.');
-            }
-        } catch (err) {
-            console.error("Error al marcar como leído:", err);
-        }
-    };
-
+    // Simulamos la carga de datos de notificaciones desde una API
     useEffect(() => {
-        fetchMyNotifications();
-    }, [user]); // Dependencia en el usuario para recargar si cambia el estado de login
+        const fetchNotificaciones = async () => {
+            try {
+                // Simulación de una llamada a la API
+                setTimeout(() => {
+                    // Datos simulados
+                    const mockData = [
+                        {
+                            id: 'notif1',
+                            message: 'Tu publicación "Tomates Orgánicos" ha recibido un nuevo comentario.',
+                            date: moment().subtract(30, 'minutes'),
+                            read: false,
+                        },
+                        {
+                            id: 'notif2',
+                            message: 'Tu pedido #ped01 ha sido marcado como "Entregado".',
+                            date: moment().subtract(2, 'hours'),
+                            read: true,
+                        },
+                        {
+                            id: 'notif3',
+                            message: '¡Felicitaciones! Has recibido una nueva propuesta para tu publicación de "Manzanas Verdes".',
+                            date: moment().subtract(1, 'day'),
+                            read: false,
+                        },
+                        {
+                            id: 'notif4',
+                            message: 'Se ha completado una transacción con el usuario Juanito.',
+                            date: moment().subtract(3, 'days'),
+                            read: true,
+                        },
+                    ];
+                    setNotificaciones(mockData);
+                    setLoading(false);
+                }, 1000);
+            } catch (err) {
+                setError("Hubo un error al cargar tus notificaciones.");
+                setLoading(false);
+            }
+        };
 
-    if (isLoading) {
-        return <div className="text-center text-gray-500 p-8">Cargando tus notificaciones...</div>;
+        if (user) {
+            fetchNotificaciones();
+        }
+    }, [user]);
+
+    if (!user) {
+        return <div className="p-6 bg-white rounded-lg shadow-sm">Inicia sesión para ver tus notificaciones.</div>;
+    }
+
+    if (loading) {
+        return <div className="p-6 bg-white rounded-lg shadow-sm">Cargando notificaciones...</div>;
     }
 
     if (error) {
-        return <div className="text-center text-red-500 p-8">Error: {error}</div>;
+        return <div className="p-6 bg-red-100 text-red-700 rounded-lg shadow-sm">{error}</div>;
     }
 
-    if (notifications.length === 0) {
-        return (
-            <div className="text-center p-8 bg-white rounded-lg shadow-sm">
-                <p className="text-gray-600">No tienes notificaciones por el momento.</p>
-            </div>
-        );
-    }
+    const handleMarkAsRead = (id) => {
+        // En un caso real, harías una llamada a la API para marcar la notificación como leída
+        setNotificaciones(notificaciones.map(notif =>
+            notif.id === id ? { ...notif, read: true } : notif
+        ));
+    };
 
     return (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-800">Mis Notificaciones</h2>
-            <div className="grid grid-cols-1 gap-4">
-                {notifications.map(n => (
-                    <NotificationItem 
-                        key={n._id} 
-                        notification={n} 
-                        onMarkAsRead={handleMarkAsRead}
-                    />
-                ))}
+        <div className="bg-white p-6 rounded-lg shadow-sm space-y-6">
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-800">Mis Notificaciones</h2>
+                <span className="text-sm font-medium text-gray-500">
+                    Tienes {notificaciones.filter(n => !n.read).length} notificaciones sin leer
+                </span>
             </div>
+            
+            {notificaciones.length > 0 ? (
+                <div className="space-y-4">
+                    {notificaciones.map((notif) => (
+                        <div 
+                            key={notif.id} 
+                            className={`p-4 rounded-lg shadow-sm flex items-start space-x-4 transition duration-200 ${
+                                notif.read ? 'bg-gray-100 text-gray-500' : 'bg-green-50 text-gray-800 hover:bg-green-100'
+                            }`}
+                        >
+                            <BellAlertIcon className={`h-6 w-6 flex-shrink-0 ${notif.read ? 'text-gray-400' : 'text-green-600'}`} />
+                            <div className="flex-1">
+                                <p className={`font-medium ${notif.read ? 'line-through' : ''}`}>{notif.message}</p>
+                                <p className="text-xs text-gray-400 mt-1">
+                                    {moment(notif.date).fromNow()}
+                                </p>
+                            </div>
+                            {!notif.read && (
+                                <button
+                                    onClick={() => handleMarkAsRead(notif.id)}
+                                    className="flex-shrink-0 px-3 py-1 text-xs font-semibold rounded-full bg-green-200 text-green-800 hover:bg-green-300 transition-colors"
+                                >
+                                    Marcar como leído
+                                </button>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="bg-blue-50 p-4 rounded-lg text-center text-blue-700">
+                    <p>No tienes nuevas notificaciones.</p>
+                </div>
+            )}
         </div>
     );
 };

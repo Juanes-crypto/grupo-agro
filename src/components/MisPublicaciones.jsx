@@ -1,126 +1,118 @@
+// src/components/MisPublicaciones.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { getToken } from '../utils/auth'; // Asumo que tienes una función para obtener el token
+import { PlusCircleIcon } from '@heroicons/react/24/outline';
+import moment from 'moment';
+import 'moment/locale/es'; // Importa el locale en español
 
-// Componente de tarjeta de publicación
-const PublicationCard = ({ publication }) => {
-    // Determinar el estado basado en isPublished y stock
-    const status = publication.isPublished && publication.stock > 0 ? 'active' : 'paused';
-    
-    // Determinar el tipo de publicación (asumiendo que 'category' es el tipo por ahora)
-    // Esto es temporal hasta que tengamos un modelo más detallado de publicaciones
-    const type = publication.category;
-
-    return (
-        <div className="bg-gray-50 rounded-lg shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg">
-            <img 
-                src={publication.imageUrl || "https://placehold.co/400x300/e2e8f0/475569?text=Sin+Imagen"} 
-                alt={publication.name} 
-                className="w-full h-48 object-cover" 
-            />
-            <div className="p-4">
-                <div className="flex justify-between items-center mb-2">
-                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                        type === 'product' ? 'bg-green-200 text-green-800' :
-                        type === 'service' ? 'bg-blue-200 text-blue-800' :
-                        'bg-yellow-200 text-yellow-800'
-                    }`}>
-                        {/* Se usa la categoría como tipo, puedes ajustarlo si el modelo cambia */}
-                        {type}
-                    </span>
-                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${
-                        status === 'active' ? 'bg-green-500 text-white' :
-                        'bg-gray-500 text-white'
-                    }`}>
-                        {status === 'active' ? 'Activo' : 'Pausado'}
-                    </span>
-                </div>
-                <h3 className="text-lg font-bold text-gray-800 truncate">{publication.name}</h3>
-                <p className="text-sm text-gray-600 mt-1 line-clamp-2">{publication.description}</p>
-                <div className="mt-3 flex justify-between items-center">
-                    <span className="text-xl font-bold text-gray-900">
-                        ${publication.price} / {publication.unit}
-                    </span>
-                    <button className="text-green-600 hover:text-green-800 text-sm font-semibold">
-                        Editar
-                    </button>
-                </div>
-            </div>
-        </div>
-    );
-};
+// Establece el locale global para moment
+moment.locale('es');
 
 const MisPublicaciones = () => {
-    const [publications, setPublications] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const { user } = useContext(AuthContext);
+    const [publicaciones, setPublicaciones] = useState([]);
+    const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const { user } = useContext(AuthContext); // Asumo que el contexto de autenticación proporciona el token
 
+    // Simulamos la carga de datos de publicaciones desde una API
     useEffect(() => {
-        const fetchMyPublications = async () => {
-            if (!user) {
-                // No hay usuario logueado, no se puede hacer la petición.
-                setIsLoading(false);
-                return;
-            }
-
-            const token = getToken(); // Función que obtiene el token guardado localmente
-            if (!token) {
-                setError("No se encontró token de autenticación.");
-                setIsLoading(false);
-                return;
-            }
-
+        const fetchPublicaciones = async () => {
             try {
-                const response = await fetch('/api/products/my-products', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error('No se pudo obtener las publicaciones.');
-                }
-
-                const data = await response.json();
-                setPublications(data);
+                // Simulación de una llamada a la API
+                setTimeout(() => {
+                    // Datos simulados. En un caso real, reemplazarías esto con un fetch a tu backend.
+                    const mockData = [
+                        {
+                            id: 'pub1',
+                            title: 'Tomates Orgánicos',
+                            description: 'Tomates cultivados de forma ecológica, ideal para ensaladas.',
+                            date: moment().subtract(2, 'days'),
+                            status: 'Activa',
+                            views: 50,
+                        },
+                        {
+                            id: 'pub2',
+                            title: 'Manzanas Verdes',
+                            description: 'Manzanas crujientes y dulces, perfectas para postres.',
+                            date: moment().subtract(1, 'week'),
+                            status: 'Activa',
+                            views: 35,
+                        },
+                        {
+                            id: 'pub3',
+                            title: 'Lechuga Fresca',
+                            description: 'Hojas de lechuga recién cortadas, lista para consumir.',
+                            date: moment().subtract(3, 'weeks'),
+                            status: 'Inactiva',
+                            views: 12,
+                        },
+                    ];
+                    setPublicaciones(mockData);
+                    setLoading(false);
+                }, 1000);
             } catch (err) {
-                console.error("Error al obtener mis publicaciones:", err);
-                setError(err.message);
-            } finally {
-                setIsLoading(false);
+                setError("Hubo un error al cargar tus publicaciones.");
+                setLoading(false);
             }
         };
 
-        fetchMyPublications();
-    }, [user]); // El efecto se ejecuta cuando el usuario cambia
+        if (user) {
+            fetchPublicaciones();
+        }
+    }, [user]);
 
-    if (isLoading) {
-        return <div className="text-center text-gray-500 p-8">Cargando tus publicaciones...</div>;
+    if (!user) {
+        return <div className="p-6 bg-white rounded-lg shadow-sm">Inicia sesión para ver tus publicaciones.</div>;
+    }
+
+    if (loading) {
+        return <div className="p-6 bg-white rounded-lg shadow-sm">Cargando publicaciones...</div>;
     }
 
     if (error) {
-        return <div className="text-center text-red-500 p-8">Error: {error}</div>;
-    }
-
-    if (publications.length === 0) {
-        return (
-            <div className="text-center p-8 bg-white rounded-lg shadow-sm">
-                <p className="text-gray-600">Aún no tienes publicaciones. ¡Anímate a crear una!</p>
-            </div>
-        );
+        return <div className="p-6 bg-red-100 text-red-700 rounded-lg shadow-sm">{error}</div>;
     }
 
     return (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-800">Mis Publicaciones</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                {publications.map(pub => (
-                    <PublicationCard key={pub._id} publication={pub} />
-                ))}
+        <div className="bg-white p-6 rounded-lg shadow-sm space-y-6">
+            <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-gray-800">Mis Publicaciones</h2>
+                <button className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white font-medium rounded-lg shadow-md hover:bg-green-700 transition duration-200">
+                    <PlusCircleIcon className="h-5 w-5" />
+                    <span>Nueva Publicación</span>
+                </button>
             </div>
+            
+            {publicaciones.length > 0 ? (
+                <div className="space-y-4">
+                    {publicaciones.map((pub) => (
+                        <div key={pub.id} className="bg-gray-50 p-4 rounded-lg shadow-sm flex flex-col md:flex-row justify-between items-center border border-gray-200">
+                            <div className="flex-1 text-center md:text-left">
+                                <h3 className="font-semibold text-gray-800 text-lg">{pub.title}</h3>
+                                <p className="text-sm text-gray-500">{pub.description}</p>
+                                <p className="text-xs text-gray-400 mt-1">Publicado hace {pub.date.fromNow()}</p>
+                            </div>
+                            <div className="flex-shrink-0 mt-4 md:mt-0 md:ml-4 flex items-center space-x-4">
+                                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                                    pub.status === 'Activa' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
+                                }`}>
+                                    {pub.status}
+                                </span>
+                                <div className="text-sm text-gray-600">
+                                    <span className="font-medium">{pub.views}</span> visitas
+                                </div>
+                                <button className="text-gray-500 hover:text-green-600 transition-colors">
+                                    Editar
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="bg-blue-50 p-4 rounded-lg text-center text-blue-700">
+                    <p>Aún no tienes publicaciones. ¡Crea una para empezar a conectar!</p>
+                </div>
+            )}
         </div>
     );
 };

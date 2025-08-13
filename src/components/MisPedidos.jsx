@@ -1,147 +1,109 @@
+// src/components/MisPedidos.jsx
 import React, { useState, useEffect, useContext } from 'react';
 import { AuthContext } from '../context/AuthContext';
-import { getToken } from '../utils/auth'; // Asume que tienes una función para obtener el token
-import moment from 'moment'; // Importar moment.js para formatear fechas
+import { TruckIcon } from '@heroicons/react/24/outline';
+import moment from 'moment';
 
-// Componente para mostrar un solo pedido
-const OrderCard = ({ order }) => {
-    // Determinar el estado del pedido
-    const getStatusText = () => {
-        if (order.isDelivered) {
-            return "Entregado";
-        }
-        if (order.isPaid) {
-            return "Pagado";
-        }
-        return "Pendiente de Pago";
-    };
-
-    const getStatusColor = () => {
-        if (order.isDelivered) {
-            return "bg-green-100 text-green-800";
-        }
-        if (order.isPaid) {
-            return "bg-blue-100 text-blue-800";
-        }
-        return "bg-yellow-100 text-yellow-800";
-    };
-
-    return (
-        <div className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
-            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-4 mb-4">
-                <div className="flex-1">
-                    <h3 className="text-xl font-bold text-gray-800">Pedido #{order._id.slice(-6)}</h3>
-                    <p className="text-sm text-gray-500 mt-1">
-                        Fecha: {moment(order.createdAt).format('DD/MM/YYYY')}
-                    </p>
-                </div>
-                <div className="mt-3 sm:mt-0">
-                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor()}`}>
-                        {getStatusText()}
-                    </span>
-                </div>
-            </div>
-
-            {/* Detalles de los productos en el pedido */}
-            <div className="space-y-4">
-                {order.orderItems.map((item) => (
-                    <div key={item.product._id} className="flex items-center gap-4">
-                        <img
-                            src={item.image || "https://placehold.co/64x64/e2e8f0/475569?text=Prod"}
-                            alt={item.name}
-                            className="w-16 h-16 object-cover rounded-md"
-                        />
-                        <div className="flex-1">
-                            <h4 className="text-md font-semibold text-gray-700">{item.name}</h4>
-                            <p className="text-sm text-gray-500">{item.quantity}</p>
-                        </div>
-                        <p className="text-md font-bold text-gray-900">${(item.price * parseInt(item.quantity)).toFixed(2)}</p>
-                    </div>
-                ))}
-            </div>
-
-            {/* Resumen de precios */}
-            <div className="mt-4 pt-4 border-t border-gray-200 text-right">
-                <div className="text-sm text-gray-600">Total de ítems: ${(order.totalPrice - order.shippingPrice - order.taxPrice).toFixed(2)}</div>
-                <div className="text-sm text-gray-600">Envío: ${(order.shippingPrice).toFixed(2)}</div>
-                <div className="text-sm text-gray-600">Impuestos: ${(order.taxPrice).toFixed(2)}</div>
-                <div className="text-xl font-bold text-gray-900 mt-2">Total: ${order.totalPrice.toFixed(2)}</div>
-            </div>
-        </div>
-    );
-};
-
-// Componente principal
 const MisPedidos = () => {
-    const [orders, setOrders] = useState([]);
-    const [isLoading, setIsLoading] = useState(true);
-    const [error, setError] = useState(null);
     const { user } = useContext(AuthContext);
+    const [pedidos, setPedidos] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
 
+    // Simulamos la carga de datos de pedidos desde una API
     useEffect(() => {
-        const fetchMyOrders = async () => {
-            if (!user) {
-                setIsLoading(false);
-                return;
-            }
-
-            const token = getToken();
-            if (!token) {
-                setError("No se encontró token de autenticación.");
-                setIsLoading(false);
-                return;
-            }
-
+        const fetchPedidos = async () => {
             try {
-                const response = await fetch('/api/orders/myorders', {
-                    method: 'GET',
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                    },
-                });
-
-                if (!response.ok) {
-                    throw new Error('No se pudo obtener los pedidos.');
-                }
-
-                const data = await response.json();
-                setOrders(data);
+                // Simulación de una llamada a la API
+                setTimeout(() => {
+                    // Datos simulados. En un caso real, reemplazarías esto con un fetch a tu backend.
+                    const mockData = [
+                        {
+                            id: 'ped01',
+                            products: ['10kg de Tomates', '5kg de Manzanas'],
+                            total: 55000,
+                            date: moment().subtract(5, 'days'),
+                            status: 'Entregado',
+                        },
+                        {
+                            id: 'ped02',
+                            products: ['Lechugas', 'Zanahorias'],
+                            total: 28000,
+                            date: moment().subtract(2, 'weeks'),
+                            status: 'En camino',
+                        },
+                        {
+                            id: 'ped03',
+                            products: ['20kg de Papas'],
+                            total: 40000,
+                            date: moment().subtract(1, 'month'),
+                            status: 'Cancelado',
+                        },
+                    ];
+                    setPedidos(mockData);
+                    setLoading(false);
+                }, 1000);
             } catch (err) {
-                console.error("Error al obtener mis pedidos:", err);
-                setError(err.message);
-            } finally {
-                setIsLoading(false);
+                setError("Hubo un error al cargar tus pedidos.");
+                setLoading(false);
             }
         };
 
-        fetchMyOrders();
-    }, [user]); // Dependencia en el usuario para recargar si cambia el estado de login
+        if (user) {
+            fetchPedidos();
+        }
+    }, [user]);
 
-    if (isLoading) {
-        return <div className="text-center text-gray-500 p-8">Cargando tus pedidos...</div>;
+    if (!user) {
+        return <div className="p-6 bg-white rounded-lg shadow-sm">Inicia sesión para ver tus pedidos.</div>;
+    }
+
+    if (loading) {
+        return <div className="p-6 bg-white rounded-lg shadow-sm">Cargando pedidos...</div>;
     }
 
     if (error) {
-        return <div className="text-center text-red-500 p-8">Error: {error}</div>;
-    }
-
-    if (orders.length === 0) {
-        return (
-            <div className="text-center p-8 bg-white rounded-lg shadow-sm">
-                <p className="text-gray-600">Aún no tienes pedidos registrados.</p>
-            </div>
-        );
+        return <div className="p-6 bg-red-100 text-red-700 rounded-lg shadow-sm">{error}</div>;
     }
 
     return (
-        <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-gray-800">Mis Pedidos</h2>
-            <div className="grid grid-cols-1 gap-6">
-                {orders.map(order => (
-                    <OrderCard key={order._id} order={order} />
-                ))}
-            </div>
+        <div className="bg-white p-6 rounded-lg shadow-sm space-y-6">
+            <h2 className="text-2xl font-bold text-gray-800">Mis Órdenes y Compras</h2>
+            
+            {pedidos.length > 0 ? (
+                <div className="space-y-4">
+                    {pedidos.map((pedido) => (
+                        <div key={pedido.id} className="bg-gray-50 p-4 rounded-lg shadow-sm flex flex-col md:flex-row justify-between items-center border border-gray-200">
+                            <div className="flex-1 text-center md:text-left">
+                                <h3 className="font-semibold text-gray-800 text-lg">Orden #{pedido.id}</h3>
+                                <ul className="text-sm text-gray-500 list-disc list-inside">
+                                    {pedido.products.map((product, index) => (
+                                        <li key={index}>{product}</li>
+                                    ))}
+                                </ul>
+                                <p className="text-xs text-gray-400 mt-1">Realizado hace {pedido.date.fromNow()}</p>
+                            </div>
+                            <div className="flex-shrink-0 mt-4 md:mt-0 md:ml-4 flex items-center space-x-4">
+                                <span className="font-semibold text-gray-700">${pedido.total.toLocaleString()} COP</span>
+                                <span className={`px-3 py-1 text-xs font-semibold rounded-full ${
+                                    pedido.status === 'Entregado' ? 'bg-green-100 text-green-800' :
+                                    pedido.status === 'En camino' ? 'bg-blue-100 text-blue-800' :
+                                    'bg-red-100 text-red-800'
+                                }`}>
+                                    {pedido.status}
+                                </span>
+                                <button className="text-gray-500 hover:text-green-600 transition-colors">
+                                    Ver Detalles
+                                </button>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : (
+                <div className="bg-blue-50 p-4 rounded-lg text-center text-blue-700">
+                    <p>Aún no has realizado ninguna compra. ¡Explora nuestros productos!</p>
+                </div>
+            )}
         </div>
     );
 };
