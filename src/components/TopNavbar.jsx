@@ -11,10 +11,11 @@ import {
   UserCircleIcon,
   ChevronRightIcon,
   HomeIcon,
-  Bars3Icon, // Importamos el icono del menú de hamburguesa
+  Bars3Icon,
+  InformationCircleIcon // Añadido para el enlace "Conócenos"
 } from "@heroicons/react/24/outline";
 
-function TopNavbar({ onMenuClick }) { // Recibimos la prop onMenuClick
+function TopNavbar({ onMenuClick }) {
   const { isAuthenticated, user, cartItems } = useContext(AuthContext);
   const { unreadCount } = useContext(NotificationContext);
   const navigate = useNavigate();
@@ -24,7 +25,6 @@ function TopNavbar({ onMenuClick }) { // Recibimos la prop onMenuClick
     ? cartItems.reduce((total, item) => total + item.quantity, 0)
     : 0;
 
-  // Generar breadcrumbs dinámicos
   const generateBreadcrumbs = () => {
     const paths = location.pathname.split("/").filter(Boolean);
     const breadcrumbs = [];
@@ -34,7 +34,6 @@ function TopNavbar({ onMenuClick }) { // Recibimos la prop onMenuClick
       accumulatedPath += `/${path}`;
       const isLast = index === paths.length - 1;
       
-      // Formatear el nombre para mostrar
       let displayName = path;
       if (path === "create-product") displayName = "Crear producto";
       else if (path === "create-service") displayName = "Crear servicio";
@@ -45,6 +44,7 @@ function TopNavbar({ onMenuClick }) { // Recibimos la prop onMenuClick
       else if (path === "cart") displayName = "Carrito";
       else if (path === "profile") displayName = "Perfil";
       else if (path === "notifications") displayName = "Notificaciones";
+      else if (path === "nosotros") displayName = "Conócenos"; // Nuevo
       else displayName = path.split("-").map(word => 
         word.charAt(0).toUpperCase() + word.slice(1)
       ).join(" ");
@@ -64,18 +64,19 @@ function TopNavbar({ onMenuClick }) { // Recibimos la prop onMenuClick
   return (
     <header className="fixed top-0 left-0 right-0 z-40 bg-stone-50 shadow-sm border-b border-amber-200 md:ml-64">
       <div className="flex items-center justify-between h-16 px-4">
-        {/* Menú de hamburguesa para móviles */}
-        <div className="flex items-center space-x-4">
+        {/* Parte izquierda - Menú y logo */}
+        <div className="flex items-center space-x-2 md:space-x-4">
+          {/* Menú hamburguesa */}
           <button
-            onClick={onMenuClick} // Llamamos a la función pasada por prop
+            onClick={onMenuClick}
             className="p-1.5 rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-900 md:hidden"
-            title="Abrir menú"
+            aria-label="Abrir menú"
           >
             <Bars3Icon className="h-6 w-6" />
           </button>
 
           {/* Logo */}
-          <Link to="/" className="flex items-center">
+          <Link to="/" className="flex-shrink-0">
             <img
               src="/images/AgroNet-logo.png"
               alt="AgroNet Logo"
@@ -83,32 +84,99 @@ function TopNavbar({ onMenuClick }) { // Recibimos la prop onMenuClick
             />
           </Link>
 
-          {/* Breadcrumbs */}
+          {/* Breadcrumbs - Versión móvil con scroll horizontal */}
           {breadcrumbs.length > 0 && (
-            <div className="hidden md:flex items-center text-sm text-gray-600">
-              <Link to="/" className="text-green-600 hover:text-green-700">
-                <HomeIcon className="h-4 w-4" />
-              </Link>
-              {breadcrumbs.map((crumb, index) => (
-                <div key={index} className="flex items-center">
-                  <ChevronRightIcon className="h-3 w-3 mx-2 text-gray-400" />
-                  {crumb.isLast ? (
-                    <span className="text-gray-800 font-medium">{crumb.name}</span>
-                  ) : (
-                    <Link 
-                      to={crumb.path} 
-                      className="text-green-600 hover:text-green-700 hover:underline"
-                    >
-                      {crumb.name}
-                    </Link>
-                  )}
+            <div className="relative flex-1 max-w-xs md:max-w-none">
+              <div className="md:hidden absolute inset-0 flex items-center overflow-x-auto whitespace-nowrap scrollbar-hide">
+                <div className="flex items-center text-sm text-gray-600 space-x-2 px-2">
+                  <Link to="/" className="text-green-600 hover:text-green-700">
+                    <HomeIcon className="h-4 w-4" />
+                  </Link>
+                  {breadcrumbs.map((crumb, index) => (
+                    <div key={index} className="flex items-center">
+                      <ChevronRightIcon className="h-3 w-3 mx-1 text-gray-400 flex-shrink-0" />
+                      {crumb.isLast ? (
+                        <span className="text-gray-800 font-medium">{crumb.name}</span>
+                      ) : (
+                        <Link 
+                          to={crumb.path} 
+                          className="text-green-600 hover:text-green-700 hover:underline"
+                        >
+                          {crumb.name}
+                        </Link>
+                      )}
+                    </div>
+                  ))}
                 </div>
-              ))}
+              </div>
+
+              {/* Breadcrumbs - Versión desktop */}
+              <div className="hidden md:flex items-center text-sm text-gray-600">
+                <Link to="/" className="text-green-600 hover:text-green-700">
+                  <HomeIcon className="h-4 w-4" />
+                </Link>
+                {breadcrumbs.map((crumb, index) => (
+                  <div key={index} className="flex items-center">
+                    <ChevronRightIcon className="h-3 w-3 mx-2 text-gray-400" />
+                    {crumb.isLast ? (
+                      <span className="text-gray-800 font-medium">{crumb.name}</span>
+                    ) : (
+                      <Link 
+                        to={crumb.path} 
+                        className="text-green-600 hover:text-green-700 hover:underline"
+                      >
+                        {crumb.name}
+                      </Link>
+                    )}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
+        </div>
 
+        {/* Parte central - Acciones rápidas (scroll horizontal en móviles) */}
+        <div className="flex-1 mx-2 md:mx-4 overflow-x-auto scrollbar-hide">
+          <div className="flex items-center justify-center space-x-2 min-w-max">
+            {isAuthenticated && (
+              <>
+                <Link
+                  to="/create-product"
+                  className="flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-amber-50 text-amber-700 hover:bg-amber-100 whitespace-nowrap"
+                >
+                  <PlusIcon className="h-4 w-4 mr-1.5" />
+                  Producto
+                </Link>
+                <Link
+                  to="/create-service"
+                  className="flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-green-50 text-green-700 hover:bg-green-100 whitespace-nowrap"
+                >
+                  <PlusIcon className="h-4 w-4 mr-1.5" />
+                  Servicio
+                </Link>
+                <Link
+                  to="/create-rental"
+                  className="flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100 whitespace-nowrap"
+                >
+                  <PlusIcon className="h-4 w-4 mr-1.5" />
+                  Renta
+                </Link>
+                <Link
+                  to="/nosotros"
+                  className="flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-purple-50 text-purple-700 hover:bg-purple-100 whitespace-nowrap"
+                >
+                  <InformationCircleIcon className="h-4 w-4 mr-1.5" />
+                  Conócenos
+                </Link>
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* Parte derecha - Acciones de usuario */}
+        <div className="flex items-center space-x-2 md:space-x-3">
           {/* Botones de navegación */}
-          <div className="flex items-center space-x-2">
+          <div className="hidden md:flex items-center space-x-1">
             <button
               onClick={() => navigate(-1)}
               className="p-1.5 rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-900"
@@ -124,49 +192,18 @@ function TopNavbar({ onMenuClick }) { // Recibimos la prop onMenuClick
               <ArrowRightIcon className="h-5 w-5" />
             </button>
           </div>
-        </div>
 
-        {/* Acciones rápidas */}
-        <div className="flex items-center space-x-2">
-          {isAuthenticated && (
-            <>
-              <Link
-                to="/create-product"
-                className="flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-amber-50 text-amber-700 hover:bg-amber-100"
-              >
-                <PlusIcon className="h-4 w-4 mr-1.5" />
-                Producto
-              </Link>
-              <Link
-                to="/create-service"
-                className="flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-green-50 text-green-700 hover:bg-green-100"
-              >
-                <PlusIcon className="h-4 w-4 mr-1.5" />
-                Servicio
-              </Link>
-              <Link
-                to="/create-rental"
-                className="flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-blue-50 text-blue-700 hover:bg-blue-100"
-              >
-                <PlusIcon className="h-4 w-4 mr-1.5" />
-                Renta
-              </Link>
-            </>
-          )}
-        </div>
-
-        {/* User actions */}
-        <div className="flex items-center space-x-3">
           {isAuthenticated && (
             <>
               <Link
                 to="/notifications"
                 className="p-1.5 relative rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-900"
+                aria-label="Notificaciones"
               >
                 <BellIcon className="h-5 w-5" />
                 {unreadCount > 0 && (
                   <span className="absolute top-0 right-0 bg-red-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center transform translate-x-1 -translate-y-1">
-                    {unreadCount}
+                    {unreadCount > 9 ? "9+" : unreadCount}
                   </span>
                 )}
               </Link>
@@ -174,18 +211,19 @@ function TopNavbar({ onMenuClick }) { // Recibimos la prop onMenuClick
               <Link
                 to="/cart"
                 className="p-1.5 relative rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-900"
+                aria-label="Carrito"
               >
                 <ShoppingCartIcon className="h-5 w-5" />
                 {totalCartItems > 0 && (
                   <span className="absolute top-0 right-0 bg-amber-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center transform translate-x-1 -translate-y-1">
-                    {totalCartItems}
+                    {totalCartItems > 9 ? "9+" : totalCartItems}
                   </span>
                 )}
               </Link>
             </>
           )}
 
-          {/* User profile */}
+          {/* Perfil de usuario */}
           {isAuthenticated ? (
             <Link
               to="/profile"
@@ -209,13 +247,13 @@ function TopNavbar({ onMenuClick }) { // Recibimos la prop onMenuClick
             <div className="flex items-center space-x-2">
               <Link
                 to="/login"
-                className="px-3 py-1.5 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100"
+                className="px-3 py-1.5 text-sm font-medium rounded-md text-gray-700 hover:bg-gray-100 whitespace-nowrap"
               >
                 Iniciar sesión
               </Link>
               <Link
                 to="/register"
-                className="px-3 py-1.5 text-sm font-medium rounded-md bg-green-600 text-white hover:bg-green-700"
+                className="px-3 py-1.5 text-sm font-medium rounded-md bg-green-600 text-white hover:bg-green-700 whitespace-nowrap"
               >
                 Registrarse
               </Link>

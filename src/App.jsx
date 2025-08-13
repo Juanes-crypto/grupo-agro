@@ -42,11 +42,11 @@ import TermsPage from './pages/TermsPage';
 import PrivacyPage from './pages/PrivacyPage';
 import CookiesPage from './pages/CookiesPage';
 import ProfilePage from './pages/ProfilePage';
-import MyServicesPage from './pages/MyServicesPage'; // Nuevo componente
-import MyRentalsPage from './pages/MyRentalsPage'; // Nuevo componente
-import EditServicePage from './pages/EditServicePage'; // Nuevo componente
-import EditRentalPage from './pages/EditRentalPage'; // Nuevo componente
-
+import MyServicesPage from './pages/MyServicesPage'; 
+import MyRentalsPage from './pages/MyRentalsPage'; 
+import EditServicePage from './pages/EditServicePage'; 
+import EditRentalPage from './pages/EditRentalPage'; 
+import AboutUsPage from './pages/AboutUsPage';
 function App() {
     const [isNavbarOpen, setIsNavbarOpen] = useState(false);
 
@@ -69,6 +69,7 @@ function App() {
                             {/* Rutas Públicas */}
                             <Route path="/" element={<HomePage />} />
                             <Route path="/register" element={<RegisterPage />} />
+                            <Route path="/nosotros" element={<AboutUsPage />} />
                             <Route path="/login" element={<LoginPage />} />
                             <Route path="/welcome" element={<WelcomePage />} />
                             <Route path="/products" element={<ProductListPage />} />
