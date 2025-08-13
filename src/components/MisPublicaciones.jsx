@@ -18,7 +18,7 @@ const MisPublicaciones = () => {
         const fetchUserProducts = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get('/api/products/my-products', {
+                const response = await axios.get('/products/my-products', {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
