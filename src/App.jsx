@@ -83,6 +83,7 @@ function App() {
                             <Route path="/terms" element={<TermsPage />} />
                             <Route path="/privacy" element={<PrivacyPage />} />
                             <Route path="/cookies" element={<CookiesPage />} />
+                            <Route path="/premium-upsell" element={<PremiumUpsellPage />} />
                             
                             {/* Rutas Privadas */}
                             <Route element={<PrivateRoute />}>
@@ -105,7 +106,6 @@ function App() {
                                 <Route path="/create-rental" element={<CreateRentalPage />} />
                                 <Route path="/create-service" element={<CreateServicePage />} />
                                 <Route path="/create-product" element={<CreateProductPage />} />
-                                <Route path="/premium-upsell" element={<PremiumUpsellPage />} />
                                 <Route path="/profile" element={<ProfilePage />} />                        
                             </Route>
 

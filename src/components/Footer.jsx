@@ -2,7 +2,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { 
-  EnvelopeIcon, 
+  EnvelopeIcon,
   PhoneIcon, 
   MapPinIcon, 
   CodeBracketIcon,
@@ -84,6 +84,7 @@ const Footer = () => {
               </div>
             </div>
             
+            
             <p className="text-amber-100/90">
               Especializado en soluciones digitales para el sector agrícola, amplio conocimiento en Backend, Frontend y Bases de datos.
               Manejo exponencial de herramientas digitales y de la productividad.
@@ -116,10 +117,9 @@ const Footer = () => {
               >
                 <span>Portafolio</span>
               </a> */}
-              <span>Correo: juanesgarciaarboleda06@gmail.com</span>
-              <span>Contacto: 3108950792</span>
             </div>
           </div>
+          
         </div>
         
         {/* Derechos de autor */}
@@ -131,13 +131,13 @@ const Footer = () => {
           
           <div className="flex gap-6">
             <Link to="/terms" className="text-amber-100/70 hover:text-amber-300 transition-colors text-sm">
-              Términos y condiciones
+              Términos y condiciones |
             </Link>
             <Link to="/privacy" className="text-amber-100/70 hover:text-amber-300 transition-colors text-sm">
-              Política de privacidad
+              Política de privacidad |
             </Link>
             <Link to="/cookies" className="text-amber-100/70 hover:text-amber-300 transition-colors text-sm">
-              Política de cookies
+              Política de cookies |
             </Link>
           </div>
         </div>

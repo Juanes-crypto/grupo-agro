@@ -6,7 +6,7 @@ import Objectives from '../components/about/Objectives';
 function AboutUsPage() {
   // Esto establecerá el título cuando el componente se monte
   React.useEffect(() => {
-    document.title = "Grupo Agro | Sobre Nosotros";
+    document.title = "AgroNet | Sobre Nosotros";
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
       metaDesc.setAttribute('content', 'Conoce nuestra misión, visión y valores como plataforma agropecuaria líder');
@@ -19,7 +19,7 @@ function AboutUsPage() {
       <div className="bg-gradient-to-r from-green-600 to-emerald-800 text-white py-20 px-4 text-center">
         <h1 className="text-4xl md:text-5xl font-bold mb-6">Nuestra Esencia</h1>
         <p className="text-xl max-w-3xl mx-auto">
-          Conectando el campo con oportunidades, innovando para el desarrollo sostenible
+          "El campo conectado con el mundo, un click a la vez"
         </p>
       </div>
 
@@ -32,9 +32,9 @@ function AboutUsPage() {
         <div className="bg-white rounded-2xl shadow-xl p-8 border border-green-100">
           <h2 className="text-3xl font-bold text-green-800 mb-6 text-center">Nuestro Impacto</h2>
           <div className="grid md:grid-cols-3 gap-8">
-            <StatCard number="5,000+" label="Productores conectados" />
-            <StatCard number="85%" label="Ahorro en intermediarios" />
-            <StatCard number="100%" label="Transacciones seguras" />
+            <StatCard number="--" label="Productores conectados" />
+            <StatCard number="--" label="Ahorro en intermediarios" />
+            <StatCard number="--" label="Transacciones seguras" />
           </div>
         </div>
       </div>

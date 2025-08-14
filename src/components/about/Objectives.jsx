@@ -27,8 +27,27 @@ export default function Objectives() {
           <li className="flex items-start">
             <FaGlobeAmericas className="text-green-500 mt-1 mr-2 flex-shrink-0" />
             <span>Implementar una plataforma digital fácil de usar para distintos niveles de experiencia tecnológica</span>
-          </li>
-          {/* Repetir para cada objetivo específico */}
+          </li><hr />
+          <li className="flex items-start">
+            <FaGlobeAmericas className="text-green-500 mt-1 mr-2 flex-shrink-0" />
+            <span>Ofrecer soluciones de pago y logística adaptadas a las necesidades del sector agropecuario.</span>
+          </li><hr />
+          <li className="flex items-start">
+            <FaGlobeAmericas className="text-green-500 mt-1 mr-2 flex-shrink-0" />
+            <span>Atraer y fidelizar a productores mediante capacitación, soporte y oportunidades de visibilidad.</span>
+          </li><hr />
+          <li className="flex items-start">
+            <FaGlobeAmericas className="text-green-500 mt-1 mr-2 flex-shrink-0" />
+            <span>Garantizar transacciones seguras mediante tecnología y protocolos de ciberseguridad avanzados.</span>
+          </li><hr />
+          <li className="flex items-start">
+            <FaGlobeAmericas className="text-green-500 mt-1 mr-2 flex-shrink-0" />
+            <span>Expandir la cobertura de la plataforma a nivel nacional y posteriormente regional.</span>
+          </li><hr />
+          <li className="flex items-start">
+            <FaGlobeAmericas className="text-green-500 mt-1 mr-2 flex-shrink-0" />
+            <span>Promover el consumo de productos locales, apoyando la sostenibilidad y el desarrollo económico del campo.</span>
+          </li><hr />
         </ul>
       </div>
     </div>

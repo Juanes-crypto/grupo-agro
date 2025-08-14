@@ -35,9 +35,9 @@ function CreateProductPage() {
     const [isTradable, setIsTradable] = useState(false); // <--- NUEVO ESTADO PARA IS_TRUEQUEABLE
 
     const categories = [
-        'Frutas', 'Verduras', 'Granos', 'Lácteos', 'Carnes',
-        'Cereales', 'Legumbres', 'Pescados', 'Huevos', 'Miel',
-        'Plantas', 'Semillas', 'Fitosanitarios', 'Fertilizantes', 'Maquinaria Agrícola', 'Otros Agrícolas'
+        'Verduras', 'Granos', 'Lácteos', 'Carnes',
+        'Cereales', 'Pescados', 'Producto Animal',
+        'Plantas', 'Semillas', 'Fertilizantes', 'Otros..'
     ];
     const units = ['kg', 'litro', 'unidad', 'docena', 'bulto', 'gr', 'saco', 'quintal']; // Añadí más unidades comunes
 
@@ -150,7 +150,7 @@ function CreateProductPage() {
         <div className="min-h-screen bg-gradient-to-br from-yellow-50 to-orange-100 flex items-center justify-center p-4 sm:p-6 lg:p-8">
             <div className="max-w-4xl w-full mx-auto p-8 bg-white rounded-3xl shadow-2xl my-10 border border-yellow-100 transform hover:scale-[1.005] transition-transform duration-300 ease-in-out">
                 <h2 className="text-5xl font-extrabold text-orange-700 text-center mb-6 drop-shadow-lg">
-                    ¡Vende o Truequea tus Productos! 🍎🥕
+                    ¡Vende y/o Truequea tus Productos! 🍎🥕
                 </h2>
                 <p className="text-center text-gray-600 mb-8 max-w-2xl mx-auto leading-relaxed">
                     Comparte la abundancia de tu cosecha. Publica aquí los productos que deseas vender o intercambiar.

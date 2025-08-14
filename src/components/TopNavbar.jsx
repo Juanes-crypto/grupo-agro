@@ -138,7 +138,6 @@ function TopNavbar({ onMenuClick }) {
         {/* Parte central - Acciones rápidas (scroll horizontal en móviles) */}
         <div className="flex-1 mx-2 md:mx-4 overflow-x-auto scrollbar-hide">
           <div className="flex items-center justify-center space-x-2 min-w-max">
-            {isAuthenticated && (
               <>
                 <Link
                   to="/create-product"
@@ -161,6 +160,7 @@ function TopNavbar({ onMenuClick }) {
                   <PlusIcon className="h-4 w-4 mr-1.5" />
                   Renta
                 </Link>
+                
                 <Link
                   to="/nosotros"
                   className="flex items-center px-3 py-1.5 text-sm font-medium rounded-md bg-purple-50 text-purple-700 hover:bg-purple-100 whitespace-nowrap"
@@ -169,7 +169,6 @@ function TopNavbar({ onMenuClick }) {
                   Conócenos
                 </Link>
               </>
-            )}
           </div>
         </div>
 
