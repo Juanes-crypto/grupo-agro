@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import { PlusCircleIcon, PencilIcon, TrashIcon, EyeIcon } from '@heroicons/react/24/outline';
 import { FaBox, FaTools, FaTractor } from 'react-icons/fa';
@@ -10,6 +11,7 @@ import api from '../services/api';
 moment.locale('es');
 
 const MisPublicaciones = () => {
+    const navigate = useNavigate();
     const { user, token } = useContext(AuthContext);
     const [publications, setPublications] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -206,13 +208,13 @@ const MisPublicaciones = () => {
                         <div className="flex space-x-2">
                             <button 
                                 className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
-                                onClick={() => window.location.href = `/${publication.type}s/${publication._id}`}
+                                onClick={() =>  navigate(`/${publication.type}s/${publication._id}`)}
                             >
                                 <EyeIcon className="h-5 w-5" />
                             </button>
                             <button 
                                 className="p-2 text-gray-500 hover:text-yellow-600 transition-colors"
-                                onClick={() => window.location.href = `${editRoutes[activeTab]}/${publication._id}`}
+                                onClick={() => navigate(`${editRoutes[activeTab]}/${publication._id}`)}
                             >
                                 <PencilIcon className="h-5 w-5" />
                             </button>
@@ -255,7 +257,7 @@ const MisPublicaciones = () => {
                 <h2 className="text-2xl font-bold text-gray-800">Mis Publicaciones</h2>
                 <button 
                     className="flex items-center space-x-2 px-4 py-2 bg-green-600 text-white font-medium rounded-lg shadow-md hover:bg-green-700 transition duration-200"
-                    onClick={() => window.location.href = createRoutes[activeTab]}
+                    onClick={() => navigate(createRoutes[activeTab])}
                 >
                     <PlusCircleIcon className="h-5 w-5" />
                     <span>Nueva Publicación</span>
