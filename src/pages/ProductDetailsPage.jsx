@@ -498,7 +498,7 @@ function ProductDetailsPage() {
                         className="h-10 w-10 rounded-full"
                         src={
                           product.user.avatar ||
-                          "https://via.placeholder.com/40?text=U"
+                         '/images/default-profile.png'
                         }
                         alt={product.user.name}
                       />
