@@ -32,9 +32,9 @@ const MisPublicaciones = () => {
 
     // Rutas de edición para cada tipo
     const editRoutes = {
-        productos: '/editar-producto',
-        servicios: '/editar-servicio',
-        rentas: '/editar-renta'
+        productos: '/edit-product',
+        servicios: '/edit-service',
+        rentas: '/edit-rental'
     };
 
     // Rutas de creación para cada tipo
