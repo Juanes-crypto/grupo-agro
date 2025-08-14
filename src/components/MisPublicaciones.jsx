@@ -25,6 +25,13 @@ const MisPublicaciones = () => {
         rentas: <FaTractor className="text-purple-600" />
     };
 
+    // Añade esto junto con las otras constantes de rutas
+    const viewRoutes = {
+    productos: 'products',
+    servicios: 'services',
+    rentas: 'rentals'
+    };
+
     // Rutas API para cada tipo de publicación
     const apiEndpoints = {
         productos: '/products/my-products',
@@ -208,7 +215,7 @@ const MisPublicaciones = () => {
                         <div className="flex space-x-2">
                             <button 
                                 className="p-2 text-gray-500 hover:text-blue-600 transition-colors"
-                                onClick={() =>  navigate(`/${publication.type}s/${publication._id}`)}
+                                onClick={() =>  navigate(`/${viewRoutes[activeTab]}/${publication._id}`)}
                             >
                                 <EyeIcon className="h-5 w-5" />
                             </button>
