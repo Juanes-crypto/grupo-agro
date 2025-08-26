@@ -1,6 +1,7 @@
 import React, { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
+import LocationInput from '../components/LocationInput';
 //import api from '../services/api'; 
 
 function RegisterPage() {
@@ -12,12 +13,16 @@ function RegisterPage() {
     // ⭐ Nuevos estados basados en tu User.js ⭐
     const [phoneNumber, setPhoneNumber] = useState(''); // Para el número de WhatsApp
     const [showPhoneNumber, setShowPhoneNumber] = useState(false); // Para el checkbox
-
+    const [location, setLocation] = useState(null);
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState([]); 
 
     const navigate = useNavigate();
     const { register } = useContext(AuthContext);
+
+    const handleLocationSelected = (selectedLocation) => {
+        setLocation(selectedLocation);
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -37,14 +42,27 @@ function RegisterPage() {
             return;
         }
 
+        // ⭐ NUEVA VALIDACIÓN: Asegurarse de que la ubicación ha sido seleccionada ⭐
+        if (!location) {
+            setErrors(prev => [...prev, 'Por favor, selecciona tu ubicación para continuar.']);
+            setLoading(false);
+            return;
+        }
+
         try {
             const formData = new FormData();
             formData.append('name', name);
             formData.append('email', email);
             formData.append('password', password);
-            // ⭐ Agregamos los nuevos campos a FormData con los nombres exactos del backend ⭐
             formData.append('phoneNumber', phoneNumber);
-            formData.append('showPhoneNumber', showPhoneNumber); // Los booleanos se envían como 'true' o 'false' strings, el backend debe convertirlos
+            formData.append('showPhoneNumber', showPhoneNumber);
+
+            // ⭐ AGREGANDO LOS DATOS DE UBICACIÓN AL FORM DATA ⭐
+            // Es crucial que estos nombres de campo coincidan con el backend
+            formData.append('location[city]', location.city);
+            formData.append('location[address]', location.address);
+            formData.append('location[coordinates][]', location.coordinates[0]); // Longitud
+            formData.append('location[coordinates][]', location.coordinates[1]); // Latitud
 
             if (profilePicture) {
                 formData.append('profilePicture', profilePicture);
@@ -202,6 +220,18 @@ function RegisterPage() {
                         </div>
                     </div>
 
+                    {/* ⭐ CAMPO DE UBICACIÓN ⭐ */}
+                    <div className="sm:col-span-2">
+                        <label className="block text-sm font-semibold text-gray-700 mb-1">Tu Ubicación Principal</label>
+                        <LocationInput onLocationSelected={handleLocationSelected} />
+                        <p className="mt-1 text-xs text-gray-500">Esto nos ayudará a mostrarte productos cercanos a ti.</p>
+                        {location && (
+                            <p className="mt-2 text-sm text-green-600 font-semibold">
+                                Ubicación seleccionada: <span className="text-gray-900">{location.address}</span>
+                            </p>
+                        )}
+                    </div>
+
                     {/* Campo para la foto de perfil */}
                     <div>
                         <label htmlFor="profilePicture" className="block text-sm font-semibold text-gray-700 mb-1">
@@ -225,7 +255,6 @@ function RegisterPage() {
                             </p>
                         )}
                     </div>
-
                     {/* ⭐ Mostrar los errores aquí ⭐ */}
                     {errors.length > 0 && (
                         <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mt-4 shadow-sm" role="alert">
