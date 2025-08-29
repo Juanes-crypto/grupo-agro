@@ -1,6 +1,6 @@
 import React, { createContext, useState, useEffect, useContext, useCallback } from 'react';
-import api from '../services/api'; // Tu instancia de Axios configurada
-import { AuthContext } from './AuthContext'; // Para acceder al token de autenticación
+import api from '../services/api';
+import { AuthContext } from './AuthContext';
 
 export const NotificationContext = createContext();
 
@@ -12,6 +12,13 @@ export const NotificationProvider = ({ children }) => {
     const [errorNotifications, setErrorNotifications] = useState(null);
 
     const fetchNotifications = useCallback(async () => {
+        // ✅ COMENTADO TEMPORALMENTE: Si no tienes endpoint de notificaciones
+        setNotifications([]);
+        setUnreadCount(0);
+        setLoadingNotifications(false);
+        return;
+
+        /*
         if (!isAuthenticated || !token) {
             setNotifications([]);
             setUnreadCount(0);
@@ -21,77 +28,37 @@ export const NotificationProvider = ({ children }) => {
         setLoadingNotifications(true);
         setErrorNotifications(null);
         try {
-            const config = {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            };
-            const response = await api.get('/notifications/my', config);
+            // ✅ Si tienes notificaciones, usa la ruta correcta con /api/
+            const response = await api.get('/api/notifications/my');
             setNotifications(response.data);
             setUnreadCount(response.data.filter(notif => !notif.isRead).length);
         } catch (err) {
             console.error('Error fetching notifications:', err);
             setErrorNotifications('Error al cargar notificaciones.');
+            setNotifications([]);
+            setUnreadCount(0);
         } finally {
             setLoadingNotifications(false);
         }
+        */
     }, [isAuthenticated, token]);
 
     useEffect(() => {
         fetchNotifications();
-        // Opcional: Polling para nuevas notificaciones cada cierto tiempo (ej. 30 segundos)
-        const interval = setInterval(fetchNotifications, 30000);
-        return () => clearInterval(interval); // Limpiar el intervalo al desmontar
+        // Comenta el polling si no tienes notificaciones implementadas
+        // const interval = setInterval(fetchNotifications, 30000);
+        // return () => clearInterval(interval);
     }, [fetchNotifications]);
 
     const markNotificationAsRead = async (id) => {
-        if (!token) return;
-        try {
-            const config = {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            };
-            await api.put(`/notifications/${id}/read`, {}, config);
-            setNotifications(prevNotifications =>
-                prevNotifications.map(notif =>
-                    notif._id === id ? { ...notif, isRead: true } : notif
-                )
-            );
-            setUnreadCount(prevCount => prevCount > 0 ? prevCount - 1 : 0);
-        } catch (err) {
-            console.error('Error marking notification as read:', err);
-            // Manejar error (ej. toast)
-        }
+        // Comentado temporalmente
+        return;
     };
 
     const deleteNotification = async (id) => {
-        if (!token) return;
-        try {
-            const config = {
-                headers: {
-                    Authorization: `Bearer ${token}`,
-                },
-            };
-            await api.delete(`/notifications/${id}`, config);
-            setNotifications(prevNotifications =>
-                prevNotifications.filter(notif => notif._id !== id)
-            );
-            setUnreadCount(prevCount => {
-                const deletedNotif = notifications.find(n => n._id === id);
-                return (deletedNotif && !deletedNotif.isRead) ? prevCount - 1 : prevCount;
-            });
-        } catch (err) {
-            console.error('Error deleting notification:', err);
-            // Manejar error (ej. toast)
-        }
+        // Comentado temporalmente
+        return;
     };
-
-    // Puedes añadir una función para añadir una notificación al estado local si se recibe por WebSocket/Socket.IO
-    // const addNotification = (newNotification) => {
-    //   setNotifications(prev => [newNotification, ...prev]);
-    //   if (!newNotification.isRead) setUnreadCount(prev => prev + 1);
-    // };
 
     return (
         <NotificationContext.Provider

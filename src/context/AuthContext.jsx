@@ -1,7 +1,7 @@
 // frontend/src/context/AuthContext.jsx
 
 import React, { createContext, useState, useEffect } from 'react';
-import { jwtDecode } from 'jwt-decode'; // Asegúrate de haber instalado jwt-decode: npm install jwt-decode
+import { jwtDecode } from 'jwt-decode';
 import api from '../services/api';
 export const AuthContext = createContext();
 
@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
     const [token, setToken] = useState(localStorage.getItem('AgroNet_token') || null);
-    const [loading, setLoading] = useState(true); // Estado de carga para la verificación inicial del token/usuario
+    const [loading, setLoading] = useState(true);
 
     const [cartItems, setCartItems] = useState(() => {
         const savedCart = localStorage.getItem('AgroNet_cart');
@@ -26,8 +26,8 @@ export const AuthProvider = ({ children }) => {
                 try {
                     const decoded = jwtDecode(token);
                     if (decoded.id) {
-                        // Usa la instancia de api importada
-                        const response = await api.get('/users/profile');
+                        // ✅ CORREGIDO: Usar la ruta correcta con /api/
+                        const response = await api.get('/api/users/profile');
                         setUser(response.data);
                         setUserId(response.data._id);
                         setIsAuthenticated(true);
@@ -36,7 +36,13 @@ export const AuthProvider = ({ children }) => {
                     }
                 } catch (error) {
                     console.error('Error al cargar perfil:', error);
-                    logout();
+                    // No hacer logout automáticamente, solo limpiar el estado
+                    setIsAuthenticated(false);
+                    setUser(null);
+                    setUserId(null);
+                    setIsPremium(false);
+                    setToken(null);
+                    localStorage.removeItem('AgroNet_token');
                 } finally {
                     setLoading(false);
                 }
@@ -50,8 +56,7 @@ export const AuthProvider = ({ children }) => {
         };
 
         loadUserFromToken();
-    }, [token]); // Se ejecuta cuando el token cambia
-
+    }, [token]);
     // Efecto para guardar/eliminar el token de localStorage
     useEffect(() => {
         if (token) {
@@ -61,20 +66,20 @@ export const AuthProvider = ({ children }) => {
         }
     }, [token]);
 
-    // Efecto para guardar el carrito en localStorage (se mantiene local por ahora)
+    // Efecto para guardar el carrito en localStorage
     useEffect(() => {
         localStorage.setItem('AgroNet_cart', JSON.stringify(cartItems));
     }, [cartItems]);
 
-    // Función de login: ahora espera un objeto userData y el token del backend
+    // Función de login
     const login = (userData, receivedToken) => {
         console.log("AuthContext: Realizando login con token.");
-        setUser(userData); // Datos del usuario de la respuesta del backend
-        setUserId(userData._id); // Usa el _id de la respuesta del backend
+        setUser(userData);
+        setUserId(userData._id);
         setIsAuthenticated(true);
-        setIsPremium(userData.isPremium || false); // Obtiene el estado premium del backend
-        setToken(receivedToken); // Almacena el token JWT
-        setLoading(false); // Termina la carga después del login
+        setIsPremium(userData.isPremium || false);
+        setToken(receivedToken);
+        setLoading(false);
     };
 
     const logout = () => {
@@ -83,68 +88,75 @@ export const AuthProvider = ({ children }) => {
         setUserId(null);
         setIsAuthenticated(false);
         setIsPremium(false);
-        setToken(null); // Borra el token
-        clearCart(); // Llama a clearCart para borrar el carrito al cerrar sesión
-        setLoading(false); // Termina la carga después del logout
+        setToken(null);
+        clearCart();
+        setLoading(false);
     };
 
     const register = (userData, receivedToken) => {
         console.log("AuthContext: Realizando registro con token.");
-        setUser(userData); // Datos del usuario de la respuesta del backend
-        setUserId(userData._id); // Usa el _id de la respuesta del backend
+        console.log("User data recibido:", userData);
+        
+        if (!userData) {
+            console.error("Error: userData es undefined/null en register");
+            throw new Error("Datos de usuario inválidos recibidos del servidor");
+        }
+        
+        if (!userData._id) {
+            console.error("Error: userData no tiene propiedad _id", userData);
+            throw new Error("Datos de usuario incompletos recibidos del servidor");
+        }
+        
+        setUser(userData);
+        setUserId(userData._id);
         setIsAuthenticated(true);
-        setIsPremium(userData.isPremium || false); // Obtiene el estado premium del backend
-        setToken(receivedToken); // Almacena el token JWT
-        setLoading(false); // Termina la carga después del registro
+        setIsPremium(userData.isPremium || false);
+        setToken(receivedToken);
+        setLoading(false);
     };
 
-    // Funciones del carrito
+    // Funciones del carrito (sin cambios)
     const addToCart = (product) => {
-        // Asegúrate de que el producto tiene la propiedad 'stock'
         if (typeof product.stock === 'undefined' || product.stock === null) {
             console.error("Error: El producto no tiene una propiedad 'stock' definida.", product);
             alert("No se pudo añadir el producto al carrito: stock no disponible.");
-            return; // No se puede añadir sin stock
+            return;
         }
 
         setCartItems((prevItems) => {
             const existingItem = prevItems.find((item) => item._id === product._id);
 
             if (existingItem) {
-                // Si el producto ya está en el carrito, intenta aumentar la cantidad
                 const newQuantity = existingItem.quantity + 1;
-                // La cantidad no puede exceder el stock disponible
                 const finalQuantity = Math.min(newQuantity, product.stock);
 
                 if (existingItem.quantity === finalQuantity) {
                     console.warn(`El producto "${product.name}" ya alcanzó el stock máximo (${product.stock}). No se añadió más.`);
-                    return prevItems; // No hay cambio si ya está en el límite
+                    return prevItems;
                 }
 
                 return prevItems.map((item) =>
                     item._id === product._id ? { ...item, quantity: finalQuantity } : item
                 );
             } else {
-                // Si el producto es nuevo, añádelo con cantidad 1, pero no más de su stock
-                const initialQuantity = Math.min(1, product.stock); // Asegura que no se añada si stock es 0 o negativo
+                const initialQuantity = Math.min(1, product.stock);
 
                 if (initialQuantity <= 0) {
                     console.warn(`El producto "${product.name}" tiene stock 0 o negativo. No se puede añadir.`);
                     alert(`El producto "${product.name}" no está disponible en este momento.`);
-                    return prevItems; // No añadir si el stock es 0 o negativo
+                    return prevItems;
                 }
                 return [...prevItems, {
                     ...product,
                     quantity: initialQuantity,
                     price: product.price || 0,
                     name: product.name || 'Producto Desconocido',
-                    stock: product.stock // MUY IMPORTANTE: Asegúrate de que el stock esté aquí
+                    stock: product.stock
                 }];
             }
         });
         console.log("Producto añadido/actualizado en el carrito:", product.name);
     };
-
 
     const removeFromCart = (productId) => {
         setCartItems((prevItems) => prevItems.filter((item) => item._id !== productId));
@@ -155,27 +167,17 @@ export const AuthProvider = ({ children }) => {
         setCartItems((prevItems) => {
             return prevItems.map((item) => {
                 if (item._id === productId) {
-                    // Asegúrate de que item.stock esté disponible.
-                    // Si no lo está, esta lógica fallará. Necesitas que 'stock'
-                    // venga cuando se añade el producto al carrito inicialmente (en addToCart).
                     const availableStock = item.stock;
-
-                    // 1. La cantidad no puede ser menor a 1
                     const quantityLowerBound = Math.max(1, newQuantity);
-
-                    // 2. La cantidad no puede exceder el stock disponible
                     const finalQuantity = Math.min(quantityLowerBound, availableStock);
 
-                    // Solo actualiza si la cantidad es realmente diferente para evitar re-renders innecesarios
                     if (finalQuantity !== item.quantity) {
                         return { ...item, quantity: finalQuantity };
                     }
-                    // Si la cantidad no cambia (ej. intentó ir más allá del stock o menos de 1
-                    // y ya estaba en ese límite), devuelve el item sin cambios.
                     return item;
                 }
                 return item;
-            }).filter(item => item.quantity > 0); // Filtra si la cantidad final es 0 (ej. al presionar '-' cuando la cantidad es 1)
+            }).filter(item => item.quantity > 0);
         });
         console.log(`Cantidad actualizada para ${productId} a ${newQuantity}`);
     };
@@ -191,7 +193,7 @@ export const AuthProvider = ({ children }) => {
         isAuthenticated,
         isPremium,
         token,
-        loading, // Exporta el estado de carga
+        loading,
         login,
         logout,
         register,
