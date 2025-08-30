@@ -28,6 +28,21 @@ const ReCaptcha = ({ onTokenChange, action }) => {
     }
   }, [action, onTokenChange]);
 
+// En ReCaptcha.jsx - Añadir función para resetear
+const resetRecaptcha = useCallback(() => {
+  if (window.grecaptcha) {
+    window.grecaptcha.reset();
+  }
+}, []);
+
+// Exponer la función globalmente
+useEffect(() => {
+  window.resetRecaptcha = resetRecaptcha;
+  return () => {
+    delete window.resetRecaptcha;
+  };
+}, [resetRecaptcha]);
+
   useEffect(() => {
     // Si reCAPTCHA ya está cargado
     if (window.grecaptcha) {

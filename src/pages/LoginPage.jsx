@@ -1,69 +1,98 @@
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
-// import api from '../services/api'; // Si usas Axios, descomenta esto
+import ReCaptcha from '../components/ReCaptcha';
 
 function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
-    // ⭐ Cambiado de 'error' a 'errors' para consistencia con RegisterPage ⭐
-    const [errors, setErrors] = useState([]); 
+    const [errors, setErrors] = useState([]);
+    const [recaptchaToken, setRecaptchaToken] = useState('');
 
     const navigate = useNavigate();
     const { login } = useContext(AuthContext);
 
+    // Función para obtener token de reCAPTCHA
+    // En LoginPage.jsx - Modifica handleGetRecaptchaToken para obtener el token JUSTO antes de enviar
+const handleGetRecaptchaToken = useCallback(async () => {
+  if (!window.grecaptcha) {
+    console.error('reCAPTCHA no está disponible');
+    return null;
+  }
+
+  try {
+    // ✅ Obtener el token JUSTO en el momento de enviar el formulario
+    const token = await window.grecaptcha.execute(
+      import.meta.env.VITE_RECAPTCHA_SITE_KEY,
+      { action: 'login' }
+    );
+    
+    console.log('🔄 Token reCAPTCHA generado en el momento:', token ? '✅' : '❌');
+    return token;
+  } catch (error) {
+    console.error('Error al ejecutar reCAPTCHA:', error);
+    return null;
+  }
+}, []);
+
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setErrors([]); // Limpiamos los errores antes de un nuevo intento
+  e.preventDefault();
+  setLoading(true);
+  setErrors([]);
 
-        try {
-            // ⭐ LLAMADA A TU API DE LOGIN DEL BACKEND ⭐
-            // Si usaras Axios:
-            // const response = await api.post('/users/login', { email, password });
-            // const data = response.data;
+  try {
+    // ✅ Obtener token FRESCO justo antes de enviar
+    console.log('🔄 Solicitando token reCAPTCHA...');
+    const token = await window.grecaptcha.execute(
+      import.meta.env.VITE_RECAPTCHA_SITE_KEY,
+      { action: 'login' }
+    );
+    
+    if (!token) {
+      throw new Error('No se pudo obtener token de seguridad');
+    }
 
-            // Si sigues usando fetch:
-            const response = await fetch('https://grupo-agro-backend.onrender.com/api/users/login', { // ⭐ VERIFICA TU URL Y PUERTO DEL BACKEND ⭐
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ email, password }),
-            });
+    console.log('✅ Token obtenido, enviando formulario...');
+    
+    const response = await fetch('http://localhost:5000/api/users/login', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ 
+        email, 
+        password,
+        recaptchaToken: token // Token fresco
+      }),
+    });
 
-            const data = await response.json();
+    const data = await response.json();
+    console.log('📨 Respuesta del servidor:', data);
 
-            if (!response.ok) {
-                // Manejo de errores más detallado para fetch
-                if (data.message) {
-                    setErrors([data.message]); // Si el backend envía un mensaje directo
-                } else if (data.errors && Array.isArray(data.errors)) {
-                    // Si el backend envía un array de errores (ej. de express-validator)
-                    const backendErrorMessages = data.errors.map(err => err.msg);
-                    setErrors(backendErrorMessages);
-                } else {
-                    setErrors(['Error al iniciar sesión. Por favor, verifica tus credenciales.']);
-                }
-                setLoading(false); // Detener la carga si hay un error
-                return; // Importante para detener la ejecución
-            }
+    if (!response.ok) {
+      // Manejar error de token expirado específicamente
+      if (data.error === 'token_expired') {
+        setErrors(['El token de seguridad expiró. Por favor, recarga la página e intenta de nuevo.']);
+      } else if (data.message) {
+        setErrors([data.message]);
+      } else {
+        setErrors(['Error al iniciar sesión']);
+      }
+      return;
+    }
 
-            // En un login exitoso, almacena los datos del usuario y el token en AuthContext
-            // Asumiendo que el backend devuelve { user: { _id, name, email, isPremium }, token: '...' }
-            login(data.user, data.token);
-            console.log('Inicio de sesión exitoso:', data);
-            navigate('/welcome'); // Redirige a la página de bienvenida o dashboard
+    // Login exitoso
+    login(data.user, data.token);
+    navigate('/welcome');
 
-        } catch (err) {
-            // Este catch manejará errores de red u otros errores inesperados
-            setErrors(['Error de conexión o inesperado. ' + (err.message || 'Por favor, inténtalo de nuevo.')]);
-            console.error("Error de login:", err);
-        } finally {
-            setLoading(false);
-        }
-    };
+  } catch (err) {
+    console.error('Error de login:', err);
+    setErrors(['Error de conexión. Por favor, intenta de nuevo.']);
+  } finally {
+    setLoading(false);
+  }
+};
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 py-12 px-4 sm:px-6 lg:px-8">
@@ -152,7 +181,7 @@ function LoginPage() {
                 {/* Columna de la Tarjeta de Incentivo Premium */}
                 <div className="bg-gradient-to-br from-yellow-400 to-yellow-600 p-8 rounded-xl shadow-xl flex flex-col justify-between items-center text-center text-white
                                 border border-yellow-300 transform hover:scale-[1.01] transition-all duration-300
-                                lg:mt-0 mt-8"> {/* Añadimos margen superior en móvil */}
+                                lg:mt-0 mt-8">
                     <div>
                         <svg className="mx-auto h-24 w-24 text-white mb-4" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd"></path>
@@ -169,12 +198,15 @@ function LoginPage() {
                         </ul>
                     </div>
                     <Link 
-                        to="/premium-upsell" // Puedes cambiar esta ruta a donde tengas la página de información premium
+                        to="/premium-upsell"
                         className="w-full bg-white text-yellow-700 hover:bg-yellow-100 py-3 px-6 rounded-lg text-lg font-bold shadow-md transition-all duration-300 transform hover:-translate-y-1"
                     >
                         Saber Más
                     </Link>
                 </div>
+
+                {/* Componente reCAPTCHA invisible */}
+                <ReCaptcha onTokenChange={setRecaptchaToken} action="login" />
             </div>
         </div>
     );
