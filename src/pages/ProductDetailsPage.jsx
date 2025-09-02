@@ -21,48 +21,85 @@ function ProductDetailsPage() {
 
   useEffect(() => {
     const fetchProduct = async () => {
+  try {
+    setLoading(true);
+    setError(null);
+    console.log("🔄 Fetching product with ID:", id);
+    
+    const headers = {};
+    if (token) {
+      headers["Authorization"] = `Bearer ${token}`;
+    }
+
+    // ✅ Ruta CORRECTA para el producto
+    const response = await api.get(`/products/${id}`, { headers });
+    console.log("✅ Product data received:", response.data);
+    
+    setProduct(response.data);
+
+    // ✅ Obtener productos del mismo vendedor (RUTA CORREGIDA)
+    if (response.data.user && response.data.user._id) {
       try {
-        setLoading(true);
-        setError(null);
-
-        const headers = {};
-        if (token) {
-          headers["Authorization"] = `Bearer ${token}`;
+        const sellerResponse = await api.get(
+          `/products/user/${response.data.user._id}?limit=4`,
+          { headers }
+        );
+        
+        console.log("📦 Seller products response:", sellerResponse.data);
+        
+        // ✅ MANEJO ROBUSTO DE LA RESPUESTA
+        let sellerProductsData = [];
+        if (Array.isArray(sellerResponse.data)) {
+          sellerProductsData = sellerResponse.data;
+        } else if (sellerResponse.data && Array.isArray(sellerResponse.data.data)) {
+          sellerProductsData = sellerResponse.data.data;
         }
-
-        const response = await api.get(`/products/${id}`, { headers });
-        setProduct(response.data);
-
-        // Si el producto tiene usuario, obtener otros productos del mismo vendedor
-        if (response.data.user && response.data.user._id) {
-          const sellerResponse = await api.get(
-            `/products?seller=${response.data.user._id}&limit=4`,
-            { headers }
-          );
-          setSellerProducts(
-            sellerResponse.data.filter(
-              (p) => p._id !== response.data._id && p.user._id === response.data.user._id
-            )
-          );
-        }
-
-        // Obtener productos de la misma categoría
-        if (response.data.category) {
-          const categoryResponse = await api.get(
-            `/products?category=${response.data.category}&limit=4`,
-            { headers }
-          );
-          setCategoryProducts(
-            categoryResponse.data.filter((p) => p._id !== response.data._id)
-          );
-        }
-      } catch (err) {
-        console.error("Error fetching product:", err);
-        setError(err.response?.data?.message || "Error al cargar el producto");
-      } finally {
-        setLoading(false);
+        
+        setSellerProducts(
+          sellerProductsData.filter(
+            (p) => p._id !== response.data._id && p.user && p.user._id === response.data.user._id
+          )
+        );
+      } catch (sellerError) {
+        console.error("Error fetching seller products:", sellerError);
+        // No romper el flujo principal por este error
       }
-    };
+    }
+
+    // ✅ Obtener productos de la misma categoría
+    if (response.data.category) {
+      try {
+        const categoryResponse = await api.get(
+          `/products?category=${response.data.category}&limit=4`,
+          { headers }
+        );
+        
+        console.log("📦 Category products response:", categoryResponse.data);
+        
+        // ✅ MANEJO ROBUSTO
+        let categoryProductsData = [];
+        if (Array.isArray(categoryResponse.data)) {
+          categoryProductsData = categoryResponse.data;
+        } else if (categoryResponse.data && Array.isArray(categoryResponse.data.data)) {
+          categoryProductsData = categoryResponse.data.data;
+        }
+        
+        setCategoryProducts(
+          categoryProductsData.filter((p) => p._id !== response.data._id)
+        );
+      } catch (categoryError) {
+        console.error("Error fetching category products:", categoryError);
+        // No romper el flujo principal
+      }
+    }
+  } catch (err) {
+    console.error("❌ Error fetching product:", err);
+    console.error("Error details:", err.response?.data);
+    setError(err.response?.data?.message || "Error al cargar el producto");
+  } finally {
+    setLoading(false);
+  }
+};
 
     fetchProduct();
   }, [id, token, user]);
@@ -147,6 +184,10 @@ function ProductDetailsPage() {
   };
 
   const renderProductCard = (productItem) => {
+    if (!product || !product._id) {
+      console.warn("Producto inválido:", product);
+      return null; // No renderizar si el producto es inválido
+    }
     return (
       <div
         key={productItem._id}
@@ -245,7 +286,9 @@ function ProductDetailsPage() {
                         <p
                           className={`text-center text-sm font-semibold mt-1 animate-pulse
                             ${
-                              addedToCartMessages[productItem._id].includes("❌")
+                              addedToCartMessages[productItem._id].includes(
+                                "❌"
+                              )
                                 ? "text-red-600"
                                 : "text-green-600"
                             }`}
@@ -465,7 +508,8 @@ function ProductDetailsPage() {
                 <div>
                   <h3 className="text-sm font-medium text-gray-500">Precio</h3>
                   <p className="text-lg font-semibold text-gray-900">
-                    {product.price && `$${product.price.toFixed(2)} por ${product.unit}`}
+                    {product.price &&
+                      `$${product.price.toFixed(2)} por ${product.unit}`}
                   </p>
                 </div>
                 <div>
@@ -497,8 +541,7 @@ function ProductDetailsPage() {
                       <img
                         className="h-10 w-10 rounded-full"
                         src={
-                          product.user.avatar ||
-                         '/images/default-profile.png'
+                          product.user.avatar || "/images/default-profile.png"
                         }
                         alt={product.user.name}
                       />

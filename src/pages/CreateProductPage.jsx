@@ -66,72 +66,69 @@ function CreateProductPage() {
     };
 
     const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setError(null);
-        setSuccess(null);
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
 
-        if (!isAuthenticated) {
-            setError('¡Atención! Debes iniciar sesión para publicar un producto.');
-            setLoading(false);
-            return;
-        }
+    if (!isAuthenticated) {
+        setError('¡Atención! Debes iniciar sesión para publicar un producto.');
+        setLoading(false);
+        return;
+    }
 
-        // ⭐ VALIDACIÓN ACTUALIZADA: Asegurarse que stock, unit y category no estén vacíos, e imagen ⭐
-        if (!productData.name || !productData.description || productData.price === '' || 
-            !productData.category || productData.stock === '' || !productData.unit || !image) {
-            setError('¡Cuidado! Por favor, completa todos los campos obligatorios (nombre, descripción, precio, categoría, cantidad en stock, unidad de medida e imagen).');
-            setLoading(false);
-            return;
-        }
+    // Validación
+    if (!productData.name || !productData.description || productData.price === '' || 
+        !productData.category || productData.stock === '' || !productData.unit || !image) {
+        setError('¡Cuidado! Por favor, completa todos los campos obligatorios.');
+        setLoading(false);
+        return;
+    }
 
-        const formData = new FormData();
-        formData.append('name', productData.name);
-        formData.append('description', productData.description);
-        formData.append('price', productData.price);
-        formData.append('stock', productData.stock); 
-        formData.append('unit', productData.unit); 
-        formData.append('category', productData.category);
-        formData.append('isPublished', true); // Se mantiene para publicación automática
-        formData.append('isTradable', isTradable); // <--- ¡ENVIAR EL ESTADO DE TRUEQUEABLE!
+    const formData = new FormData();
+    formData.append('name', productData.name);
+    formData.append('description', productData.description);
+    formData.append('price', productData.price);
+    formData.append('stock', productData.stock);
+    formData.append('unit', productData.unit);
+    formData.append('category', productData.category);
+    formData.append('isPublished', true);
+    formData.append('isTradable', isTradable);
 
-        if (image) {
-            formData.append('image', image);
-        } else { // Esto ya está validado arriba, pero por si acaso.
-            setError('Por favor, selecciona una imagen para el producto.');
-            setLoading(false);
-            return;
-        }
+    if (image) {
+        formData.append('image', image);
+    }
 
-        try {
-            const response = await api.post('/products', formData, { // Usar la URL base de `api`
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'multipart/form-data'
-                },
-            });
+    try {
+        // ✅ CORREGIDO: Agregar /api/ a la ruta
+        const response = await api.post('/api/products', formData, {
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'multipart/form-data'
+            },
+        });
 
-            const data = response.data;
+        const data = response.data;
 
-            setSuccess('¡Producto publicado con éxito en tu tienda! 🛒');
-            // Limpiar formulario
-            setProductData({
-                name: '', description: '', price: '', unit: 'kg', stock: '', category: ''
-            });
-            setImage(null);
-            setPreviewUrl('');
-            setIsTradable(false); // Restablecer el checkbox
-            console.log('Producto creado:', data);
-            navigate('/products'); 
+        setSuccess('¡Producto publicado con éxito en tu tienda! 🛒');
+        // Limpiar formulario
+        setProductData({
+            name: '', description: '', price: '', unit: 'kg', stock: '', category: ''
+        });
+        setImage(null);
+        setPreviewUrl('');
+        setIsTradable(false);
+        console.log('Producto creado:', data);
+        navigate('/products'); 
 
-        } catch (err) {
-            console.error("Error creating product:", err);
-            const errorMessage = err.response?.data?.message || 'Hubo un problema al publicar tu producto. Intenta de nuevo más tarde.';
-            setError(errorMessage);
-        } finally {
-            setLoading(false);
-        }
-    };
+    } catch (err) {
+        console.error("Error creating product:", err);
+        const errorMessage = err.response?.data?.message || 'Hubo un problema al publicar tu producto. Intenta de nuevo más tarde.';
+        setError(errorMessage);
+    } finally {
+        setLoading(false);
+    }
+};
 
     if (authLoading) {
         return (
