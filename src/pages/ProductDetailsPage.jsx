@@ -32,7 +32,7 @@ function ProductDetailsPage() {
     }
 
     // ✅ Ruta CORRECTA para el producto
-    const response = await api.get(`/products/${id}`, { headers });
+    const response = await api.get(`/api/products/${id}`, { headers });
     console.log("✅ Product data received:", response.data);
     
     setProduct(response.data);
@@ -41,7 +41,7 @@ function ProductDetailsPage() {
     if (response.data.user && response.data.user._id) {
       try {
         const sellerResponse = await api.get(
-          `/products/user/${response.data.user._id}?limit=4`,
+          `/api/products/user/${response.data.user._id}?limit=4`,
           { headers }
         );
         
@@ -70,7 +70,7 @@ function ProductDetailsPage() {
     if (response.data.category) {
       try {
         const categoryResponse = await api.get(
-          `/products?category=${response.data.category}&limit=4`,
+          `/api/products?category=${response.data.category}&limit=4`,
           { headers }
         );
         
@@ -525,7 +525,7 @@ function ProductDetailsPage() {
                     Ubicación
                   </h3>
                   <p className="text-lg font-semibold text-gray-900">
-                    {product.location || "No especificada"}
+                    {product.location?.city ? `${product.location.city}, ${product.location.address}` : "No especificada"}
                   </p>
                 </div>
               </div>
