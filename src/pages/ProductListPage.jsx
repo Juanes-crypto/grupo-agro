@@ -253,7 +253,7 @@ function ProductListPage() {
       window.confirm("¿Estás seguro de que quieres eliminar este producto?")
     ) {
       try {
-        await api.delete(`/products/${productId}`, {
+        await api.delete(`/api/products/${productId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         setProducts(products.filter((p) => p._id !== productId));

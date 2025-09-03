@@ -27,18 +27,18 @@ function ServiceDetailsPage() {
                     headers['Authorization'] = `Bearer ${token}`;
                 }
 
-                const response = await api.get(`/services/${id}`, { headers });
+                const response = await api.get(`/api/services/${id}`, { headers });
                 setService(response.data);
 
                 // Obtener otros servicios del mismo proveedor
                 if (response.data.user && response.data.user._id) {
-                    const providerResponse = await api.get(`/services?user=${response.data.user._id}&limit=4`, { headers });
+                    const providerResponse = await api.get(`/api/services?user=${response.data.user._id}&limit=4`, { headers });
                     setProviderServices(providerResponse.data.filter(s => s._id !== response.data._id));
                 }
 
                 // Obtener servicios de la misma categoría
                 if (response.data.category) {
-                    const categoryResponse = await api.get(`/services?category=${response.data.category}&limit=4`, { headers });
+                    const categoryResponse = await api.get(`/api/services?category=${response.data.category}&limit=4`, { headers });
                     setCategoryServices(categoryResponse.data.filter(s => s._id !== response.data._id));
                 }
             } catch (err) {

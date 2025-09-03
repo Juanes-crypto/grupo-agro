@@ -25,7 +25,7 @@ const MyServicesPage = () => {
   useEffect(() => {
     const fetchServices = async () => {
       try {
-        const response = await api.get('/services/my-services', {
+        const response = await api.get('/api/services/my-services', {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -49,7 +49,7 @@ const MyServicesPage = () => {
   const handleDelete = async (serviceId) => {
     if (window.confirm('¿Estás seguro de eliminar este servicio?')) {
       try {
-        await api.delete(`/services/${serviceId}`, {
+        await api.delete(`/api/services/${serviceId}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -65,7 +65,7 @@ const MyServicesPage = () => {
   const togglePublishStatus = async (serviceId, currentStatus) => {
     try {
       const response = await api.put(
-        `/services/${serviceId}`,
+        `/api/services/${serviceId}`,
         { isPublished: !currentStatus },
         {
           headers: {

@@ -38,7 +38,7 @@ function EditServicePage() {
     useEffect(() => {
         const fetchService = async () => {
             try {
-                const response = await api.get(`/services/${id}`, {
+                const response = await api.get(`/api/services/${id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 const data = response.data;
@@ -98,7 +98,7 @@ function EditServicePage() {
         if (image) formData.append('image', image);
 
         try {
-            await api.put(`/services/${id}`, formData, {
+            await api.put(`/api/services/${id}`, formData, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'

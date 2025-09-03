@@ -35,7 +35,7 @@ function EditRentalPage() {
     useEffect(() => {
         const fetchRental = async () => {
             try {
-                const response = await api.get(`/rentals/${id}`, {
+                const response = await api.get(`/api/rentals/${id}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 const data = response.data;
@@ -94,7 +94,7 @@ function EditRentalPage() {
         if (image) formData.append('image', image);
 
         try {
-            await api.put(`/rentals/${id}`, formData, {
+            await api.put(`/api/rentals/${id}`, formData, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'

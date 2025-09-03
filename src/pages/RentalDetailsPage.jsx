@@ -27,18 +27,18 @@ function RentalDetailsPage() {
                     headers['Authorization'] = `Bearer ${token}`;
                 }
 
-                const response = await api.get(`/rentals/${id}`, { headers });
+                const response = await api.get(`/api/rentals/${id}`, { headers });
                 setRental(response.data);
 
                 // Obtener otras rentas del mismo dueño
                 if (response.data.owner && response.data.owner._id) {
-                    const ownerResponse = await api.get(`/rentals?owner=${response.data.owner._id}&limit=4`, { headers });
+                    const ownerResponse = await api.get(`/api/rentals?owner=${response.data.owner._id}&limit=4`, { headers });
                     setOwnerRentals(ownerResponse.data.filter(r => r._id !== response.data._id));
                 }
 
                 // Obtener rentas de la misma categoría
                 if (response.data.category) {
-                    const categoryResponse = await api.get(`/rentals?category=${response.data.category}&limit=4`, { headers });
+                    const categoryResponse = await api.get(`/api/rentals?category=${response.data.category}&limit=4`, { headers });
                     setCategoryRentals(categoryResponse.data.filter(r => r._id !== response.data._id));
                 }
             } catch (err) {
@@ -77,7 +77,7 @@ function RentalDetailsPage() {
 
     const handleDeleteRental = async () => {
         try {
-            await api.delete(`/rentals/${id}`, {
+            await api.delete(`/api/rentals/${id}`, {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -128,7 +128,7 @@ function RentalDetailsPage() {
                     
                     <div className="mt-auto">
                         <Link
-                            to={`/rentals/${rentalItem._id}`}
+                            to={`/api/rentals/${rentalItem._id}`}
                             className="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg text-center block transition duration-300 shadow-md hover:shadow-lg"
                         >
                             Ver Detalles

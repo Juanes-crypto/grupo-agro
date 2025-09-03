@@ -71,7 +71,7 @@ function CreateServicePage() {
         }
 
         try {
-            const res = await api.post('/services', formData, {
+            const res = await api.post('/api/services', formData, {
                 headers: { 'Content-Type': 'multipart/form-data' },
             });
             const data = res.data;

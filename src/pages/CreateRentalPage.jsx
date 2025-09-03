@@ -85,7 +85,7 @@ function CreateRentalPage() {
 
         try {
             // Asegúrate de usar la URL base de `api` para consistencia
-            const response = await api.post('/rentals', formData, {
+            const response = await api.post('/api/rentals', formData, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
                     'Content-Type': 'multipart/form-data'

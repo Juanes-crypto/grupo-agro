@@ -23,7 +23,7 @@ const EditProductPage = () => {
     useEffect(() => {
         const fetchProduct = async () => {
             try {
-                const response = await api.get(`/products/${id}`, {
+                const response = await api.get(`/api/products/${id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -49,13 +49,13 @@ const EditProductPage = () => {
     const handleSubmit = async (formData) => {
         setSubmitting(true);
         try {
-            await api.put(`/products/${id}`, formData, {
+            await api.put(`/api/products/${id}`, formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     Authorization: `Bearer ${token}`
                 }
             });
-            navigate('/mis-productos', { state: { message: 'Producto actualizado correctamente' } });
+            navigate('/my-products', { state: { message: 'Producto actualizado correctamente' } });
         } catch (err) {
             setError(err.response?.data?.message || 'Error al actualizar el producto');
             console.error('Error updating product:', err);

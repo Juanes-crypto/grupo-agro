@@ -25,7 +25,7 @@ const MyRentalsPage = () => {
   useEffect(() => {
     const fetchRentals = async () => {
       try {
-        const response = await api.get('/rentals/my-rentals', {
+        const response = await api.get('/api/rentals/my-rentals', {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -49,7 +49,7 @@ const MyRentalsPage = () => {
   const handleDelete = async (rentalId) => {
     if (window.confirm('¿Estás seguro de eliminar esta renta?')) {
       try {
-        await api.delete(`/rentals/${rentalId}`, {
+        await api.delete(`/api/rentals/${rentalId}`, {
           headers: {
             Authorization: `Bearer ${token}`
           }
@@ -65,7 +65,7 @@ const MyRentalsPage = () => {
   const togglePublishStatus = async (rentalId, currentStatus) => {
     try {
       const response = await api.put(
-        `/rentals/${rentalId}`,
+        `/api/rentals/${rentalId}`,
         { isPublished: !currentStatus },
         {
           headers: {
