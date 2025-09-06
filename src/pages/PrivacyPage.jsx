@@ -52,7 +52,7 @@ const PrivacyPage = () => {
         <div className="bg-blue-50 p-6 rounded-xl border border-blue-100">
           <h3 className="font-semibold text-blue-800 mb-2">Ejercer tus Derechos</h3>
           <p className="text-gray-700">
-            Envía un email a <a href="mailto:soporte@agronet.com" className="text-blue-600 hover:underline">soporte@agronet.com</a> con:
+            Envía un email a <a href="mailto:campobitsuport@gmail.com " className="text-blue-600 hover:underline">campobitsuport@gmail.com </a> con:
           </p>
           <ul className="list-disc pl-5 mt-2 text-gray-700">
             <li>Tu nombre completo</li>

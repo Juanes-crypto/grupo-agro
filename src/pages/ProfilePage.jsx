@@ -166,7 +166,7 @@ const ProfilePage = () => {
 
             {/* Contenido principal del dashboard */}
             <main className="flex-1 p-8">
-                <h1 className="text-3xl font-bold text-gray-800 mb-6">Dashboard de Usuario</h1>
+                <h1 className="text-3xl font-bold text-gray-800 mb-6">Panel de Control</h1>
                 {renderContent()}
             </main>
         </div>

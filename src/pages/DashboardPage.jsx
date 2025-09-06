@@ -10,7 +10,7 @@ function DashboardPage() {
     <div className="min-h-screen bg-agro-gray-light flex flex-col items-center justify-center p-4 sm:p-6 lg:p-8">
       <div className="bg-white p-6 sm:p-8 rounded-3xl shadow-elevated w-full max-w-md md:max-w-lg lg:max-w-xl text-center">
         <h2 className="text-3xl sm:text-4xl font-bold text-agro-black-primary mb-6 animate-fade-in-down">
-          Dashboard de Usuario
+          Panel de Control
         </h2>
 
         {user ? (

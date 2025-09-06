@@ -35,10 +35,10 @@ const Footer = () => {
                 <div>
                   <h4 className="font-semibold text-amber-200">Correo Electrónico</h4>
                   <a 
-                    href="mailto:soporte@agronet.com" 
+                    href="mailto:campobitsuport@gmail.com " 
                     className="text-amber-100/80 hover:text-amber-300 transition-colors"
                   >
-                    soporte@agronet.com
+                    campobitsuport@gmail.com 
                   </a>
                 </div>
               </div>

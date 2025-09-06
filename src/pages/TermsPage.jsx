@@ -62,7 +62,7 @@ const TermsPage = () => {
           <h3 className="font-semibold text-amber-800 mb-2">Contacto Legal</h3>
           <p className="text-gray-700">
             Para reportar violaciones a estos términos: <br />
-            📧 <a href="mailto:soporte@agronet.com" className="text-green-600 hover:underline">soporte@agronet.com</a> <br />
+            📧 <a href="mailto:campobitsuport@gmail.com " className="text-green-600 hover:underline">campobitsuport@gmail.com </a> <br />
             📞 <a href="tel:+573108950792" className="text-green-600 hover:underline">310 895 0792</a> (Horario: L-V 8am-5pm)
           </p>
         </div>

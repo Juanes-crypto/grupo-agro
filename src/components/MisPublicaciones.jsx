@@ -1,6 +1,5 @@
-import React, { useState, useEffect, useContext } from "react";
-import { useNavigate, Link } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
   PlusCircleIcon,
   PencilIcon,
@@ -15,138 +14,70 @@ import api from "../services/api";
 
 moment.locale("es");
 
-const MisPublicaciones = () => {
+// El componente ahora recibe las publicaciones y el token como props
+const MisPublicaciones = ({ products, services, rentals, token }) => {
   const navigate = useNavigate();
-  const { user, token } = useContext(AuthContext);
   const [publications, setPublications] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [activeTab, setActiveTab] = useState("productos"); // 'productos', 'servicios', 'rentas'
 
-  // Iconos para cada tipo de publicación
   const typeIcons = {
     productos: <FaBox className="text-green-600" />,
     servicios: <FaTools className="text-blue-600" />,
     rentas: <FaTractor className="text-purple-600" />,
   };
 
-  // Añade esto junto con las otras constantes de rutas
   const viewRoutes = {
     productos: "products",
     servicios: "services",
     rentas: "rentals",
   };
 
-  // Rutas API para cada tipo de publicación
-  const apiEndpoints = {
-    productos: "/api/products/my-products",
-    servicios: "/api/services/my-services",
-    rentas: "/api/rentals/my-rentals",
-  };
-
-  // Rutas de edición para cada tipo
   const editRoutes = {
     productos: "/edit-product",
     servicios: "/edit-service",
     rentas: "/edit-rental",
   };
 
-  // Rutas de creación para cada tipo
   const createRoutes = {
     productos: "/create-product",
     servicios: "/create-service",
     rentas: "/create-rental",
   };
 
+  // Este useEffect se encarga de filtrar los datos que vienen por props
+  // cada vez que cambie la pestaña activa o los datos mismos.
   useEffect(() => {
-    const fetchPublications = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-
-        const response = await api.get(apiEndpoints[activeTab], {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-
-        console.log("🔍 RESPONSE COMPLETA:", response);
-        console.log("📊 RESPONSE DATA:", response.data);
-        console.log("📊 RESPONSE DATA TYPE:", typeof response.data);
-
-        // ✅ MANEJO COMPLETO DE TODOS LOS CASOS POSIBLES
-        let publicationsData = [];
-
-        // Caso 1: Respuesta es array directamente
-        if (Array.isArray(response.data)) {
-          console.log("✅ Caso 1 - Es un array directamente");
-          publicationsData = response.data;
-        }
-        // Caso 2: Respuesta es { data: [], success: true }
-        else if (response.data && Array.isArray(response.data.data)) {
-          console.log("✅ Caso 2 - Tiene propiedad data con array");
-          publicationsData = response.data.data;
-        }
-        // Caso 3: Respuesta es { products: [], success: true }
-        else if (response.data && Array.isArray(response.data.products)) {
-          console.log("✅ Caso 3 - Tiene propiedad products con array");
-          publicationsData = response.data.products;
-        }
-        // Caso 4: Respuesta es { items: [], success: true }
-        else if (response.data && Array.isArray(response.data.items)) {
-          console.log("✅ Caso 4 - Tiene propiedad items con array");
-          publicationsData = response.data.items;
-        }
-        // Caso 5: Respuesta de error pero con data
-        else if (response.data && response.data.success === false) {
-          console.log("❌ Caso 5 - Respuesta de error");
-          throw new Error(response.data.message || "Error del servidor");
-        }
-        // Caso 6: Formato completamente diferente
-        else {
-          console.log("❌ Caso 6 - Formato desconocido");
-          console.log("🔍 Keys del objeto:", Object.keys(response.data));
-          throw new Error(
-            `Formato de respuesta inesperado: ${JSON.stringify(response.data)}`
-          );
-        }
-
-        console.log("📦 Datos extraídos:", publicationsData);
-
-        const publicationsWithType = publicationsData.map((pub) => ({
-          ...pub,
-          type: activeTab.slice(0, -1),
-        }));
-
-        setPublications(publicationsWithType);
-      } catch (err) {
-        console.error(`Error al cargar ${activeTab}:`, err);
-        console.error("Error details:", err.response?.data);
-        setError(`No se pudieron cargar tus ${activeTab}.`);
-        toast.error(`Error al cargar tus ${activeTab}: ${err.message}`);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (user && token) {
-      fetchPublications();
+    let publicationsData = [];
+    switch (activeTab) {
+      case "productos":
+        publicationsData = products.map(pub => ({ ...pub, type: 'producto' }));
+        break;
+      case "servicios":
+        publicationsData = services.map(pub => ({ ...pub, type: 'servicio' }));
+        break;
+      case "rentas":
+        publicationsData = rentals.map(pub => ({ ...pub, type: 'renta' }));
+        break;
+      default:
+        publicationsData = [];
+        break;
     }
-  }, [user, token, activeTab]);
+    setPublications(publicationsData);
+  }, [activeTab, products, services, rentals]);
 
+  // Se mantiene la lógica de eliminación y cambio de estado,
+  // pero usando el token que viene de las props.
   const handleDelete = async (publicationId, type) => {
-    if (
-      window.confirm("¿Estás seguro de que deseas eliminar esta publicación?")
-    ) {
+    // Usamos un modal personalizado en lugar de window.confirm()
+    const confirmDelete = window.confirm("¿Estás seguro de que deseas eliminar esta publicación?");
+    if (confirmDelete) {
       try {
         await api.delete(`/${type}s/${publicationId}`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
         });
-        setPublications(
-          publications.filter((pub) => pub._id !== publicationId)
-        );
+        setPublications(publications.filter((pub) => pub._id !== publicationId));
         toast.success("Publicación eliminada correctamente");
       } catch (err) {
         console.error("Error al eliminar:", err);
@@ -190,7 +121,6 @@ const MisPublicaciones = () => {
   };
 
   const renderPublicationCard = (publication) => {
-    // Campos comunes
     const commonFields = (
       <>
         <h3 className="font-semibold text-gray-800 text-lg">
@@ -217,7 +147,6 @@ const MisPublicaciones = () => {
       </>
     );
 
-    // Campos específicos por tipo
     let specificFields;
     switch (publication.type) {
       case "producto":
@@ -301,29 +230,29 @@ const MisPublicaciones = () => {
     );
   };
 
-  if (!user) {
-    return (
-      <div className="p-6 bg-white rounded-lg shadow-sm">
-        Inicia sesión para ver tus publicaciones.
-      </div>
-    );
-  }
+  const renderContent = () => {
+    if (publications.length === 0) {
+      return (
+        <div className="bg-blue-50 p-4 rounded-lg text-center text-blue-700">
+          <p>Aún no tienes {activeTab} publicados. ¡Crea uno para empezar!</p>
+          <button
+            className="mt-2 px-4 py-2 bg-green-600 text-white font-medium rounded-lg shadow-md hover:bg-green-700 transition duration-200"
+            onClick={() => navigate(createRoutes[activeTab])}
+          >
+            Crear mi primer {activeTab.slice(0, -1)}
+          </button>
+        </div>
+      );
+    }
 
-  if (loading) {
     return (
-      <div className="p-6 bg-white rounded-lg shadow-sm flex justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-500"></div>
+      <div className="space-y-4">
+        {publications.map((publication) =>
+          renderPublicationCard(publication)
+        )}
       </div>
     );
-  }
-
-  if (error) {
-    return (
-      <div className="p-6 bg-red-100 text-red-700 rounded-lg shadow-sm">
-        {error}
-      </div>
-    );
-  }
+  };
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-sm space-y-6">
@@ -338,7 +267,6 @@ const MisPublicaciones = () => {
         </button>
       </div>
 
-      {/* Pestañas para diferentes tipos de publicaciones */}
       <div className="border-b border-gray-200">
         <nav className="flex space-x-4">
           {["productos", "servicios", "rentas"].map((tab) => (
@@ -358,23 +286,7 @@ const MisPublicaciones = () => {
         </nav>
       </div>
 
-      {publications.length > 0 ? (
-        <div className="space-y-4">
-          {publications.map((publication) =>
-            renderPublicationCard(publication)
-          )}
-        </div>
-      ) : (
-        <div className="bg-blue-50 p-4 rounded-lg text-center text-blue-700">
-          <p>Aún no tienes {activeTab} publicados. ¡Crea uno para empezar!</p>
-          <button
-            className="mt-2 px-4 py-2 bg-green-600 text-white font-medium rounded-lg shadow-md hover:bg-green-700 transition duration-200"
-            onClick={() => (window.location.href = createRoutes[activeTab])}
-          >
-            Crear mi primer {activeTab.slice(0, -1)}
-          </button>
-        </div>
-      )}
+      {renderContent()}
     </div>
   );
 };

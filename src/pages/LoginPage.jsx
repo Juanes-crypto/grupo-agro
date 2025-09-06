@@ -67,7 +67,7 @@ const handleGetRecaptchaToken = useCallback(async () => {
 
       // Login exitoso
       login(user, authToken);
-      navigate('/welcome');
+      navigate('/profile');
 
     } catch (err) {
       console.error('Error de login:', err);
