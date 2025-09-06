@@ -63,7 +63,7 @@ function Navbar() {
   return (
     <>
       {/* Botón de hamburguesa visible solo en móviles */}
-      <div className="fixed top-0 left-0 z-40 p-4 md:hidden">
+      <div className="fixed top-0 left-0 z-50 p-4 md:hidden">
         <button
           onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
           className="p-2 text-white bg-green-800 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white"
