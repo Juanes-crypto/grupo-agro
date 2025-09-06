@@ -2,7 +2,7 @@ import React, { useState, useContext, useCallback } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import ReCaptcha from '../components/ReCaptcha';
-
+import api from '../services/api';
 function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -36,63 +36,47 @@ const handleGetRecaptchaToken = useCallback(async () => {
   }
 }, []);
 
-    const handleSubmit = async (e) => {
-  e.preventDefault();
-  setLoading(true);
-  setErrors([]);
+     const handleSubmit = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setErrors([]);
 
-  try {
-    // ✅ Obtener token FRESCO justo antes de enviar
-    console.log('🔄 Solicitando token reCAPTCHA...');
-    const token = await window.grecaptcha.execute(
-      import.meta.env.VITE_RECAPTCHA_SITE_KEY,
-      { action: 'login' }
-    );
-    
-    if (!token) {
-      throw new Error('No se pudo obtener token de seguridad');
-    }
+    try {
+      console.log('🔄 Solicitando token reCAPTCHA...');
+      const token = await window.grecaptcha.execute(
+        import.meta.env.VITE_RECAPTCHA_SITE_KEY,
+        { action: 'login' }
+      );
 
-    console.log('✅ Token obtenido, enviando formulario...');
-    
-    const response = await fetch('http://localhost:5000/api/users/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ 
-        email, 
-        password,
-        recaptchaToken: token // Token fresco
-      }),
-    });
-
-    const data = await response.json();
-    console.log('📨 Respuesta del servidor:', data);
-
-    if (!response.ok) {
-      // Manejar error de token expirado específicamente
-      if (data.error === 'token_expired') {
-        setErrors(['El token de seguridad expiró. Por favor, recarga la página e intenta de nuevo.']);
-      } else if (data.message) {
-        setErrors([data.message]);
-      } else {
-        setErrors(['Error al iniciar sesión']);
+      if (!token) {
+        throw new Error('No se pudo obtener token de seguridad');
       }
-      return;
+
+      console.log('✅ Token obtenido, enviando formulario...');
+
+      // ⭐⭐⭐ LÍNEA CORREGIDA ⭐⭐⭐
+      const response = await api.post('/api/users/login', {
+        email,
+        password,
+        recaptchaToken: token,
+      });
+
+      // Axios encapsula la respuesta en la propiedad 'data'
+      const { user, token: authToken } = response.data;
+      console.log('📨 Respuesta del servidor:', response.data);
+
+      // Login exitoso
+      login(user, authToken);
+      navigate('/welcome');
+
+    } catch (err) {
+      console.error('Error de login:', err);
+      const errorMessage = err.response?.data?.message || 'Error de conexión. Por favor, intenta de nuevo.';
+      setErrors([errorMessage]);
+    } finally {
+      setLoading(false);
     }
-
-    // Login exitoso
-    login(data.user, data.token);
-    navigate('/welcome');
-
-  } catch (err) {
-    console.error('Error de login:', err);
-    setErrors(['Error de conexión. Por favor, intenta de nuevo.']);
-  } finally {
-    setLoading(false);
-  }
-};
+  };
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 py-12 px-4 sm:px-6 lg:px-8">
