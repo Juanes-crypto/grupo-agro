@@ -40,7 +40,7 @@ const DashboardOverview = () => {
                     api.get('/api/products/my-products', { headers: { Authorization: `Bearer ${token}` } }),
                     api.get('/api/services/my-services', { headers: { Authorization: `Bearer ${token}` } }),
                     api.get('/api/rentals/my-rentals', { headers: { Authorization: `Bearer ${token}` } }),
-                    api.get('/api/barterproposals/my-proposals', { headers: { Authorization: `Bearer ${token}` } }),
+                    api.get('/api/barter/myproposals', { headers: { Authorization: `Bearer ${token}` } }),
                     api.get('/api/orders/my-orders', { headers: { Authorization: `Bearer ${token}` } }),
                 ]);
 
