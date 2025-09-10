@@ -18,16 +18,18 @@ import {
   ChevronDownIcon,
   Bars3Icon,
   XMarkIcon,
+  EnvelopeIcon,
 } from "@heroicons/react/24/outline";
 
 function Navbar() {
-  const { isAuthenticated, isPremium, logout, cartItems } = useContext(AuthContext);
+  const { isAuthenticated, isPremium, logout, cartItems } =
+    useContext(AuthContext);
   const { unreadCount } = useContext(NotificationContext);
   const navigate = useNavigate();
   const [expandedSections, setExpandedSections] = useState({
     products: false,
     services: false,
-    rentals: false
+    rentals: false,
   });
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
@@ -39,9 +41,9 @@ function Navbar() {
   };
 
   const toggleSection = (section) => {
-    setExpandedSections(prev => ({
+    setExpandedSections((prev) => ({
       ...prev,
-      [section]: !prev[section]
+      [section]: !prev[section],
     }));
   };
 
@@ -84,7 +86,7 @@ function Navbar() {
       <aside
         className={`fixed inset-y-0 left-0 z-30 w-64 bg-gradient-to-b from-green-800 to-green-900 text-white shadow-2xl border-r border-amber-100/10 overflow-y-auto pt-16
           transform transition-transform duration-300 ease-in-out
-          ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full'}
+          ${isMobileMenuOpen ? "translate-x-0" : "-translate-x-full"}
           md:translate-x-0 md:block`}
       >
         <div className="md:hidden p-4 text-right">
@@ -103,29 +105,41 @@ function Navbar() {
             {/* Products Section */}
             <div>
               <button
-                onClick={() => toggleSection('products')}
+                onClick={() => toggleSection("products")}
                 className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg hover:bg-green-700/20 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <BuildingStorefrontIcon className="h-5 w-5 text-amber-200/80" />
                   <span>Productos</span>
                 </div>
-                <ChevronDownIcon className={`h-4 w-4 text-amber-200/70 transition-transform ${expandedSections.products ? 'rotate-180' : ''}`} />
+                <ChevronDownIcon
+                  className={`h-4 w-4 text-amber-200/70 transition-transform ${
+                    expandedSections.products ? "rotate-180" : ""
+                  }`}
+                />
               </button>
-              
+
               {expandedSections.products && (
                 <div className="ml-2 pl-6 mt-1 space-y-1 border-l-2 border-amber-100/20">
-                  <SidebarLink to="/products" icon={<BuildingStorefrontIcon className="h-4 w-4" />} onClick={closeMenu}>
+                  <SidebarLink
+                    to="/products"
+                    icon={<BuildingStorefrontIcon className="h-4 w-4" />}
+                    onClick={closeMenu}
+                  >
                     Todos los productos
                   </SidebarLink>
                   {isAuthenticated && (
-                    <SidebarLink to="/my-products" icon={<CubeIcon className="h-4 w-4" />} onClick={closeMenu}>
+                    <SidebarLink
+                      to="/my-products"
+                      icon={<CubeIcon className="h-4 w-4" />}
+                      onClick={closeMenu}
+                    >
                       Mis productos
                     </SidebarLink>
                   )}
                   {isAuthenticated && (
-                    <SidebarLink 
-                      to="/create-product" 
+                    <SidebarLink
+                      to="/create-product"
                       icon={<PlusIcon className="h-4 w-4" />}
                       className="bg-green-700/50 hover:bg-green-700"
                       onClick={closeMenu}
@@ -140,29 +154,41 @@ function Navbar() {
             {/* Services Section */}
             <div>
               <button
-                onClick={() => toggleSection('services')}
+                onClick={() => toggleSection("services")}
                 className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg hover:bg-green-700/20 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <WrenchIcon className="h-5 w-5 text-amber-200/80" />
                   <span>Servicios</span>
                 </div>
-                <ChevronDownIcon className={`h-4 w-4 text-amber-200/70 transition-transform ${expandedSections.services ? 'rotate-180' : ''}`} />
+                <ChevronDownIcon
+                  className={`h-4 w-4 text-amber-200/70 transition-transform ${
+                    expandedSections.services ? "rotate-180" : ""
+                  }`}
+                />
               </button>
-              
+
               {expandedSections.services && (
                 <div className="ml-2 pl-6 mt-1 space-y-1 border-l-2 border-amber-100/20">
-                  <SidebarLink to="/services" icon={<WrenchIcon className="h-4 w-4" />} onClick={closeMenu}>
+                  <SidebarLink
+                    to="/services"
+                    icon={<WrenchIcon className="h-4 w-4" />}
+                    onClick={closeMenu}
+                  >
                     Todos los servicios
                   </SidebarLink>
                   {isAuthenticated && (
-                    <SidebarLink to="/my-services" icon={<WrenchIcon className="h-4 w-4" />} onClick={closeMenu}>
+                    <SidebarLink
+                      to="/my-services"
+                      icon={<WrenchIcon className="h-4 w-4" />}
+                      onClick={closeMenu}
+                    >
                       Mis servicios
                     </SidebarLink>
                   )}
                   {isAuthenticated && (
-                    <SidebarLink 
-                      to="/create-service" 
+                    <SidebarLink
+                      to="/create-service"
                       icon={<PlusIcon className="h-4 w-4" />}
                       className="bg-green-700/50 hover:bg-green-700"
                       onClick={closeMenu}
@@ -177,29 +203,41 @@ function Navbar() {
             {/* Rentals Section */}
             <div>
               <button
-                onClick={() => toggleSection('rentals')}
+                onClick={() => toggleSection("rentals")}
                 className="flex items-center justify-between w-full px-3 py-2 text-sm font-medium rounded-lg hover:bg-green-700/20 transition-colors"
               >
                 <div className="flex items-center gap-3">
                   <BuildingOfficeIcon className="h-5 w-5 text-amber-200/80" />
                   <span>Rentas</span>
                 </div>
-                <ChevronDownIcon className={`h-4 w-4 text-amber-200/70 transition-transform ${expandedSections.rentals ? 'rotate-180' : ''}`} />
+                <ChevronDownIcon
+                  className={`h-4 w-4 text-amber-200/70 transition-transform ${
+                    expandedSections.rentals ? "rotate-180" : ""
+                  }`}
+                />
               </button>
-              
+
               {expandedSections.rentals && (
                 <div className="ml-2 pl-6 mt-1 space-y-1 border-l-2 border-amber-100/20">
-                  <SidebarLink to="/rentals" icon={<BuildingOfficeIcon className="h-4 w-4" />} onClick={closeMenu}>
+                  <SidebarLink
+                    to="/rentals"
+                    icon={<BuildingOfficeIcon className="h-4 w-4" />}
+                    onClick={closeMenu}
+                  >
                     Todas las rentas
                   </SidebarLink>
                   {isAuthenticated && (
-                    <SidebarLink to="/my-rentals" icon={<BuildingOfficeIcon className="h-4 w-4" />} onClick={closeMenu}>
+                    <SidebarLink
+                      to="/my-rentals"
+                      icon={<BuildingOfficeIcon className="h-4 w-4" />}
+                      onClick={closeMenu}
+                    >
                       Mis rentas
                     </SidebarLink>
                   )}
                   {isAuthenticated && (
-                    <SidebarLink 
-                      to="/create-rental" 
+                    <SidebarLink
+                      to="/create-rental"
                       icon={<PlusIcon className="h-4 w-4" />}
                       className="bg-green-700/50 hover:bg-green-700"
                       onClick={closeMenu}
@@ -214,26 +252,26 @@ function Navbar() {
 
           {/* Other Important Links */}
           <div className="pt-2">
-            <SidebarLink 
-              to="/my-barter-proposals" 
+            <SidebarLink
+              to="/my-barter-proposals"
               icon={<ArrowsRightLeftIcon className="h-5 w-5" />}
               badge={isAuthenticated ? 3 : null} // Ejemplo de badge para propuestas nuevas
               onClick={closeMenu}
             >
               Permutas
             </SidebarLink>
-            
-            <SidebarLink 
-              to="/my-orders" 
+
+            <SidebarLink
+              to="/my-orders"
               icon={<ListBulletIcon className="h-5 w-5" />}
               onClick={closeMenu}
             >
               Mis Pedidos
             </SidebarLink>
-            
+
             {isAuthenticated && (
-              <SidebarLink 
-                to="/notifications" 
+              <SidebarLink
+                to="/notifications"
                 icon={<BellIcon className="h-5 w-5" />}
                 badge={unreadCount > 0 ? unreadCount : null}
                 onClick={closeMenu}
@@ -241,9 +279,9 @@ function Navbar() {
                 Notificaciones
               </SidebarLink>
             )}
-            
-            <SidebarLink 
-              to="/cart" 
+
+            <SidebarLink
+              to="/cart"
               icon={<ShoppingCartIcon className="h-5 w-5" />}
               badge={totalCartItems > 0 ? totalCartItems : null}
               onClick={closeMenu}
@@ -255,7 +293,7 @@ function Navbar() {
           {/* Premium Section */}
           <div className="pt-4">
             <div className="border-t border-amber-100/20 my-2"></div>
-            
+
             {isPremium ? (
               <SidebarLink
                 to="/premium-inventory"
@@ -277,11 +315,24 @@ function Navbar() {
             )}
           </div>
 
+          {isAuthenticated && (
+            <>
+              <div className="border-t border-amber-100/20 my-2"></div>
+              <SidebarLink
+                to="/newsletter"
+                icon={<EnvelopeIcon className="h-5 w-5" />}
+                onClick={closeMenu}
+                className="bg-blue-600/50 hover:bg-blue-600 text-white"
+              >
+                📧 Enviar Newsletter
+              </SidebarLink>
+            </>
+          )}
           {/* User Actions */}
           <div className="pt-2">
             {isAuthenticated ? (
-              <SidebarLink 
-                to="/profile" 
+              <SidebarLink
+                to="/profile"
                 icon={<UserCircleIcon className="h-5 w-5" />}
                 onClick={closeMenu}
               >
@@ -289,15 +340,15 @@ function Navbar() {
               </SidebarLink>
             ) : (
               <>
-                <SidebarLink 
-                  to="/login" 
+                <SidebarLink
+                  to="/login"
                   icon={<UserCircleIcon className="h-5 w-5" />}
                   onClick={closeMenu}
                 >
                   Iniciar Sesión
                 </SidebarLink>
-                <SidebarLink 
-                  to="/register" 
+                <SidebarLink
+                  to="/register"
                   icon={<PlusIcon className="h-5 w-5" />}
                   onClick={closeMenu}
                 >
@@ -305,7 +356,7 @@ function Navbar() {
                 </SidebarLink>
               </>
             )}
-            
+
             {isAuthenticated && (
               <button
                 onClick={onLogout}

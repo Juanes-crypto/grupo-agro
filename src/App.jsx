@@ -7,7 +7,6 @@ import Navbar from './components/Navbar';
 import PrivateRoute from './components/PrivateRoute';
 import PremiumRoute from './components/PremiumRoute';
 import Footer from './components/Footer';
-
 // Páginas
 import HomePage from './pages/HomePage';
 import RegisterPage from './pages/RegisterPage';
@@ -47,6 +46,7 @@ import MyRentalsPage from './pages/MyRentalsPage';
 import EditServicePage from './pages/EditServicePage'; 
 import EditRentalPage from './pages/EditRentalPage'; 
 import AboutUsPage from './pages/AboutUsPage';
+import NewsletterPage from './pages/NewsletterPage';
 function App() {
     const [isNavbarOpen, setIsNavbarOpen] = useState(false);
 
@@ -91,6 +91,7 @@ function App() {
                                 <Route path="/checkout" element={<CheckoutPage />} />
                                 <Route path="/my-orders" element={<MyOrdersPage />} />
                                 <Route path="/order-details/:id" element={<OrderDetailsPage />} />
+                                <Route path="/newsletter" element={<NewsletterPage />} />
                                 <Route path="/dashboard" element={<DashboardPage />} />
                                 <Route path="/notifications" element={<NotificationsPage />} />
                                 <Route path="/edit-product/:id" element={<EditProductPage />} />
