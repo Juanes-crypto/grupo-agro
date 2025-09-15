@@ -1,87 +1,114 @@
-import React, { useState, useContext, useCallback } from 'react';
+import React, { useState, useContext, useCallback, useRef } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import ReCaptcha from '../components/ReCaptcha';
 import api from '../services/api';
+
 function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const [loading, setLoading] = useState(false);
     const [errors, setErrors] = useState([]);
     const [recaptchaToken, setRecaptchaToken] = useState('');
+    const [recaptchaReady, setRecaptchaReady] = useState(false);
+    const recaptchaRef = useRef();
 
     const navigate = useNavigate();
     const { login } = useContext(AuthContext);
 
-    // Función para obtener token de reCAPTCHA
-    // En LoginPage.jsx - Modifica handleGetRecaptchaToken para obtener el token JUSTO antes de enviar
-const handleGetRecaptchaToken = useCallback(async () => {
-  if (!window.grecaptcha) {
-    console.error('reCAPTCHA no está disponible');
-    return null;
-  }
+    // Función para verificar si reCAPTCHA está disponible
+    const isRecaptchaAvailable = useCallback(() => {
+        return window.grecaptcha && typeof window.grecaptcha.execute === 'function';
+    }, []);
 
-  try {
-    // ✅ Obtener el token JUSTO en el momento de enviar el formulario
-    const token = await window.grecaptcha.execute(
-      import.meta.env.VITE_RECAPTCHA_SITE_KEY,
-      { action: 'login' }
-    );
-    
-    console.log('🔄 Token reCAPTCHA generado en el momento:', token ? '✅' : '❌');
-    return token;
-  } catch (error) {
-    console.error('Error al ejecutar reCAPTCHA:', error);
-    return null;
-  }
-}, []);
+    // Función para obtener token de reCAPTCHA con verificación
+    const handleGetRecaptchaToken = useCallback(async () => {
+        if (!isRecaptchaAvailable()) {
+            console.error('❌ reCAPTCHA no está disponible');
+            return null;
+        }
 
-     const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setErrors([]);
+        try {
+            console.log('🔄 Generando token reCAPTCHA...');
+            const token = await window.grecaptcha.execute(
+                import.meta.env.VITE_RECAPTCHA_SITE_KEY,
+                { action: 'login' }
+            );
+            
+            console.log('✅ Token reCAPTCHA generado:', token ? 'Éxito' : 'Falló');
+            return token;
+        } catch (error) {
+            console.error('❌ Error al ejecutar reCAPTCHA:', error);
+            return null;
+        }
+    }, [isRecaptchaAvailable]);
 
-    try {
-      console.log('🔄 Solicitando token reCAPTCHA...');
-      const token = await window.grecaptcha.execute(
-        import.meta.env.VITE_RECAPTCHA_SITE_KEY,
-        { action: 'login' }
-      );
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setErrors([]);
 
-      if (!token) {
-        throw new Error('No se pudo obtener token de seguridad');
-      }
+        try {
+            // Verificar que reCAPTCHA esté disponible
+            if (!isRecaptchaAvailable()) {
+                throw new Error('El servicio de seguridad no está disponible. Por favor, recarga la página.');
+            }
 
-      console.log('✅ Token obtenido, enviando formulario...');
+            console.log('🔄 Solicitando token reCAPTCHA...');
+            const token = await handleGetRecaptchaToken();
 
-      // ⭐⭐⭐ LÍNEA CORREGIDA ⭐⭐⭐
-      const response = await api.post('/api/users/login', {
-        email,
-        password,
-        recaptchaToken: token,
-      });
+            if (!token) {
+                throw new Error('No se pudo obtener token de seguridad. Intenta recargar la página.');
+            }
 
-      // Axios encapsula la respuesta en la propiedad 'data'
-      const { user, token: authToken } = response.data;
-      console.log('📨 Respuesta del servidor:', response.data);
+            console.log('✅ Token obtenido, enviando formulario...');
 
-      // Login exitoso
-      login(user, authToken);
-      navigate('/profile');
+            const response = await api.post('/api/users/login', {
+                email,
+                password,
+                recaptchaToken: token,
+            });
 
-    } catch (err) {
-      console.error('Error de login:', err);
-      const errorMessage = err.response?.data?.message || 'Error de conexión. Por favor, intenta de nuevo.';
-      setErrors([errorMessage]);
-    } finally {
-      setLoading(false);
-    }
-  };
+            const { user, token: authToken } = response.data;
+            console.log('📨 Respuesta del servidor:', response.data);
+
+            login(user, authToken);
+            navigate('/profile');
+
+        } catch (err) {
+            console.error('Error de login:', err);
+            
+            let errorMessage = 'Error de conexión. Por favor, intenta de nuevo.';
+            
+            if (err.message.includes('reCAPTCHA')) {
+                errorMessage = err.message;
+            } else if (err.response?.data?.message) {
+                errorMessage = err.response.data.message;
+            } else if (err.code === 'NETWORK_ERROR') {
+                errorMessage = 'Error de conexión. Verifica tu internet e intenta de nuevo.';
+            }
+
+            setErrors([errorMessage]);
+            
+            // Resetear reCAPTCHA si hay error
+            if (window.grecaptcha && typeof window.grecaptcha.reset === 'function') {
+                window.grecaptcha.reset();
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Función para manejar cuando reCAPTCHA está listo
+    const handleRecaptchaReady = useCallback(() => {
+        console.log('✅ reCAPTCHA está listo para usar');
+        setRecaptchaReady(true);
+    }, []);
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 py-12 px-4 sm:px-6 lg:px-8">
-            <div className="max-w-4xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 p-8 bg-white rounded-xl shadow-2xl border border-green-100 transform hover:scale-[1.005] transition-all duration-300">
-                {/* Columna del Formulario de Inicio de Sesión */}
+            <div className="max-w-4xl w-full grid grid-cols-1 lg:grid-cols-2 gap-8 p-8 bg-white rounded-xl shadow-2xl border border-green-100">
+                {/* Columna del Formulario */}
                 <div className="space-y-8 flex flex-col justify-center">
                     <div className="text-center">
                         <img className="mx-auto h-16 w-auto mb-4" src="/images/AgroNet-logo.png" alt="AgroNet Logo" />
@@ -92,6 +119,15 @@ const handleGetRecaptchaToken = useCallback(async () => {
                             Inicia sesión para acceder a tu cuenta de AgroNet.
                         </p>
                     </div>
+                    
+                    {!recaptchaReady && (
+                        <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
+                            <p className="text-yellow-800 text-sm">
+                                ⚠️ Cargando sistema de seguridad...
+                            </p>
+                        </div>
+                    )}
+
                     <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                         <div>
                             <label htmlFor="email-address" className="sr-only">Email</label>
@@ -105,6 +141,7 @@ const handleGetRecaptchaToken = useCallback(async () => {
                                 placeholder="Tu dirección de email"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
+                                disabled={loading || !recaptchaReady}
                             />
                         </div>
                         <div>
@@ -119,10 +156,10 @@ const handleGetRecaptchaToken = useCallback(async () => {
                                 placeholder="Tu contraseña"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
+                                disabled={loading || !recaptchaReady}
                             />
                         </div>
 
-                        {/* ⭐ Mostrar los errores aquí ⭐ */}
                         {errors.length > 0 && (
                             <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mt-4 shadow-sm" role="alert">
                                 <strong className="font-bold">¡Error al iniciar sesión!</strong>
@@ -137,8 +174,8 @@ const handleGetRecaptchaToken = useCallback(async () => {
                         <div>
                             <button
                                 type="submit"
-                                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-lg font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:-translate-y-0"
-                                disabled={loading}
+                                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-lg font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                disabled={loading || !recaptchaReady}
                             >
                                 {loading ? (
                                     <span className="flex items-center">
@@ -189,8 +226,13 @@ const handleGetRecaptchaToken = useCallback(async () => {
                     </Link>
                 </div>
 
-                {/* Componente reCAPTCHA invisible */}
-                <ReCaptcha onTokenChange={setRecaptchaToken} action="login" />
+                {/* Componente reCAPTCHA con callback de ready */}
+                <ReCaptcha 
+                    onTokenChange={setRecaptchaToken} 
+                    action="login" 
+                    onReady={handleRecaptchaReady}
+                    ref={recaptchaRef}
+                />
             </div>
         </div>
     );

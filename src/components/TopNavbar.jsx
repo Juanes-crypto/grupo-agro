@@ -174,23 +174,6 @@ function TopNavbar({ onMenuClick }) {
 
         {/* Parte derecha - Acciones de usuario */}
         <div className="flex items-center space-x-2 md:space-x-3">
-          {/* Botones de navegación */}
-          <div className="hidden md:flex items-center space-x-1">
-            <button
-              onClick={() => navigate(-1)}
-              className="p-1.5 rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-900"
-              title="Atrás"
-            >
-              <ArrowLeftIcon className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => navigate(1)}
-              className="p-1.5 rounded-full hover:bg-gray-100 text-gray-600 hover:text-gray-900"
-              title="Adelante"
-            >
-              <ArrowRightIcon className="h-5 w-5" />
-            </button>
-          </div>
 
           {isAuthenticated && (
             <>

@@ -1,101 +1,70 @@
-import { useEffect, useRef, useCallback } from 'react';
+// components/ReCaptcha.jsx
+import React, { useEffect, useImperativeHandle, forwardRef } from 'react';
 
-const ReCaptcha = ({ onTokenChange, action }) => {
-  const recaptchaRef = useRef();
+const ReCaptcha = forwardRef(({ onTokenChange, action = 'submit', onReady }, ref) => {
+    useEffect(() => {
+        const loadRecaptcha = () => {
+            if (window.grecaptcha) {
+                console.log('✅ reCAPTCHA ya está cargado');
+                initializeRecaptcha();
+                return;
+            }
 
-  // Función para obtener token
-  const getToken = useCallback(async () => {
-    if (!window.grecaptcha) {
-      console.error('reCAPTCHA no está disponible');
-      return null;
-    }
+            console.log('🔄 Cargando script reCAPTCHA...');
+            const script = document.createElement('script');
+            script.src = `https://www.google.com/recaptcha/api.js?render=${import.meta.env.VITE_RECAPTCHA_SITE_KEY}`;
+            script.async = true;
+            script.defer = true;
+            script.onload = () => {
+                console.log('✅ Script reCAPTCHA cargado');
+                initializeRecaptcha();
+            };
+            script.onerror = () => {
+                console.error('❌ Error al cargar reCAPTCHA');
+                if (onReady) onReady();
+            };
+            document.head.appendChild(script);
+        };
 
-    try {
-      // Usar import.meta.env en lugar de process.env para Vite
-      const token = await window.grecaptcha.execute(
-        import.meta.env.VITE_RECAPTCHA_SITE_KEY,
-        { action }
-      );
-      
-      if (onTokenChange) {
-        onTokenChange(token);
-      }
-      
-      return token;
-    } catch (error) {
-      console.error('Error al ejecutar reCAPTCHA:', error);
-      return null;
-    }
-  }, [action, onTokenChange]);
+        const initializeRecaptcha = () => {
+            if (!window.grecaptcha) {
+                console.error('❌ grecaptcha no está definido');
+                return;
+            }
 
-// En ReCaptcha.jsx - Añadir función para resetear
-const resetRecaptcha = useCallback(() => {
-  if (window.grecaptcha) {
-    window.grecaptcha.reset();
-  }
-}, []);
+            console.log('✅ reCAPTCHA inicializado exitosamente');
+            if (onReady) onReady();
+        };
 
-// Exponer la función globalmente
-useEffect(() => {
-  window.resetRecaptcha = resetRecaptcha;
-  return () => {
-    delete window.resetRecaptcha;
-  };
-}, [resetRecaptcha]);
+        loadRecaptcha();
+    }, [onReady]);
 
-  useEffect(() => {
-    // Si reCAPTCHA ya está cargado
-    if (window.grecaptcha) {
-      window.grecaptcha.ready(() => {
-        recaptchaRef.current = window.grecaptcha;
-        console.log('reCAPTCHA ya estaba cargado');
-      });
-      return;
-    }
+    useImperativeHandle(ref, () => ({
+        execute: async () => {
+            if (!window.grecaptcha) {
+                throw new Error('reCAPTCHA no está disponible');
+            }
+            return await window.grecaptcha.execute(
+                import.meta.env.VITE_RECAPTCHA_SITE_KEY,
+                { action }
+            );
+        },
+        reset: () => {
+            if (window.grecaptcha) {
+                window.grecaptcha.reset();
+            }
+        }
+    }));
 
-    // Cargar script de reCAPTCHA - Usar import.meta.env para Vite
-    const script = document.createElement('script');
-    script.src = `https://www.google.com/recaptcha/api.js?render=${import.meta.env.VITE_RECAPTCHA_SITE_KEY}`;
-    script.async = true;
-    script.defer = true;
-    script.id = 'recaptcha-script';
-    
-    script.addEventListener('load', () => {
-      console.log('reCAPTCHA script loaded successfully');
-      window.grecaptcha.ready(() => {
-        recaptchaRef.current = window.grecaptcha;
-        console.log('reCAPTCHA initialized successfully');
-      });
-    });
-    
-    script.addEventListener('error', () => {
-      console.error('Failed to load reCAPTCHA script');
-    });
-    
-    // Evitar duplicados
-    if (!document.getElementById('recaptcha-script')) {
-      document.body.appendChild(script);
-    }
+    return (
+        <div
+            className="g-recaptcha"
+            data-sitekey={import.meta.env.VITE_RECAPTCHA_SITE_KEY}
+            data-size="invisible"
+        />
+    );
+});
 
-    return () => {
-      // No remover el script para evitar recargas innecesarias
-    };
-  }, []);
-
-  // Exponer la función getToken globalmente para uso en forms
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      window.getRecaptchaToken = getToken;
-    }
-    
-    return () => {
-      if (typeof window !== 'undefined') {
-        delete window.getRecaptchaToken;
-      }
-    };
-  }, [getToken]);
-
-  return null; // reCAPTCHA v3 es invisible
-};
+ReCaptcha.displayName = 'ReCaptcha';
 
 export default ReCaptcha;
