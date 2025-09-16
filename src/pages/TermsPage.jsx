@@ -8,7 +8,7 @@ import {
 
 const TermsPage = () => {
   useEffect(() => {
-    document.title = "Términos y Condiciones | AgroNet";
+    document.title = "Términos y Condiciones | CampoBit";
   }, []);
 
   return (
@@ -29,7 +29,7 @@ const TermsPage = () => {
             1. Alcance Geográfico
           </h2>
           <p className="text-gray-700">
-            AgroNet opera <strong>exclusivamente en Colombia</strong>. Al registrarte, confirmas que resides o operas en territorio colombiano.
+            CampoBit opera <strong>exclusivamente en Colombia</strong>. Al registrarte, confirmas que resides o operas en territorio colombiano.
           </p>
         </section>
 
@@ -41,7 +41,7 @@ const TermsPage = () => {
           <ul className="list-disc pl-5 space-y-2 text-gray-700">
             <li>Proporcionar <strong>WhatsApp válido</strong> y <strong>email real</strong>.</li>
             <li>Ser mayor de 18 años o contar con autorización parental.</li>
-            <li>No usar AgroNet para actividades ilegales según las leyes colombianas.</li>
+            <li>No usar CampoBit para actividades ilegales según las leyes colombianas.</li>
           </ul>
         </section>
 

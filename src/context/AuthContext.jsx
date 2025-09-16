@@ -10,11 +10,11 @@ export const AuthProvider = ({ children }) => {
     const [userId, setUserId] = useState(null);
     const [isAuthenticated, setIsAuthenticated] = useState(false);
     const [isPremium, setIsPremium] = useState(false);
-    const [token, setToken] = useState(localStorage.getItem('AgroNet_token') || null);
+    const [token, setToken] = useState(localStorage.getItem('CampoBit_token') || null);
     const [loading, setLoading] = useState(true);
 
     const [cartItems, setCartItems] = useState(() => {
-        const savedCart = localStorage.getItem('AgroNet_cart');
+        const savedCart = localStorage.getItem('CampoBit_cart');
         return savedCart ? JSON.parse(savedCart) : [];
     });
 
@@ -42,7 +42,7 @@ export const AuthProvider = ({ children }) => {
                     setUserId(null);
                     setIsPremium(false);
                     setToken(null);
-                    localStorage.removeItem('AgroNet_token');
+                    localStorage.removeItem('CampoBit_token');
                 } finally {
                     setLoading(false);
                 }
@@ -60,15 +60,15 @@ export const AuthProvider = ({ children }) => {
     // Efecto para guardar/eliminar el token de localStorage
     useEffect(() => {
         if (token) {
-            localStorage.setItem('AgroNet_token', token);
+            localStorage.setItem('CampoBit_token', token);
         } else {
-            localStorage.removeItem('AgroNet_token');
+            localStorage.removeItem('CampoBit_token');
         }
     }, [token]);
 
     // Efecto para guardar el carrito en localStorage
     useEffect(() => {
-        localStorage.setItem('AgroNet_cart', JSON.stringify(cartItems));
+        localStorage.setItem('CampoBit_cart', JSON.stringify(cartItems));
     }, [cartItems]);
 
     // Función de login

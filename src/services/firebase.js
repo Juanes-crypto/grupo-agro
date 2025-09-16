@@ -5,9 +5,9 @@ import { getAuth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDUhW5jO7R21d2ndMyghxbXVBrw5_Ea1lc",
-  authDomain: "AgroNet-5cecb.firebaseapp.com",
-  projectId: "AgroNet-5cecb",
-  storageBucket: "AgroNet-5cecb.firebasestorage.app",
+  authDomain: "CampoBit-5cecb.firebaseapp.com",
+  projectId: "CampoBit-5cecb",
+  storageBucket: "CampoBit-5cecb.firebasestorage.app",
   messagingSenderId: "423703036242",
   appId: "1:423703036242:web:3100fa689309c14847ba8b",
   measurementId: "G-YVZFNZWGQT"

@@ -1,4 +1,4 @@
-// AgroNet-UI/src/pages/MyBarterProposalsPage.jsx
+// CampoBit-UI/src/pages/MyBarterProposalsPage.jsx
 
 import React, { useState, useEffect, useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';

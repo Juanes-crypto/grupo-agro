@@ -74,7 +74,7 @@ Autenticación:
 
 Gestionada por AuthContext.jsx y useAuth.js.
 
-El token de autenticación (AgroNet_token) se almacena en localStorage.
+El token de autenticación (CampoBit_token) se almacena en localStorage.
 
 api.js (Axios) intercepta las solicitudes para adjuntar automáticamente el token en la cabecera Authorization: Bearer <token>.
 

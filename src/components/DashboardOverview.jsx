@@ -105,7 +105,7 @@ const DashboardOverview = () => {
                         ¡Hola de nuevo, {user?.name || 'Usuario'}!
                     </h2>
                     <p className="text-gray-600 mt-2">
-                        Aquí tienes un resumen rápido de tu actividad en AgroApp.
+                        Aquí tienes un resumen rápido de tu actividad en CampoBit.
                     </p>
                 </div>
                 {user?.profilePicture && (

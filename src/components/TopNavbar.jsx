@@ -78,8 +78,8 @@ function TopNavbar({ onMenuClick }) {
           {/* Logo */}
           <Link to="/" className="flex-shrink-0">
             <img
-              src="/images/AgroNet-logo.png"
-              alt="AgroNet Logo"
+              src="/images/CampoBit-logo.png"
+              alt="CampoBit Logo"
               className="h-8 w-auto"
             />
           </Link>

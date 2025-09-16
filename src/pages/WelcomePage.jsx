@@ -100,7 +100,7 @@ function WelcomePage() {
           >
             Bienvenido a{" "}
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-emerald-600 to-green-800">
-              AgroNet
+              CampoBit
             </span>
           </motion.h1>
 
@@ -147,7 +147,7 @@ function WelcomePage() {
             <div className="relative bg-white rounded-xl shadow-2xl overflow-hidden border border-gray-200">
               <img
                 src="/images/dashboard-preview.jpg"
-                alt="Vista previa de AgroNet"
+                alt="Vista previa de CampoBit"
                 className="w-full h-auto"
               />
             </div>
@@ -160,7 +160,7 @@ function WelcomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              Todo lo que AgroNet ofrece
+              Todo lo que CampoBit ofrece
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Una plataforma completa diseñada específicamente para las
@@ -217,7 +217,7 @@ function WelcomePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-16">
             <h2 className="text-3xl font-bold text-gray-900 mb-4">
-              ¿Cómo funciona AgroNet?
+              ¿Cómo funciona CampoBit?
             </h2>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
               Sigue estos simples pasos para comenzar a aprovechar todas las
@@ -284,7 +284,7 @@ function WelcomePage() {
           </h2>
           <p className="text-xl text-emerald-100 mb-10 max-w-3xl mx-auto">
             Regístrate ahora y comienza a disfrutar de todas las ventajas que
-            AgroNet tiene para ofrecerte
+            CampoBit tiene para ofrecerte
           </p>
           <div className="flex flex-col sm:flex-row justify-center gap-4">
             <Link

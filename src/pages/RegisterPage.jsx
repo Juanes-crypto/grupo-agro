@@ -140,11 +140,11 @@ function RegisterPage() {
         <div className="text-center">
           <img
             className="mx-auto h-20 w-auto"
-            src="/images/AgroNet-logo.png"
-            alt="AgroNet Logo"
+            src="/images/CampoBit-logo.png"
+            alt="CampoBit Logo"
           />
           <h2 className="mt-6 text-center text-4xl font-extrabold text-green-800">
-            ¡Únete a la comunidad AgroNet!
+            ¡Únete a la comunidad CampoBit!
           </h2>
           <p className="mt-2 text-center text-sm text-gray-600">
             Crea tu cuenta para empezar a vender o comprar productos agrícolas.

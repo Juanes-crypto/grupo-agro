@@ -7,7 +7,7 @@ import {
 
 const PrivacyPage = () => {
   useEffect(() => {
-    document.title = "Política de Privacidad | AgroNet";
+    document.title = "Política de Privacidad | CampoBit";
   }, []);
 
   return (

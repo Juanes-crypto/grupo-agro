@@ -18,7 +18,7 @@ const api = axios.create({
 // Interceptor para requests - añadir token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem("AgroNet_token");
+    const token = localStorage.getItem("CampoBit_token");
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -53,7 +53,7 @@ api.interceptors.response.use(
     }
 
     if (error.response?.status === 401) {
-      localStorage.removeItem("AgroNet_token");
+      localStorage.removeItem("CampoBit_token");
       // Redirigir a login solo si no está ya en la página de login
       if (!window.location.href.includes("/login")) {
         window.location.href = "/login";

@@ -6,7 +6,7 @@ import {
 
 const CookiesPage = () => {
   useEffect(() => {
-    document.title = "Política de Cookies | AgroNet";
+    document.title = "Política de Cookies | CampoBit";
   }, []);
 
   return (
@@ -25,7 +25,7 @@ const CookiesPage = () => {
           <div className="flex items-start gap-4 mb-6">
             <NoSymbolIcon className="h-6 w-6 text-green-600 mt-1" />
             <div>
-              <h2 className="text-xl font-semibold text-green-800 mb-2">AgroNet NO usa cookies de terceros</h2>
+              <h2 className="text-xl font-semibold text-green-800 mb-2">CampoBit NO usa cookies de terceros</h2>
               <p className="text-gray-700">
                 No utilizamos herramientas de análisis externas como Google Analytics.
               </p>

@@ -126,7 +126,7 @@ const Footer = () => {
         <div className="border-t border-amber-100/10 mt-12 pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="flex items-center gap-2 text-amber-100/70">
             <HeartIcon className="h-5 w-5 text-amber-300/70" />
-            <span>© {new Date().getFullYear()} AgroNet. Todos los derechos reservados.</span>
+            <span>© {new Date().getFullYear()} CampoBit. Todos los derechos reservados.</span>
           </div>
           
           <div className="flex gap-6">

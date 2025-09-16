@@ -19,7 +19,7 @@ function NotFoundPage() {
           Volver al Inicio
         </Link>
         <p className="text-xl text-gray-600 mb-8">
-          Te pedimos una disculpa de parte el equipo de AgroNet.
+          Te pedimos una disculpa de parte el equipo de CampoBit.
         </p>
       </div>
     </div>

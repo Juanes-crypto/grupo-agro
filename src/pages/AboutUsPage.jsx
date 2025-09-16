@@ -6,7 +6,7 @@ import Objectives from '../components/about/Objectives';
 function AboutUsPage() {
   // Esto establecerá el título cuando el componente se monte
   React.useEffect(() => {
-    document.title = "AgroNet | Sobre Nosotros";
+    document.title = "CampoBit | Sobre Nosotros";
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
       metaDesc.setAttribute('content', 'Conoce nuestra misión, visión y valores como plataforma agropecuaria líder');

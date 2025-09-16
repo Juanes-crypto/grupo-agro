@@ -113,7 +113,7 @@ const NewsletterForm = () => {
             required
             rows={8}
             className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500 font-mono text-sm"
-            placeholder='<p>¡Hola [Nombre]!</p><p>Tenemos novedades en AgroApp...</p><a href="https://tu-app.com">Ver más</a>'
+            placeholder='<p>¡Hola [Nombre]!</p><p>Tenemos novedades en Campobit...</p><a href="https://tu-app.com">Ver más</a>'
           />
         </div>
 
