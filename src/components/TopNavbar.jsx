@@ -81,7 +81,7 @@ function TopNavbar({ onMenuClick }) {
               src="/images/CampoBit-logo.png"
               alt="CampoBit Logo"
               className="h-8 w-auto"
-            />
+              />
           </Link>
 
           {/* Breadcrumbs - Versión móvil con scroll horizontal */}

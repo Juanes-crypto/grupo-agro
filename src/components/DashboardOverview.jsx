@@ -29,7 +29,6 @@ const DashboardOverview = () => {
             try {
                 setLoading(true);
 
-                // ⭐ Cambio clave: usamos Promise.allSettled para que las promesas fallidas no detengan a las exitosas
                 const [
                     productsResponse,
                     servicesResponse,
@@ -44,15 +43,33 @@ const DashboardOverview = () => {
                     api.get('/api/orders/my-orders', { headers: { Authorization: `Bearer ${token}` } }),
                 ]);
 
-                // Función para extraer los datos solo de las promesas cumplidas
+                // ⭐⭐ FUNCIÓN MEJORADA PARA EXTRAER DATOS ⭐⭐
                 const extractData = (result) => {
-                    // Si el estado es 'fulfilled', extrae la data, si no, devuelve un array vacío
                     if (result.status === 'fulfilled') {
                         const response = result.value;
-                        if (Array.isArray(response.data)) return response.data;
-                        if (response.data?.data) return response.data.data;
-                        if (response.data?.products) return response.data.products;
-                        if (response.data?.items) return response.data.items;
+                        
+                        console.log('🔍 Response data:', response.data); // Para debug
+                        
+                        // Estructura: { success: true, data: [...] }
+                        if (response.data && response.data.success === true && Array.isArray(response.data.data)) {
+                            return response.data.data;
+                        }
+                        // Estructura: { data: [...] } (sin success property)
+                        if (response.data && Array.isArray(response.data.data)) {
+                            return response.data.data;
+                        }
+                        // Estructura: array directo
+                        if (Array.isArray(response.data)) {
+                            return response.data;
+                        }
+                        // Estructura: { products: [...] }, { services: [...] }, etc.
+                        if (response.data && typeof response.data === 'object') {
+                            for (const key in response.data) {
+                                if (Array.isArray(response.data[key])) {
+                                    return response.data[key];
+                                }
+                            }
+                        }
                     }
                     return [];
                 };
@@ -63,7 +80,14 @@ const DashboardOverview = () => {
                 const barterData = extractData(barterResponse);
                 const ordersData = extractData(ordersResponse);
 
-                // ⭐ Actualizar el estado con los conteos y los datos completos de las llamadas exitosas
+                console.log('📊 Extracted data:', {
+                    products: productsData,
+                    services: servicesData,
+                    rentals: rentalsData,
+                    barter: barterData,
+                    orders: ordersData
+                });
+
                 setStats({
                     activeListings: productsData.length + servicesData.length + rentalsData.length,
                     barterProposals: barterData.length,
@@ -74,7 +98,6 @@ const DashboardOverview = () => {
                 });
 
             } catch (error) {
-                // Este bloque de catch ahora es menos probable que se ejecute, pero lo dejamos por si acaso
                 console.error("Error al obtener datos del dashboard:", error);
                 toast.error("Error al cargar tus datos del dashboard.");
             } finally {
@@ -132,11 +155,12 @@ const DashboardOverview = () => {
 
             <hr className="my-8 border-gray-200" />
 
+
             {/* Contenedor principal de las secciones */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Notificaciones */}
                 <div className="lg:col-span-1">
-                    <MisNotificaciones />
+                    <MisNotificaciones token={token} />
                 </div>
 
                 {/* Publicaciones y Pedidos */}
@@ -147,7 +171,7 @@ const DashboardOverview = () => {
                         rentals={stats.rentals}
                         token={token}
                     />
-                    <MisPedidos />
+                    <MisPedidos token={token} />
                 </div>
             </div>
         </div>
