@@ -87,7 +87,7 @@ function App() {
                             <Route path="/privacy" element={<PrivacyPage />} />
                             <Route path="/cookies" element={<CookiesPage />} />
                             <Route path="/premium-upsell" element={<PremiumUpsellPage />} />
-                             <Route path="/payment-success" element={<PaymentSuccessPage />} />
+                            <Route path="/payment-success" element={<PaymentSuccessPage />} />
                             <Route path="/payment-failure" element={<PaymentFailurePage />} />
                             <Route path="/payment-pending" element={<PaymentPendingPage />} />
                             
