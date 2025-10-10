@@ -47,6 +47,9 @@ import EditServicePage from './pages/EditServicePage';
 import EditRentalPage from './pages/EditRentalPage'; 
 import AboutUsPage from './pages/AboutUsPage';
 import NewsletterPage from './pages/NewsletterPage';
+import PaymentSuccessPage from './pages/PaymentSuccessPage';
+import PaymentFailurePage from './pages/PaymentFailurePage';
+import PaymentPendingPage from './pages/PaymentPendingPage';
 function App() {
     const [isNavbarOpen, setIsNavbarOpen] = useState(false);
 
@@ -84,6 +87,9 @@ function App() {
                             <Route path="/privacy" element={<PrivacyPage />} />
                             <Route path="/cookies" element={<CookiesPage />} />
                             <Route path="/premium-upsell" element={<PremiumUpsellPage />} />
+                             <Route path="/payment-success" element={<PaymentSuccessPage />} />
+                            <Route path="/payment-failure" element={<PaymentFailurePage />} />
+                            <Route path="/payment-pending" element={<PaymentPendingPage />} />
                             
                             {/* Rutas Privadas */}
                             <Route element={<PrivateRoute />}>
