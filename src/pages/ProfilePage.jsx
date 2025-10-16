@@ -1,6 +1,7 @@
 // src/pages/ProfilePage.jsx
 import React, { useState, useContext } from 'react';
-import { UserCircleIcon, Cog6ToothIcon, BellIcon, HomeIcon, ShoppingCartIcon, TagIcon } from '@heroicons/react/24/outline';
+import { Link } from 'react-router-dom';
+import { UserCircleIcon, Cog6ToothIcon, CreditCardIcon, BellIcon, HomeIcon, ShoppingCartIcon, TagIcon } from '@heroicons/react/24/outline';
 import { AuthContext } from '../context/AuthContext';
 import DashboardOverview from '../components/DashboardOverview';
 import MisPublicaciones from '../components/MisPublicaciones';
@@ -161,6 +162,16 @@ const ProfilePage = () => {
                         <Cog6ToothIcon className="h-5 w-5 mr-2" />
                         Configuración
                     </button>
+                    <Link
+                        to="/profile/payout-settings"
+                        className={`w-full text-left px-4 py-2 rounded-md transition duration-200 flex items-center ${
+                             // Usamos una clase simple para destacarlo o podemos usar activeSection si quieres
+                            'text-gray-600 hover:bg-gray-100 border-t border-gray-100 pt-3 mt-3' 
+                        }`}
+                    >
+                        <CreditCardIcon className="h-5 w-5 mr-2" />
+                        **Recibir Pagos (Mercado Pago)**
+                    </Link>
                 </nav>
             </aside>
 

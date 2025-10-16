@@ -50,6 +50,7 @@ import NewsletterPage from './pages/NewsletterPage';
 import PaymentSuccessPage from './pages/PaymentSuccessPage';
 import PaymentFailurePage from './pages/PaymentFailurePage';
 import PaymentPendingPage from './pages/PaymentPendingPage';
+import PayoutSettingsPage from './pages/PayoutSettingsPage';
 function App() {
     const [isNavbarOpen, setIsNavbarOpen] = useState(false);
 
@@ -113,7 +114,8 @@ function App() {
                                 <Route path="/create-rental" element={<CreateRentalPage />} />
                                 <Route path="/create-service" element={<CreateServicePage />} />
                                 <Route path="/create-product" element={<CreateProductPage />} />
-                                <Route path="/profile" element={<ProfilePage />} />                        
+                                <Route path="/profile" element={<ProfilePage />} /> 
+                                <Route path="/profile/payout-settings" element={<PayoutSettingsPage />} />                       
                             </Route>
 
                             {/* Rutas Premium */}

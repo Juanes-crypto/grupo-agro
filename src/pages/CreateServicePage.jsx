@@ -1,18 +1,16 @@
-// frontend/src/pages/CreateServicePage.jsx
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
 import { useNavigate } from 'react-router-dom';
-// Importamos los íconos de Heroicons para un toque visual
 import {
-    PlusCircleIcon, // Para el botón de enviar
-    PhotoIcon,      // Para el campo de imagen
-    TagIcon,        // Para categoría
-    CurrencyDollarIcon, // Para precio
-    LightBulbIcon,   // Para experiencia
-    BookOpenIcon,    // Para descripción
-    SparklesIcon     // Para el nombre del servicio
-} from '@heroicons/react/24/outline'; // Usamos outline para un estilo más ligero
+    PlusCircleIcon,
+    PhotoIcon,
+    TagIcon,
+    CurrencyDollarIcon,
+    LightBulbIcon,
+    BookOpenIcon,
+    SparklesIcon
+} from '@heroicons/react/24/outline';
 
 function CreateServicePage() {
     const { isAuthenticated, loading: authLoading } = useContext(AuthContext);
@@ -24,10 +22,15 @@ function CreateServicePage() {
     const [price, setPrice] = useState('');
     const [category, setCategory] = useState('');
     const [image, setImage] = useState(null);
-    const [imagePreview, setImagePreview] = useState(''); // Estado para la URL de la vista previa
+    const [imagePreview, setImagePreview] = useState('');
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+
+    // Contadores de caracteres
+    const [nameCount, setNameCount] = useState(0);
+    const [descriptionCount, setDescriptionCount] = useState(0);
+    const [experienceCount, setExperienceCount] = useState(0);
 
     const serviceCategories = [
         'Análisis de Suelos', 'Asesoría Agrícola', 'Cosecha y Siembra',
@@ -36,11 +39,51 @@ function CreateServicePage() {
         'Transporte de Productos', 'Otros'
     ];
 
+    // Función para formatear números con separadores de miles
+    const formatNumber = (value) => {
+        if (!value) return '';
+        const numericValue = value.toString().replace(/[^\d]/g, '');
+        return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    };
+
+    // Función para parsear números formateados
+    const parseFormattedNumber = (formattedValue) => {
+        return formattedValue.replace(/\./g, '');
+    };
+
+    const handleNameChange = (value) => {
+        if (value.length <= 50) {
+            setName(value);
+            setNameCount(value.length);
+        }
+    };
+
+    const handleDescriptionChange = (value) => {
+        if (value.length <= 250) {
+            setDescription(value);
+            setDescriptionCount(value.length);
+        }
+    };
+
+    const handleExperienceChange = (value) => {
+        if (value.length <= 250) {
+            setExperience(value);
+            setExperienceCount(value.length);
+        }
+    };
+
+    const handlePriceChange = (value) => {
+        const formattedValue = formatNumber(value);
+        if (formattedValue.replace(/\./g, '').length <= 10) {
+            setPrice(parseFormattedNumber(formattedValue));
+        }
+    };
+
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (file) {
             setImage(file);
-            setImagePreview(URL.createObjectURL(file)); // Crea una URL para la vista previa
+            setImagePreview(URL.createObjectURL(file));
         } else {
             setImage(null);
             setImagePreview('');
@@ -84,7 +127,10 @@ function CreateServicePage() {
             setPrice('');
             setCategory('');
             setImage(null);
-            setImagePreview(''); // Limpiar la vista previa
+            setImagePreview('');
+            setNameCount(0);
+            setDescriptionCount(0);
+            setExperienceCount(0);
             console.log('Servicio creado:', data);
             navigate('/services');
         } catch (err) {
@@ -137,71 +183,88 @@ function CreateServicePage() {
                     {/* Nombre del Servicio */}
                     <div>
                         <label htmlFor="name" className="block text-lg font-semibold text-gray-800 mb-2 flex items-center">
-                            <SparklesIcon className="h-6 w-6 text-green-500 mr-2" /> Nombre del Servicio <span className="text-red-500 ml-1">*</span>
+                            <SparklesIcon className="h-6 w-6 text-green-500 mr-2" /> 
+                            Nombre del Servicio <span className="text-red-500 ml-1">*</span>
+                            <span className="ml-auto text-sm font-medium text-gray-500">
+                                {nameCount}/50
+                            </span>
                         </label>
                         <p className="text-sm text-gray-500 mb-2">Un título claro y atractivo para lo que ofreces (ej. "Análisis de Suelos con Drones").</p>
                         <input
                             type="text"
                             id="name"
                             value={name}
-                            onChange={(e) => setName(e.target.value)}
+                            onChange={(e) => handleNameChange(e.target.value)}
                             className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-gray-700 placeholder-gray-400 text-base transition duration-200"
                             placeholder="Ej: Asesoría en Cultivos Orgánicos"
                             required
+                            maxLength={50}
                         />
                     </div>
 
                     {/* Descripción Detallada */}
                     <div>
                         <label htmlFor="description" className="block text-lg font-semibold text-gray-800 mb-2 flex items-center">
-                            <BookOpenIcon className="h-6 w-6 text-green-500 mr-2" /> Descripción Detallada <span className="text-red-500 ml-1">*</span>
+                            <BookOpenIcon className="h-6 w-6 text-green-500 mr-2" /> 
+                            Descripción Detallada <span className="text-red-500 ml-1">*</span>
+                            <span className="ml-auto text-sm font-medium text-gray-500">
+                                {descriptionCount}/250
+                            </span>
                         </label>
                         <p className="text-sm text-gray-500 mb-2">Explica en qué consiste tu servicio, cómo lo realizas y qué beneficios ofrece.</p>
                         <textarea
                             id="description"
                             value={description}
-                            onChange={(e) => setDescription(e.target.value)}
+                            onChange={(e) => handleDescriptionChange(e.target.value)}
                             rows="5"
                             className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-gray-700 placeholder-gray-400 text-base transition duration-200"
                             placeholder="Detalla aquí los aspectos clave de tu servicio..."
                             required
+                            maxLength={250}
                         ></textarea>
                     </div>
 
                     {/* Experiencia / Calificaciones */}
                     <div>
                         <label htmlFor="experience" className="block text-lg font-semibold text-gray-800 mb-2 flex items-center">
-                            <LightBulbIcon className="h-6 w-6 text-green-500 mr-2" /> Tu Experiencia / Calificaciones <span className="text-red-500 ml-1">*</span>
+                            <LightBulbIcon className="h-6 w-6 text-green-500 mr-2" /> 
+                            Tu Experiencia / Calificaciones <span className="text-red-500 ml-1">*</span>
+                            <span className="ml-auto text-sm font-medium text-gray-500">
+                                {experienceCount}/250
+                            </span>
                         </label>
                         <p className="text-sm text-gray-500 mb-2">Cuéntanos sobre tu trayectoria o formación (ej. "5 años podando frutales", "Ingeniero Agrónomo titulado").</p>
                         <input
                             type="text"
                             id="experience"
                             value={experience}
-                            onChange={(e) => setExperience(e.target.value)}
+                            onChange={(e) => handleExperienceChange(e.target.value)}
                             className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-gray-700 placeholder-gray-400 text-base transition duration-200"
                             placeholder="Ej: Técnico agrícola con 10 años de experiencia en riego"
                             required
+                            maxLength={250}
                         />
                     </div>
 
                     {/* Precio */}
                     <div>
                         <label htmlFor="price" className="block text-lg font-semibold text-gray-800 mb-2 flex items-center">
-                            <CurrencyDollarIcon className="h-6 w-6 text-green-500 mr-2" /> Precio (COP) <span className="text-red-500 ml-1">*</span>
+                            <CurrencyDollarIcon className="h-6 w-6 text-green-500 mr-2" /> 
+                            Precio (COP) <span className="text-red-500 ml-1">*</span>
                         </label>
-                        <p className="text-sm text-gray-500 mb-2">Establece el costo de tu servicio por hora, por proyecto, o si es un precio fijo. Solo números.</p>
+                        <p className="text-sm text-gray-500 mb-2">Establece el costo de tu servicio por hora, por proyecto, o si es un precio fijo.</p>
                         <input
-                            type="number"
+                            type="text"
                             id="price"
-                            value={price}
-                            onChange={(e) => setPrice(e.target.value)}
+                            value={formatNumber(price)}
+                            onChange={(e) => handlePriceChange(e.target.value)}
                             className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-green-500 focus:border-green-500 text-gray-700 placeholder-gray-400 text-base transition duration-200"
-                            placeholder="Ej: 50000 (solo el número, se mostrará como COP 50.000)"
+                            placeholder="Ej: 50.000 (se mostrará como COP 50.000)"
                             required
-                            min="0"
-                            step="any" // Permite decimales si necesitas para precios más exactos
                         />
+                        <p className="text-xs text-gray-500 mt-1">
+                            Máximo 10 dígitos
+                        </p>
                     </div>
 
                     {/* Categoría del Servicio */}
@@ -240,7 +303,7 @@ function CreateServicePage() {
                             id="image"
                             onChange={handleImageChange}
                             className="mt-1 block w-full text-base text-gray-500 file:mr-4 file:py-3 file:px-6 file:rounded-full file:border-0 file:text-base file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 transition duration-200 cursor-pointer"
-                            accept="image/*" // Solo acepta archivos de imagen
+                            accept="image/*"
                         />
                         {imagePreview && (
                             <div className="mt-4 border-2 border-dashed border-green-300 rounded-lg p-4 flex justify-center items-center">

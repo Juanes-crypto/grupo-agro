@@ -1,19 +1,17 @@
-// frontend/src/pages/CreateProductPage.jsx
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
-// Importamos los íconos de Heroicons para un toque visual
 import {
-    PlusCircleIcon,        // Para el botón de enviar
-    PhotoIcon,             // Para el campo de imagen
-    TagIcon,               // Para categoría
-    CurrencyDollarIcon,    // Para precio
-    ShoppingBagIcon,       // Para el título principal y nombre del producto
-    CubeIcon,              // Para stock y unidad
-    DocumentTextIcon,      // Para descripción
-    ArrowsRightLeftIcon    // Para el campo de truequeable
-} from '@heroicons/react/24/outline'; // Usamos outline para un estilo más ligero
+    PlusCircleIcon,
+    PhotoIcon,
+    TagIcon,
+    CurrencyDollarIcon,
+    ShoppingBagIcon,
+    CubeIcon,
+    DocumentTextIcon,
+    ArrowsRightLeftIcon
+} from '@heroicons/react/24/outline';
 
 function CreateProductPage() {
     const { token, isAuthenticated, loading: authLoading } = useContext(AuthContext);
@@ -23,8 +21,8 @@ function CreateProductPage() {
         name: '',
         description: '',
         price: '',
-        unit: 'kg', // Valor por defecto
-        stock: '',  // Valor por defecto
+        unit: 'kg',
+        stock: '',
         category: '',
     });
     const [image, setImage] = useState(null);
@@ -32,24 +30,69 @@ function CreateProductPage() {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
-    const [isTradable, setIsTradable] = useState(false); // <--- NUEVO ESTADO PARA IS_TRUEQUEABLE
+    const [isTradable, setIsTradable] = useState(false);
+
+    // Contadores de caracteres
+    const [nameCount, setNameCount] = useState(0);
+    const [descriptionCount, setDescriptionCount] = useState(0);
 
     const categories = [
         'Verduras', 'Granos', 'Lácteos', 'Carnes',
         'Cereales', 'Pescados', 'Producto Animal',
         'Plantas', 'Semillas', 'Fertilizantes', 'Otros..'
     ];
-    const units = ['kg', 'litro', 'unidad', 'docena', 'bulto', 'gr', 'saco', 'quintal']; // Añadí más unidades comunes
+    const units = ['kg', 'litro', 'unidad', 'docena', 'bulto', 'gr', 'saco', 'quintal'];
+
+    // Función para formatear números con separadores de miles
+    const formatNumber = (value) => {
+        if (!value) return '';
+        // Remover cualquier caracter que no sea número
+        const numericValue = value.toString().replace(/[^\d]/g, '');
+        // Formatear con separadores de miles
+        return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    };
+
+    // Función para parsear números formateados
+    const parseFormattedNumber = (formattedValue) => {
+        return formattedValue.replace(/\./g, '');
+    };
 
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setProductData(prevData => ({
-            ...prevData,
-            [name]: value
-        }));
+        
+        if (name === 'name') {
+            if (value.length <= 50) {
+                setProductData(prevData => ({
+                    ...prevData,
+                    [name]: value
+                }));
+                setNameCount(value.length);
+            }
+        } else if (name === 'description') {
+            if (value.length <= 250) {
+                setProductData(prevData => ({
+                    ...prevData,
+                    [name]: value
+                }));
+                setDescriptionCount(value.length);
+            }
+        } else if (name === 'price' || name === 'stock') {
+            // Para campos numéricos, formatear al mostrar pero guardar sin formato
+            const formattedValue = formatNumber(value);
+            if (formattedValue.replace(/\./g, '').length <= 10) { // Límite de 10 dígitos
+                setProductData(prevData => ({
+                    ...prevData,
+                    [name]: parseFormattedNumber(formattedValue)
+                }));
+            }
+        } else {
+            setProductData(prevData => ({
+                ...prevData,
+                [name]: value
+            }));
+        }
     };
 
-    // <--- NUEVO HANDLER PARA EL CHECKBOX DE TRUEQUEABLE
     const handleTradableChange = (e) => {
         setIsTradable(e.target.checked);
     };
@@ -66,69 +109,70 @@ function CreateProductPage() {
     };
 
     const handleSubmit = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setSuccess(null);
+        e.preventDefault();
+        setLoading(true);
+        setError(null);
+        setSuccess(null);
 
-    if (!isAuthenticated) {
-        setError('¡Atención! Debes iniciar sesión para publicar un producto.');
-        setLoading(false);
-        return;
-    }
+        if (!isAuthenticated) {
+            setError('¡Atención! Debes iniciar sesión para publicar un producto.');
+            setLoading(false);
+            return;
+        }
 
-    // Validación
-    if (!productData.name || !productData.description || productData.price === '' || 
-        !productData.category || productData.stock === '' || !productData.unit || !image) {
-        setError('¡Cuidado! Por favor, completa todos los campos obligatorios.');
-        setLoading(false);
-        return;
-    }
+        // Validación
+        if (!productData.name || !productData.description || productData.price === '' || 
+            !productData.category || productData.stock === '' || !productData.unit || !image) {
+            setError('¡Cuidado! Por favor, completa todos los campos obligatorios.');
+            setLoading(false);
+            return;
+        }
 
-    const formData = new FormData();
-    formData.append('name', productData.name);
-    formData.append('description', productData.description);
-    formData.append('price', productData.price);
-    formData.append('stock', productData.stock);
-    formData.append('unit', productData.unit);
-    formData.append('category', productData.category);
-    formData.append('isPublished', true);
-    formData.append('isTradable', isTradable);
+        const formData = new FormData();
+        formData.append('name', productData.name);
+        formData.append('description', productData.description);
+        formData.append('price', productData.price);
+        formData.append('stock', productData.stock);
+        formData.append('unit', productData.unit);
+        formData.append('category', productData.category);
+        formData.append('isPublished', true);
+        formData.append('isTradable', isTradable);
 
-    if (image) {
-        formData.append('image', image);
-    }
+        if (image) {
+            formData.append('image', image);
+        }
 
-    try {
-        // ✅ CORREGIDO: Agregar /api/ a la ruta
-        const response = await api.post('/api/products', formData, {
-            headers: {
-                'Authorization': `Bearer ${token}`,
-                'Content-Type': 'multipart/form-data'
-            },
-        });
+        try {
+            const response = await api.post('/api/products', formData, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'multipart/form-data'
+                },
+            });
 
-        const data = response.data;
+            const data = response.data;
 
-        setSuccess('¡Producto publicado con éxito en tu tienda! 🛒');
-        // Limpiar formulario
-        setProductData({
-            name: '', description: '', price: '', unit: 'kg', stock: '', category: ''
-        });
-        setImage(null);
-        setPreviewUrl('');
-        setIsTradable(false);
-        console.log('Producto creado:', data);
-        navigate('/products'); 
+            setSuccess('¡Producto publicado con éxito en tu tienda! 🛒');
+            // Limpiar formulario
+            setProductData({
+                name: '', description: '', price: '', unit: 'kg', stock: '', category: ''
+            });
+            setImage(null);
+            setPreviewUrl('');
+            setIsTradable(false);
+            setNameCount(0);
+            setDescriptionCount(0);
+            console.log('Producto creado:', data);
+            navigate('/products'); 
 
-    } catch (err) {
-        console.error("Error creating product:", err);
-        const errorMessage = err.response?.data?.message || 'Hubo un problema al publicar tu producto. Intenta de nuevo más tarde.';
-        setError(errorMessage);
-    } finally {
-        setLoading(false);
-    }
-};
+        } catch (err) {
+            console.error("Error creating product:", err);
+            const errorMessage = err.response?.data?.message || 'Hubo un problema al publicar tu producto. Intenta de nuevo más tarde.';
+            setError(errorMessage);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (authLoading) {
         return (
@@ -171,7 +215,11 @@ function CreateProductPage() {
                     {/* Nombre del Producto */}
                     <div>
                         <label htmlFor="name" className="block text-lg font-semibold text-gray-800 mb-2 flex items-center">
-                            <ShoppingBagIcon className="h-6 w-6 text-orange-500 mr-2" /> Nombre del Producto <span className="text-red-500 ml-1">*</span>
+                            <ShoppingBagIcon className="h-6 w-6 text-orange-500 mr-2" /> 
+                            Nombre del Producto <span className="text-red-500 ml-1">*</span>
+                            <span className="ml-auto text-sm font-medium text-gray-500">
+                                {nameCount}/50
+                            </span>
                         </label>
                         <p className="text-sm text-gray-500 mb-2">Un nombre claro y atractivo para tu producto (ej. "Tomates Chonto Frescos", "Café Orgánico de la Finca").</p>
                         <input
@@ -183,13 +231,18 @@ function CreateProductPage() {
                             className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-gray-700 placeholder-gray-400 text-base transition duration-200"
                             placeholder="Ej: Aguacates Hass maduros"
                             required
+                            maxLength={50}
                         />
                     </div>
 
                     {/* Descripción */}
                     <div>
                         <label htmlFor="description" className="block text-lg font-semibold text-gray-800 mb-2 flex items-center">
-                            <DocumentTextIcon className="h-6 w-6 text-orange-500 mr-2" /> Descripción Detallada <span className="text-red-500 ml-1">*</span>
+                            <DocumentTextIcon className="h-6 w-6 text-orange-500 mr-2" /> 
+                            Descripción Detallada <span className="text-red-500 ml-1">*</span>
+                            <span className="ml-auto text-sm font-medium text-gray-500">
+                                {descriptionCount}/250
+                            </span>
                         </label>
                         <p className="text-sm text-gray-500 mb-2">Describe las características de tu producto, su calidad, origen, etc.</p>
                         <textarea
@@ -201,34 +254,39 @@ function CreateProductPage() {
                             className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-gray-700 placeholder-gray-400 text-base transition duration-200"
                             placeholder="Ej: Cosecha fresca de la semana, cultivados sin pesticidas, ideal para ensaladas."
                             required
+                            maxLength={250}
                         ></textarea>
                     </div>
 
-                    {/* Precio, Unidad y Stock - En una cuadrícula para mejor visualización */}
+                    {/* Precio, Unidad y Stock */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         {/* Precio */}
                         <div>
                             <label htmlFor="price" className="block text-lg font-semibold text-gray-800 mb-2 flex items-center">
-                                <CurrencyDollarIcon className="h-6 w-6 text-orange-500 mr-2" /> Precio (COP) <span className="text-red-500 ml-1">*</span>
+                                <CurrencyDollarIcon className="h-6 w-6 text-orange-500 mr-2" /> 
+                                Precio (COP) <span className="text-red-500 ml-1">*</span>
                             </label>
                             <p className="text-sm text-gray-500 mb-2">Costo del producto por la unidad seleccionada.</p>
                             <input
-                                type="number"
+                                type="text"
                                 id="price"
                                 name="price"
-                                value={productData.price}
+                                value={formatNumber(productData.price)}
                                 onChange={handleChange}
                                 className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-gray-700 placeholder-gray-400 text-base transition duration-200"
-                                placeholder="Ej: 3000 (por kg)"
+                                placeholder="Ej: 10.000 (por kg)"
                                 required
-                                min="0"
-                                step="any"
                             />
+                            <p className="text-xs text-gray-500 mt-1">
+                                Máximo 10 dígitos
+                            </p>
                         </div>
+                        
                         {/* Unidad */}
                         <div>
                             <label htmlFor="unit" className="block text-lg font-semibold text-gray-800 mb-2 flex items-center">
-                                <CubeIcon className="h-6 w-6 text-orange-500 mr-2" /> Unidad de Medida <span className="text-red-500 ml-1">*</span>
+                                <CubeIcon className="h-6 w-6 text-orange-500 mr-2" /> 
+                                Unidad de Medida <span className="text-red-500 ml-1">*</span>
                             </label>
                             <p className="text-sm text-gray-500 mb-2">Cómo se mide tu producto (ej. por kilo, por unidad).</p>
                             <div className="relative">
@@ -245,30 +303,37 @@ function CreateProductPage() {
                                     ))}
                                 </select>
                                 <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-700">
-                                    <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20"><path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 6.096 6.924 4.682 8.338z"/></svg>
+                                    <svg className="fill-current h-5 w-5" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
+                                        <path d="M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 6.096 6.924 4.682 8.338z"/>
+                                    </svg>
                                 </div>
                             </div>
                         </div>
+                        
                         {/* Cantidad en Stock */}
                         <div>
                             <label htmlFor="stock" className="block text-lg font-semibold text-gray-800 mb-2 flex items-center">
-                                <CubeIcon className="h-6 w-6 text-orange-500 mr-2" /> Cantidad en Stock <span className="text-red-500 ml-1">*</span>
+                                <CubeIcon className="h-6 w-6 text-orange-500 mr-2" /> 
+                                Cantidad en Stock <span className="text-red-500 ml-1">*</span>
                             </label>
                             <p className="text-sm text-gray-500 mb-2">Cuántas unidades o kilos tienes disponibles.</p>
                             <input
-                                type="number"
+                                type="text"
                                 id="stock"
                                 name="stock"
-                                value={productData.stock}
+                                value={formatNumber(productData.stock)}
                                 onChange={handleChange}
                                 className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 text-gray-700 placeholder-gray-400 text-base transition duration-200"
-                                placeholder="Ej: 50 (unidades)"
+                                placeholder="Ej: 1.000 (unidades)"
                                 required
-                                min="0"
                             />
+                            <p className="text-xs text-gray-500 mt-1">
+                                Máximo 10 dígitos
+                            </p>
                         </div>
                     </div>
 
+                    {/* Resto del formulario se mantiene igual */}
                     {/* Categoría */}
                     <div>
                         <label htmlFor="category" className="block text-lg font-semibold text-gray-800 mb-2 flex items-center">
@@ -325,7 +390,7 @@ function CreateProductPage() {
                             name="isTradable"
                             checked={isTradable}
                             onChange={handleTradableChange}
-                            className="h-6 w-6 text-orange-600 focus:ring-orange-500 border-gray-300 rounded-md flex-shrink-0 mt-1 cursor-pointer" // Aumenté tamaño
+                            className="h-6 w-6 text-orange-600 focus:ring-orange-500 border-gray-300 rounded-md flex-shrink-0 mt-1 cursor-pointer"
                         />
                         <div>
                             <label htmlFor="isTradable" className="block text-lg font-semibold text-gray-800 cursor-pointer flex items-center">

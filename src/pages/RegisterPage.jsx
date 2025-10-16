@@ -145,7 +145,7 @@ function RegisterPage() {
         <div className="text-center">
           <div className="flex justify-center items-center space-x-4 mb-4">
             <img
-              className="h-16 w-16 sm:h-20 sm:w-20"
+              className="h-16 w-36 sm:h-20 sm:w-40"
               src="/images/CampoBit-logo.png"
               alt="CampoBit Logo"
             />
@@ -160,87 +160,9 @@ function RegisterPage() {
           </div>
           
           <div className="flex justify-center space-x-4 text-sm text-gray-600">
-            <span>🌱 Compra y vende productos</span>
-            <span>🤝 Trueques seguros</span>
-            <span>📍 Comercio local</span>
-          </div>
-        </div>
-
-        {/* Sección de Términos y Condiciones - MUY VISUAL */}
-        <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-xl p-6 shadow-lg">
-          <div className="flex items-start space-x-4">
-            <div className="flex-shrink-0">
-              <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
-                <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                </svg>
-              </div>
-            </div>
-            <div className="flex-1">
-              <h3 className="text-lg font-bold text-amber-800 mb-2">
-                Antes de registrarte, es importante que conozcas:
-              </h3>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-amber-100">
-                  <svg className="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span className="text-sm font-medium text-amber-700">Términos y Condiciones</span>
-                </div>
-                <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-amber-100">
-                  <svg className="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span className="text-sm font-medium text-amber-700">Política de Privacidad</span>
-                </div>
-              </div>
-              <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0">
-                <Link 
-                  to="/terms" 
-                  className="inline-flex items-center px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors duration-200"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  Leer Términos
-                </Link>
-                <Link 
-                  to="/privacy" 
-                  className="inline-flex items-center px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors duration-200"
-                >
-                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                  </svg>
-                  Leer Política
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Checkbox de Aceptación */}
-        <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
-          <div className="flex items-start space-x-3">
-            <input
-              id="acceptTerms"
-              name="acceptTerms"
-              type="checkbox"
-              required
-              className="mt-1 focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
-              checked={acceptedTerms}
-              onChange={(e) => setAcceptedTerms(e.target.checked)}
-            />
-            <label htmlFor="acceptTerms" className="text-sm text-blue-800 cursor-pointer">
-              He leído y acepto los{" "}
-              <Link to="/terms" className="font-semibold text-blue-600 hover:text-blue-800 underline">
-                Términos y Condiciones
-              </Link>{" "}
-              y la{" "}
-              <Link to="/privacy" className="font-semibold text-blue-600 hover:text-blue-800 underline">
-                Política de Privacidad
-              </Link>{" "}
-              de CampoBit
-            </label>
+            <span>Compra y vende productos</span>
+            <span>Trueques seguros</span>
+            <span>Comercio local</span>
           </div>
         </div>
 
@@ -261,7 +183,7 @@ function RegisterPage() {
                 className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
                 placeholder="Ej: Juan Esteban García"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => setName(e.target.checked)}
               />
             </div>
 
@@ -423,6 +345,84 @@ function RegisterPage() {
               </ul>
             </div>
           )}
+
+          {/* Sección de Términos y Condiciones - MOVIDA ARRIBA DEL BOTÓN */}
+          <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-xl p-6 shadow-lg">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-amber-800 mb-2">
+                  Antes de registrarte, es importante que conozcas:
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-amber-100">
+                    <svg className="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-sm font-medium text-amber-700">Términos y Condiciones</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-amber-100">
+                    <svg className="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-sm font-medium text-amber-700">Política de Privacidad</span>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0">
+                  <Link 
+                    to="/terms" 
+                    className="inline-flex items-center px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors duration-200"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Leer Términos
+                  </Link>
+                  <Link 
+                    to="/privacy" 
+                    className="inline-flex items-center px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors duration-200"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Leer Política
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Checkbox de Aceptación */}
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <div className="flex items-start space-x-3">
+              <input
+                id="acceptTerms"
+                name="acceptTerms"
+                type="checkbox"
+                required
+                className="mt-1 focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+              />
+              <label htmlFor="acceptTerms" className="text-sm text-blue-800 cursor-pointer">
+                He leído y acepto los{" "}
+                <Link to="/terms" className="font-semibold text-blue-600 hover:text-blue-800 underline">
+                  Términos y Condiciones
+                </Link>{" "}
+                y la{" "}
+                <Link to="/privacy" className="font-semibold text-blue-600 hover:text-blue-800 underline">
+                  Política de Privacidad
+                </Link>{" "}
+                de CampoBit
+              </label>
+            </div>
+          </div>
 
           {/* Botón de Registro */}
           <div>

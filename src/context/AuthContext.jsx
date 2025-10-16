@@ -1,8 +1,7 @@
-// frontend/src/context/AuthContext.jsx
-
 import React, { createContext, useState, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
 import api from '../services/api';
+
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
@@ -17,6 +16,70 @@ export const AuthProvider = ({ children }) => {
         const savedCart = localStorage.getItem('CampoBit_cart');
         return savedCart ? JSON.parse(savedCart) : [];
     });
+
+    // 🔥 NUEVO: Función para limpiar completamente la sesión
+    const clearSession = () => {
+        console.log("AuthContext: Limpiando sesión completa.");
+        setUser(null);
+        setUserId(null);
+        setIsAuthenticated(false);
+        setIsPremium(false);
+        setToken(null);
+        clearCart();
+        
+        // Limpiar TODOS los datos de localStorage relacionados con la sesión
+        localStorage.removeItem('CampoBit_token');
+        localStorage.removeItem('CampoBit_cart');
+        localStorage.removeItem('CampoBit_user');
+        localStorage.removeItem('CampoBit_premium');
+        
+        // También limpiar sessionStorage por si acaso
+        sessionStorage.clear();
+    };
+
+    // 🔥 NUEVO: Manejar el cierre de pestaña/ventana
+    useEffect(() => {
+        const handleBeforeUnload = (event) => {
+            if (isAuthenticated) {
+                console.log("Cerrando pestaña - Limpiando sesión...");
+                
+                // Intentar hacer logout en el servidor (opcional, pero recomendado)
+                // Esto se ejecuta justo antes de que la pestaña se cierre
+                if (navigator.sendBeacon) {
+                    try {
+                        // Usar sendBeacon para enviar la solicitud de logout
+                        // Es más confiable que fetch/xhr en beforeunload
+                        const formData = new FormData();
+                        formData.append('logout', 'true');
+                        navigator.sendBeacon(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/users/logout`, formData);
+                    } catch (error) {
+                        console.log('Logout con sendBeacon no disponible');
+                    }
+                }
+                
+                // Limpiar datos locales
+                clearSession();
+            }
+        };
+
+        // 🔥 NUEVO: Manejar cuando la pestaña/navegador se cierra
+        const handlePageHide = (event) => {
+            if (isAuthenticated && (event.persisted || !document.hidden)) {
+                console.log("Pestaña siendo descargada - Limpiando sesión...");
+                clearSession();
+            }
+        };
+
+        // Agregar event listeners
+        window.addEventListener('beforeunload', handleBeforeUnload);
+        window.addEventListener('pagehide', handlePageHide);
+
+        // Cleanup: remover event listeners cuando el componente se desmonte
+        return () => {
+            window.removeEventListener('beforeunload', handleBeforeUnload);
+            window.removeEventListener('pagehide', handlePageHide);
+        };
+    }, [isAuthenticated]); // Se ejecuta cuando cambia el estado de autenticación
 
     // Efecto para cargar el estado del usuario/autenticación a partir del token al cargar la app
     useEffect(() => {
@@ -36,13 +99,8 @@ export const AuthProvider = ({ children }) => {
                     }
                 } catch (error) {
                     console.error('Error al cargar perfil:', error);
-                    // No hacer logout automáticamente, solo limpiar el estado
-                    setIsAuthenticated(false);
-                    setUser(null);
-                    setUserId(null);
-                    setIsPremium(false);
-                    setToken(null);
-                    localStorage.removeItem('CampoBit_token');
+                    // Si hay error al cargar el perfil, limpiar la sesión
+                    clearSession();
                 } finally {
                     setLoading(false);
                 }
@@ -57,6 +115,7 @@ export const AuthProvider = ({ children }) => {
 
         loadUserFromToken();
     }, [token]);
+
     // Efecto para guardar/eliminar el token de localStorage
     useEffect(() => {
         if (token) {
@@ -71,6 +130,25 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('CampoBit_cart', JSON.stringify(cartItems));
     }, [cartItems]);
 
+    // 🔥 NUEVO: Manejar cuando el usuario cambia de pestaña (opcional)
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.hidden) {
+                // El usuario cambió a otra pestaña
+                console.log("Usuario cambió a otra pestaña");
+            } else {
+                // El usuario regresó a esta pestaña
+                console.log("Usuario regresó a la pestaña");
+            }
+        };
+
+        document.addEventListener('visibilitychange', handleVisibilityChange);
+
+        return () => {
+            document.removeEventListener('visibilitychange', handleVisibilityChange);
+        };
+    }, []);
+
     // Función de login
     const login = (userData, receivedToken) => {
         console.log("AuthContext: Realizando login con token.");
@@ -84,13 +162,7 @@ export const AuthProvider = ({ children }) => {
 
     const logout = () => {
         console.log("AuthContext: Realizando logout.");
-        setUser(null);
-        setUserId(null);
-        setIsAuthenticated(false);
-        setIsPremium(false);
-        setToken(null);
-        clearCart();
-        setLoading(false);
+        clearSession();
     };
 
     const register = (userData, receivedToken) => {

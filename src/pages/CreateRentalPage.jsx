@@ -1,19 +1,17 @@
-// frontend/src/pages/CreateRentalPage.jsx
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import api from '../services/api';
-// Importamos los íconos de Heroicons para un toque visual
 import {
-    PlusCircleIcon,        // Para el botón de enviar
-    PhotoIcon,             // Para el campo de imagen
-    TagIcon,               // Para categoría
-    CurrencyDollarIcon,    // Para precio
-    CubeTransparentIcon,   // Para nombre del equipo/espacio
-    DocumentTextIcon,      // Para descripción
-    CalendarDaysIcon,      // Para precio por día
-    BuildingStorefrontIcon // Para el título principal
-} from '@heroicons/react/24/outline'; // O @heroicons/react/24/solid si prefieres rellenos
+    PlusCircleIcon,
+    PhotoIcon,
+    TagIcon,
+    CurrencyDollarIcon,
+    CubeTransparentIcon,
+    DocumentTextIcon,
+    CalendarDaysIcon,
+    BuildingStorefrontIcon
+} from '@heroicons/react/24/outline';
 
 function CreateRentalPage() {
     const { token, isAuthenticated, loading: authLoading } = useContext(AuthContext);
@@ -31,18 +29,61 @@ function CreateRentalPage() {
     const [error, setError] = useState(null);
     const [success, setSuccess] = useState(null);
 
+    // Contadores de caracteres
+    const [nameCount, setNameCount] = useState(0);
+    const [descriptionCount, setDescriptionCount] = useState(0);
+
     const categories = [
         'Maquinaria Agrícola', 'Implementos de Labranza', 'Equipo de Riego',
-        'Drones Agrícolas', 'Vehículos de Carga', 'Espacios/Terrenos', // Nueva categoría clave
+        'Drones Agrícolas', 'Vehículos de Carga', 'Espacios/Terrenos',
         'Herramientas Manuales', 'Otros Equipos'
     ];
 
+    // Función para formatear números con separadores de miles
+    const formatNumber = (value) => {
+        if (!value) return '';
+        const numericValue = value.toString().replace(/[^\d]/g, '');
+        return numericValue.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    };
+
+    // Función para parsear números formateados
+    const parseFormattedNumber = (formattedValue) => {
+        return formattedValue.replace(/\./g, '');
+    };
+
     const handleChange = (e) => {
         const { name, value } = e.target;
-        setRentalData(prevData => ({
-            ...prevData,
-            [name]: value
-        }));
+        
+        if (name === 'name') {
+            if (value.length <= 50) {
+                setRentalData(prevData => ({
+                    ...prevData,
+                    [name]: value
+                }));
+                setNameCount(value.length);
+            }
+        } else if (name === 'description') {
+            if (value.length <= 250) {
+                setRentalData(prevData => ({
+                    ...prevData,
+                    [name]: value
+                }));
+                setDescriptionCount(value.length);
+            }
+        } else if (name === 'pricePerDay') {
+            const formattedValue = formatNumber(value);
+            if (formattedValue.replace(/\./g, '').length <= 10) {
+                setRentalData(prevData => ({
+                    ...prevData,
+                    [name]: parseFormattedNumber(formattedValue)
+                }));
+            }
+        } else {
+            setRentalData(prevData => ({
+                ...prevData,
+                [name]: value
+            }));
+        }
     };
 
     const handleImageChange = (e) => {
@@ -84,7 +125,6 @@ function CreateRentalPage() {
         }
 
         try {
-            // Asegúrate de usar la URL base de `api` para consistencia
             const response = await api.post('/api/rentals', formData, {
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -101,8 +141,10 @@ function CreateRentalPage() {
             });
             setImage(null);
             setPreviewUrl('');
+            setNameCount(0);
+            setDescriptionCount(0);
             console.log('Renta creada:', data);
-            navigate('/rentals'); // Redirige a la lista de rentas
+            navigate('/rentals');
         } catch (err) {
             console.error("Error creating rental:", err);
             const errorMessage = err.response?.data?.message || 'Hubo un problema al publicar tu renta. Intenta de nuevo más tarde.';
@@ -153,7 +195,11 @@ function CreateRentalPage() {
                     {/* Nombre del Equipo o Espacio */}
                     <div>
                         <label htmlFor="name" className="block text-lg font-semibold text-gray-800 mb-2 flex items-center">
-                            <CubeTransparentIcon className="h-6 w-6 text-blue-500 mr-2" /> Nombre del Equipo o Espacio <span className="text-red-500 ml-1">*</span>
+                            <CubeTransparentIcon className="h-6 w-6 text-blue-500 mr-2" /> 
+                            Nombre del Equipo o Espacio <span className="text-red-500 ml-1">*</span>
+                            <span className="ml-auto text-sm font-medium text-gray-500">
+                                {nameCount}/50
+                            </span>
                         </label>
                         <p className="text-sm text-gray-500 mb-2">Un nombre claro y descriptivo para lo que ofreces (ej. "Tractor John Deere 5075E", "Finca para Eventos 'El Edén'").</p>
                         <input
@@ -165,13 +211,18 @@ function CreateRentalPage() {
                             className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-700 placeholder-gray-400 text-base transition duration-200"
                             placeholder="Ej: Sembradora de maíz de 4 surcos"
                             required
+                            maxLength={50}
                         />
                     </div>
 
                     {/* Descripción */}
                     <div>
                         <label htmlFor="description" className="block text-lg font-semibold text-gray-800 mb-2 flex items-center">
-                            <DocumentTextIcon className="h-6 w-6 text-blue-500 mr-2" /> Descripción Detallada <span className="text-red-500 ml-1">*</span>
+                            <DocumentTextIcon className="h-6 w-6 text-blue-500 mr-2" /> 
+                            Descripción Detallada <span className="text-red-500 ml-1">*</span>
+                            <span className="ml-auto text-sm font-medium text-gray-500">
+                                {descriptionCount}/250
+                            </span>
                         </label>
                         <p className="text-sm text-gray-500 mb-2">Describe las características, estado, capacidades y si es un espacio, sus comodidades.</p>
                         <textarea
@@ -183,27 +234,30 @@ function CreateRentalPage() {
                             className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-700 placeholder-gray-400 text-base transition duration-200"
                             placeholder="Ej: Tractor en excelente estado, ideal para arado y siembra, incluye operador. O: Finca con piscina, kiosco, zona de asados, ideal para eventos campestres."
                             required
+                            maxLength={250}
                         ></textarea>
                     </div>
 
                     {/* Precio por Día */}
                     <div>
                         <label htmlFor="pricePerDay" className="block text-lg font-semibold text-gray-800 mb-2 flex items-center">
-                            <CurrencyDollarIcon className="h-6 w-6 text-blue-500 mr-2" /> Precio por Día (COP) <span className="text-red-500 ml-1">*</span>
+                            <CurrencyDollarIcon className="h-6 w-6 text-blue-500 mr-2" /> 
+                            Precio por Día (COP) <span className="text-red-500 ml-1">*</span>
                         </label>
-                        <p className="text-sm text-gray-500 mb-2">Indica el costo de la renta por cada día. Solo números.</p>
+                        <p className="text-sm text-gray-500 mb-2">Indica el costo de la renta por cada día.</p>
                         <input
-                            type="number"
+                            type="text"
                             id="pricePerDay"
                             name="pricePerDay"
-                            value={rentalData.pricePerDay}
+                            value={formatNumber(rentalData.pricePerDay)}
                             onChange={handleChange}
                             className="mt-1 block w-full px-4 py-3 border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 text-gray-700 placeholder-gray-400 text-base transition duration-200"
-                            placeholder="Ej: 150000 (solo el número, se mostrará como COP 150.000/día)"
+                            placeholder="Ej: 150.000 (se mostrará como COP 150.000/día)"
                             required
-                            min="0"
-                            step="any"
                         />
+                        <p className="text-xs text-gray-500 mt-1">
+                            Máximo 10 dígitos
+                        </p>
                     </div>
 
                     {/* Categoría */}
