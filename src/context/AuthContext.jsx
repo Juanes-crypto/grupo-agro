@@ -37,23 +37,44 @@ export const AuthProvider = ({ children }) => {
         sessionStorage.clear();
     };
 
+    // 🔥 NUEVO: Función de logout que llama al servidor
+    const logout = async () => {
+        console.log("AuthContext: Realizando logout.");
+        
+        try {
+            // Intentar hacer logout en el servidor
+            await api.post('/api/users/logout');
+            console.log("Logout exitoso en el servidor");
+        } catch (error) {
+            console.log("Error en logout del servidor:", error);
+            // Continuar con el logout local incluso si falla el servidor
+        } finally {
+            // Siempre limpiar la sesión local
+            clearSession();
+        }
+    };
+
     // 🔥 NUEVO: Manejar el cierre de pestaña/ventana
     useEffect(() => {
         const handleBeforeUnload = (event) => {
             if (isAuthenticated) {
                 console.log("Cerrando pestaña - Limpiando sesión...");
                 
-                // Intentar hacer logout en el servidor (opcional, pero recomendado)
-                // Esto se ejecuta justo antes de que la pestaña se cierre
-                if (navigator.sendBeacon) {
+                // Usar sendBeacon para enviar la solicitud de logout al servidor
+                if (navigator.sendBeacon && token) {
                     try {
-                        // Usar sendBeacon para enviar la solicitud de logout
-                        // Es más confiable que fetch/xhr en beforeunload
-                        const formData = new FormData();
-                        formData.append('logout', 'true');
-                        navigator.sendBeacon(`${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/users/logout`, formData);
+                        const logoutData = new Blob(
+                            [JSON.stringify({ token })], 
+                            { type: 'application/json' }
+                        );
+                        
+                        navigator.sendBeacon(
+                            `${import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000'}/api/users/logout`, 
+                            logoutData
+                        );
+                        console.log('Logout enviado al servidor via sendBeacon');
                     } catch (error) {
-                        console.log('Logout con sendBeacon no disponible');
+                        console.log('Logout con sendBeacon no disponible:', error);
                     }
                 }
                 
@@ -79,7 +100,7 @@ export const AuthProvider = ({ children }) => {
             window.removeEventListener('beforeunload', handleBeforeUnload);
             window.removeEventListener('pagehide', handlePageHide);
         };
-    }, [isAuthenticated]); // Se ejecuta cuando cambia el estado de autenticación
+    }, [isAuthenticated, token]);
 
     // Efecto para cargar el estado del usuario/autenticación a partir del token al cargar la app
     useEffect(() => {
@@ -89,7 +110,6 @@ export const AuthProvider = ({ children }) => {
                 try {
                     const decoded = jwtDecode(token);
                     if (decoded.id) {
-                        // ✅ CORREGIDO: Usar la ruta correcta con /api/
                         const response = await api.get('/api/users/profile');
                         setUser(response.data);
                         setUserId(response.data._id);
@@ -130,25 +150,6 @@ export const AuthProvider = ({ children }) => {
         localStorage.setItem('CampoBit_cart', JSON.stringify(cartItems));
     }, [cartItems]);
 
-    // 🔥 NUEVO: Manejar cuando el usuario cambia de pestaña (opcional)
-    useEffect(() => {
-        const handleVisibilityChange = () => {
-            if (document.hidden) {
-                // El usuario cambió a otra pestaña
-                console.log("Usuario cambió a otra pestaña");
-            } else {
-                // El usuario regresó a esta pestaña
-                console.log("Usuario regresó a la pestaña");
-            }
-        };
-
-        document.addEventListener('visibilitychange', handleVisibilityChange);
-
-        return () => {
-            document.removeEventListener('visibilitychange', handleVisibilityChange);
-        };
-    }, []);
-
     // Función de login
     const login = (userData, receivedToken) => {
         console.log("AuthContext: Realizando login con token.");
@@ -158,11 +159,6 @@ export const AuthProvider = ({ children }) => {
         setIsPremium(userData.isPremium || false);
         setToken(receivedToken);
         setLoading(false);
-    };
-
-    const logout = () => {
-        console.log("AuthContext: Realizando logout.");
-        clearSession();
     };
 
     const register = (userData, receivedToken) => {
@@ -267,7 +263,7 @@ export const AuthProvider = ({ children }) => {
         token,
         loading,
         login,
-        logout,
+        logout, // 🔥 AHORA USA LA NUEVA FUNCIÓN ASINCRONA
         register,
         cartItems,
         addToCart,

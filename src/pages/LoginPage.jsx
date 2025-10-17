@@ -79,16 +79,30 @@ function LoginPage() {
             console.error('Error de login:', err);
             
             let errorMessage = 'Error de conexión. Por favor, intenta de nuevo.';
+            let remainingAttempts = null;
+            let isFinalWarning = false;
+            let isAccountLocked = false;
             
             if (err.message.includes('reCAPTCHA')) {
                 errorMessage = err.message;
             } else if (err.response?.data?.message) {
                 errorMessage = err.response.data.message;
+                remainingAttempts = err.response.data.remainingAttempts;
+                isFinalWarning = err.response.data.isFinalWarning;
+                isAccountLocked = err.response.status === 423;
             } else if (err.code === 'NETWORK_ERROR') {
                 errorMessage = 'Error de conexión. Verifica tu internet e intenta de nuevo.';
             }
 
-            setErrors([errorMessage]);
+            // 🔥 MEJOR MANEJO DE ERRORES CON ESTILOS DIFERENTES
+            const errorDetails = {
+                message: errorMessage,
+                type: isAccountLocked ? 'blocked' : 
+                      isFinalWarning ? 'warning' : 
+                      remainingAttempts !== null ? 'attempts' : 'general'
+            };
+
+            setErrors([errorDetails]);
             
             // Resetear reCAPTCHA si hay error
             if (window.grecaptcha && typeof window.grecaptcha.reset === 'function') {
@@ -104,6 +118,36 @@ function LoginPage() {
         console.log('✅ reCAPTCHA está listo para usar');
         setRecaptchaReady(true);
     }, []);
+
+    // 🔥 FUNCIÓN PARA OBTENER ESTILOS DE ERROR SEGÚN EL TIPO
+    const getErrorStyles = (errorType) => {
+        switch (errorType) {
+            case 'blocked':
+                return {
+                    container: 'bg-red-100 border border-red-400 text-red-700',
+                    title: '¡Cuenta Bloqueada! 🔒',
+                    icon: '🔒'
+                };
+            case 'warning':
+                return {
+                    container: 'bg-orange-100 border border-orange-400 text-orange-700',
+                    title: '¡Último Intento! ⚠️',
+                    icon: '⚠️'
+                };
+            case 'attempts':
+                return {
+                    container: 'bg-yellow-100 border border-yellow-400 text-yellow-700',
+                    title: 'Credenciales Incorrectas',
+                    icon: '🔐'
+                };
+            default:
+                return {
+                    container: 'bg-red-100 border border-red-400 text-red-700',
+                    title: 'Error al Iniciar Sesión',
+                    icon: '❌'
+                };
+        }
+    };
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 to-emerald-100 py-12 px-4 sm:px-6 lg:px-8">
@@ -130,29 +174,34 @@ function LoginPage() {
 
                     <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
                         <div>
-                            <label htmlFor="email-address" className="sr-only">Email</label>
+                            <label htmlFor="email-address" className="block text-sm font-medium text-gray-700 mb-1">
+                                Email
+                            </label>
                             <input
                                 id="email-address"
                                 name="email"
                                 type="email"
                                 autoComplete="email"
                                 required
-                                className="appearance-none relative block w-full px-4 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm transition-all duration-200"
-                                placeholder="Tu dirección de email"
+                                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm transition-all duration-200"
+                                placeholder="tu.email@ejemplo.com"
                                 value={email}
                                 onChange={(e) => setEmail(e.target.value)}
                                 disabled={loading || !recaptchaReady}
                             />
                         </div>
+                        
                         <div>
-                            <label htmlFor="password" className="sr-only">Contraseña</label>
+                            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
+                                Contraseña
+                            </label>
                             <input
                                 id="password"
                                 name="password"
                                 type="password"
                                 autoComplete="current-password"
                                 required
-                                className="appearance-none relative block w-full px-4 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 sm:text-sm transition-all duration-200"
+                                className="appearance-none relative block w-full px-4 py-3 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-lg focus:outline-none focus:ring-green-500 focus:border-green-500 focus:z-10 sm:text-sm transition-all duration-200"
                                 placeholder="Tu contraseña"
                                 value={password}
                                 onChange={(e) => setPassword(e.target.value)}
@@ -160,21 +209,44 @@ function LoginPage() {
                             />
                         </div>
 
-                        {errors.length > 0 && (
-                            <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded-lg relative mt-4 shadow-sm" role="alert">
-                                <strong className="font-bold">¡Error al iniciar sesión!</strong>
-                                <ul className="mt-2 list-disc list-inside space-y-1">
-                                    {errors.map((msg, index) => (
-                                        <li key={index} className="text-sm">{msg}</li>
-                                    ))}
-                                </ul>
-                            </div>
-                        )}
+                        {errors.length > 0 && errors.map((errorDetail, index) => {
+                            const styles = getErrorStyles(errorDetail.type);
+                            return (
+                                <div key={index} className={`rounded-lg p-4 mt-4 shadow-sm ${styles.container}`} role="alert">
+                                    <div className="flex items-start">
+                                        <span className="text-lg mr-2">{styles.icon}</span>
+                                        <div>
+                                            <strong className="font-bold block">{styles.title}</strong>
+                                            <p className="mt-1 text-sm">{errorDetail.message}</p>
+                                            
+                                            {/* 🔥 INFORMACIÓN ADICIONAL PARA INTENTOS */}
+                                            {errorDetail.type === 'attempts' && (
+                                                <div className="mt-2 p-2 bg-white bg-opacity-50 rounded border">
+                                                    <p className="text-xs font-medium">
+                                                        💡 <strong>Consejo:</strong> Si olvidaste tu contraseña, usa la opción "¿Olvidaste tu contraseña?"
+                                                    </p>
+                                                </div>
+                                            )}
+                                            
+                                            {/* 🔥 INFORMACIÓN ADICIONAL PARA CUENTA BLOQUEADA */}
+                                            {errorDetail.type === 'blocked' && (
+                                                <div className="mt-2 p-2 bg-white bg-opacity-50 rounded border">
+                                                    <p className="text-xs font-medium">
+                                                        ⏰ <strong>Nota:</strong> El bloqueo es por 24 horas por seguridad. 
+                                                        Si necesitas ayuda, contacta con soporte.
+                                                    </p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
 
                         <div>
                             <button
                                 type="submit"
-                                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-lg font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-lg font-medium rounded-lg text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
                                 disabled={loading || !recaptchaReady}
                             >
                                 {loading ? (
@@ -190,13 +262,26 @@ function LoginPage() {
                                 )}
                             </button>
                         </div>
+
+                        {/* 🔥 ENLACE PARA RECUPERAR CONTRASEÑA */}
+                        <div className="text-center">
+                            <Link 
+                                to="/forgot-password" 
+                                className="text-sm text-green-600 hover:text-green-500 transition-colors duration-200 font-medium"
+                            >
+                                ¿Olvidaste tu contraseña?
+                            </Link>
+                        </div>
                     </form>
-                    <p className="mt-4 text-center text-gray-600">
-                        ¿No tienes una cuenta?{' '}
-                        <Link to="/register" className="font-medium text-green-600 hover:text-green-500 transition-colors duration-200">
-                            Regístrate aquí
-                        </Link>
-                    </p>
+                    
+                    <div className="text-center border-t pt-4">
+                        <p className="text-gray-600">
+                            ¿No tienes una cuenta?{' '}
+                            <Link to="/register" className="font-medium text-green-600 hover:text-green-500 transition-colors duration-200">
+                                Regístrate aquí
+                            </Link>
+                        </p>
+                    </div>
                 </div>
 
                 {/* Columna de la Tarjeta de Incentivo Premium */}
