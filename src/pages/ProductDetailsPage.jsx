@@ -159,7 +159,7 @@ function ProductDetailsPage() {
 
   const handleDeleteProduct = async () => {
     try {
-      await api.delete(`/products/${id}`, {
+      await api.delete(`/api/products/${id}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

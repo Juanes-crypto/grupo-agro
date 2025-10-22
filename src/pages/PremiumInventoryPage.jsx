@@ -127,7 +127,7 @@ function PremiumInventoryPage() {
         const confirmed = window.confirm('¿Estás seguro de que quieres eliminar este producto? Esta acción es irreversible.');
         if (confirmed) {
             try {
-                await api.delete(`/products/${productId}`, {
+                await api.delete(`/api/products/${productId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
                 setProducts(products.filter(p => p._id !== productId));
