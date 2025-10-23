@@ -1,6 +1,4 @@
-// src/pages/PremiumInventoryPage.jsx
-
-import React, { useState, useEffect, useContext, useCallback } from 'react'; // Asegúrate de importar useCallback
+import React, { useState, useEffect, useContext, useCallback } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import api from '../services/api'; 
@@ -35,25 +33,55 @@ function PremiumInventoryPage() {
     ];
     const units = ['kg', 'litro', 'unidad', 'docena', 'bulto', 'gr'];
 
-    // ✨ MUEVE ESTA FUNCIÓN AQUÍ, ANTES DEL useEffect QUE LA USA ✨
-    // Envuelve en useCallback para evitar que se recree en cada render
+    // 🔥 CORREGIDO: Función para cargar productos con manejo robusto de errores
     const fetchUserProducts = useCallback(async () => {
         setLoadingProducts(true);
         setError('');
         try {
-            const res = await api.get('/products/my-products', {
+            console.log('🔄 Cargando productos del usuario...');
+            
+            // 🔥 USAR SIEMPRE RUTAS CON /api/ PARA CONSISTENCIA
+            const res = await api.get('/api/products/my-products', {
                 headers: {
                     Authorization: `Bearer ${token}` 
                 }
             });
-            setProducts(res.data);
+            
+            console.log('✅ Respuesta del servidor:', res.data);
+            
+            // 🔥 MANEJO ROBUSTO DE DIFERENTES FORMATOS DE RESPUESTA
+            let productsData = [];
+            
+            if (Array.isArray(res.data)) {
+                productsData = res.data;
+            } else if (res.data && Array.isArray(res.data.data)) {
+                productsData = res.data.data;
+            } else if (res.data && Array.isArray(res.data.products)) {
+                productsData = res.data.products;
+            } else {
+                console.warn('⚠️ Formato de respuesta inesperado, usando array vacío');
+                productsData = [];
+            }
+            
+            setProducts(productsData);
+            
         } catch (err) {
-            console.error('Error al cargar los productos del inventario:', err);
-            setError(err.response?.data?.message || 'No se pudieron cargar los productos de tu inventario.');
+            console.error('❌ Error al cargar los productos del inventario:', err);
+            
+            // 🔥 MEJOR MANEJO DE ERRORES
+            if (err.response?.status === 404) {
+                setError('La función de inventario no está disponible en este momento. Por favor, contacta con soporte.');
+            } else if (err.response?.data?.message) {
+                setError(err.response.data.message);
+            } else {
+                setError('No se pudieron cargar los productos de tu inventario. Verifica tu conexión.');
+            }
+            
+            setProducts([]); // Siempre establecer un array vacío en caso de error
         } finally {
             setLoadingProducts(false);
         }
-    }, [token]); // token como dependencia para useCallback
+    }, [token]);
 
     // Redirección si no es premium o no está autenticado
     useEffect(() => {
@@ -63,14 +91,11 @@ function PremiumInventoryPage() {
             } else if (!isPremium) {
                 navigate('/premium-upsell');
             } else {
-                fetchUserProducts(); // Ahora fetchUserProducts está definido cuando se llama aquí
+                fetchUserProducts();
             }
         }
     }, [isAuthenticated, isPremium, authLoading, navigate, fetchUserProducts]); 
 
-    // El resto de tu código (handleImageChange, closeModal, handleCreateNewProduct, etc.)
-    // ... permanece igual aquí, después del useEffect y antes del return
-    
     // Manejar cambio de imagen y vista previa
     const handleImageChange = (e) => {
         const file = e.target.files[0];
@@ -91,7 +116,7 @@ function PremiumInventoryPage() {
         setDescription('');
         setPrice('');
         setStock('');
-        setUnit('kg'); // Restablecer a valor por defecto
+        setUnit('kg');
         setCategory('');
         setIsTradable(false);
         setImage(null);
@@ -102,31 +127,32 @@ function PremiumInventoryPage() {
 
     // Abrir modal para crear nuevo producto
     const handleCreateNewProduct = () => {
-        closeModal(); // Asegura que los estados estén limpios
+        closeModal();
         setIsModalOpen(true);
     };
 
     // Abrir modal para editar un producto existente
     const handleEditProduct = (product) => {
-        closeModal(); // Limpiar estados antes de cargar nuevos
+        closeModal();
         setEditingProduct(product);
         setProductName(product.name);
         setDescription(product.description);
         setPrice(product.price);
-        setStock(product.stock || ''); 
-        setUnit(product.unit || 'kg'); 
+        setStock(product.stock || '');
+        setUnit(product.unit || 'kg');
         setCategory(product.category || '');
         setIsTradable(product.isTradable);
-        setPreviewUrl(product.imageUrl || ''); 
+        setPreviewUrl(product.imageUrl || '');
         setImage(null);
         setIsModalOpen(true);
     };
 
-    // Eliminar producto
+    // 🔥 CORREGIDO: Eliminar producto con ruta correcta
     const handleDeleteProduct = async (productId) => {
         const confirmed = window.confirm('¿Estás seguro de que quieres eliminar este producto? Esta acción es irreversible.');
         if (confirmed) {
             try {
+                // 🔥 USAR RUTA CON /api/
                 await api.delete(`/api/products/${productId}`, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
@@ -139,7 +165,7 @@ function PremiumInventoryPage() {
         }
     };
 
-    // Publicar o Despublicar Producto
+    // 🔥 CORREGIDO: Publicar o Despublicar Producto con ruta correcta
     const handleTogglePublish = async (product) => {
         const newPublishedStatus = !product.isPublished;
         const confirmAction = newPublishedStatus
@@ -149,7 +175,8 @@ function PremiumInventoryPage() {
         const confirmed = window.confirm(confirmAction);
         if (confirmed) {
             try {
-                const res = await api.put(`/products/${product._id}`, 
+                // 🔥 USAR RUTA CON /api/
+                const res = await api.put(`/api/products/${product._id}`, 
                     { isPublished: newPublishedStatus }, 
                     { headers: { Authorization: `Bearer ${token}` } }
                 );
@@ -165,7 +192,7 @@ function PremiumInventoryPage() {
         }
     };
 
-    // Enviar formulario (Crear o Actualizar)
+    // 🔥 CORREGIDO: Enviar formulario con rutas correctas
     const handleFormSubmit = async (e) => {
         e.preventDefault();
         setFormLoading(true);
@@ -204,7 +231,8 @@ function PremiumInventoryPage() {
 
         try {
             if (editingProduct) {
-                await api.put(`/products/${editingProduct._id}`, formData, {
+                // 🔥 USAR RUTA CON /api/
+                await api.put(`/api/products/${editingProduct._id}`, formData, {
                     headers: { 
                         'Content-Type': 'multipart/form-data',
                         'Authorization': `Bearer ${token}` 
@@ -212,7 +240,8 @@ function PremiumInventoryPage() {
                 });
                 setFormMessage('Producto actualizado exitosamente.');
             } else {
-                await api.post('/products', formData, {
+                // 🔥 USAR RUTA CON /api/
+                await api.post('/api/products', formData, {
                     headers: { 
                         'Content-Type': 'multipart/form-data',
                         'Authorization': `Bearer ${token}` 
@@ -234,15 +263,10 @@ function PremiumInventoryPage() {
     if (authLoading || loadingProducts) {
         return (
             <div className="flex items-center justify-center min-h-screen text-gray-600">
-                Cargando inventario premium...
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="text-center text-red-600 font-medium py-20">
-                {error}
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-green-600 mx-auto mb-4"></div>
+                    Cargando inventario premium...
+                </div>
             </div>
         );
     }
@@ -252,6 +276,27 @@ function PremiumInventoryPage() {
             <h2 className="text-4xl font-extrabold text-green-800 text-center mb-8">
                 Mi Inventario Premium 📊
             </h2>
+
+            {/* 🔥 MEJORADO: Manejo de errores */}
+            {error && (
+                <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
+                    <div className="flex items-center">
+                        <svg className="w-6 h-6 text-red-500 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                        </svg>
+                        <div>
+                            <h3 className="text-lg font-medium text-red-800">Error</h3>
+                            <p className="text-red-700">{error}</p>
+                            <button
+                                onClick={fetchUserProducts}
+                                className="mt-3 bg-red-600 hover:bg-red-700 text-white font-medium py-2 px-4 rounded-lg text-sm"
+                            >
+                                Reintentar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             <div className="flex justify-between items-center mb-6">
                 <p className="text-lg text-gray-700">Gestiona tus productos premium.</p>
@@ -263,7 +308,8 @@ function PremiumInventoryPage() {
                 </button>
             </div>
 
-            {products.length === 0 ? (
+            {/* 🔥 MEJORADO: Validación robusta para products */}
+            {!products || !Array.isArray(products) || products.length === 0 ? (
                 <div className="bg-white p-8 rounded-lg shadow-md text-center text-gray-600">
                     <p className="text-xl">No tienes productos en tu inventario premium.</p>
                     <p className="mt-2">¡Haz clic en "Nuevo Producto" para añadir el primero!</p>
@@ -376,7 +422,7 @@ function PremiumInventoryPage() {
             {/* Modal para Crear/Editar Producto */}
             {isModalOpen && (
                 <div className="fixed inset-0 bg-gray-600 bg-opacity-75 flex items-center justify-center z-50">
-                    <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full relative">
+                    <div className="bg-white p-8 rounded-lg shadow-xl max-w-md w-full relative max-h-[90vh] overflow-y-auto">
                         <h3 className="text-2xl font-bold text-gray-800 mb-6 text-center">
                             {editingProduct ? 'Editar Producto' : 'Crear Nuevo Producto'}
                         </h3>
