@@ -1,3 +1,5 @@
+//services/api.js
+
 import axios from "axios";
 
 // Configuración automática para desarrollo/producción - CORREGIDO para Vite

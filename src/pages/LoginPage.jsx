@@ -34,7 +34,7 @@ function LoginPage() {
                 import.meta.env.VITE_RECAPTCHA_SITE_KEY,
                 { action: 'login' }
             );
-            
+
             console.log('✅ Token reCAPTCHA generado:', token ? 'Éxito' : 'Falló');
             return token;
         } catch (error) {
@@ -49,13 +49,13 @@ function LoginPage() {
         setErrors([]);
 
         try {
-            // Verificar que reCAPTCHA esté disponible
-            if (!isRecaptchaAvailable()) {
+            // Verificar que reCAPTCHA esté disponible usando la nueva función
+            if (!recaptchaRef.current?.isReady?.()) {
                 throw new Error('El servicio de seguridad no está disponible. Por favor, recarga la página.');
             }
 
             console.log('🔄 Solicitando token reCAPTCHA...');
-            const token = await handleGetRecaptchaToken();
+            const token = await recaptchaRef.current.execute();
 
             if (!token) {
                 throw new Error('No se pudo obtener token de seguridad. Intenta recargar la página.');
@@ -77,36 +77,25 @@ function LoginPage() {
 
         } catch (err) {
             console.error('Error de login:', err);
-            
+
             let errorMessage = 'Error de conexión. Por favor, intenta de nuevo.';
-            let remainingAttempts = null;
-            let isFinalWarning = false;
-            let isAccountLocked = false;
-            
+
             if (err.message.includes('reCAPTCHA')) {
                 errorMessage = err.message;
             } else if (err.response?.data?.message) {
                 errorMessage = err.response.data.message;
-                remainingAttempts = err.response.data.remainingAttempts;
-                isFinalWarning = err.response.data.isFinalWarning;
-                isAccountLocked = err.response.status === 423;
             } else if (err.code === 'NETWORK_ERROR') {
                 errorMessage = 'Error de conexión. Verifica tu internet e intenta de nuevo.';
             }
 
-            // 🔥 MEJOR MANEJO DE ERRORES CON ESTILOS DIFERENTES
-            const errorDetails = {
+            setErrors([{
                 message: errorMessage,
-                type: isAccountLocked ? 'blocked' : 
-                      isFinalWarning ? 'warning' : 
-                      remainingAttempts !== null ? 'attempts' : 'general'
-            };
+                type: 'general'
+            }]);
 
-            setErrors([errorDetails]);
-            
             // Resetear reCAPTCHA si hay error
-            if (window.grecaptcha && typeof window.grecaptcha.reset === 'function') {
-                window.grecaptcha.reset();
+            if (recaptchaRef.current?.reset) {
+                recaptchaRef.current.reset();
             }
         } finally {
             setLoading(false);
@@ -163,7 +152,7 @@ function LoginPage() {
                             Inicia sesión para acceder a tu cuenta de CampoBit.
                         </p>
                     </div>
-                    
+
                     {!recaptchaReady && (
                         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-center">
                             <p className="text-yellow-800 text-sm">
@@ -190,7 +179,7 @@ function LoginPage() {
                                 disabled={loading || !recaptchaReady}
                             />
                         </div>
-                        
+
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
                                 Contraseña
@@ -218,7 +207,7 @@ function LoginPage() {
                                         <div>
                                             <strong className="font-bold block">{styles.title}</strong>
                                             <p className="mt-1 text-sm">{errorDetail.message}</p>
-                                            
+
                                             {/* 🔥 INFORMACIÓN ADICIONAL PARA INTENTOS */}
                                             {errorDetail.type === 'attempts' && (
                                                 <div className="mt-2 p-2 bg-white bg-opacity-50 rounded border">
@@ -227,12 +216,12 @@ function LoginPage() {
                                                     </p>
                                                 </div>
                                             )}
-                                            
+
                                             {/* 🔥 INFORMACIÓN ADICIONAL PARA CUENTA BLOQUEADA */}
                                             {errorDetail.type === 'blocked' && (
                                                 <div className="mt-2 p-2 bg-white bg-opacity-50 rounded border">
                                                     <p className="text-xs font-medium">
-                                                        ⏰ <strong>Nota:</strong> El bloqueo es por 24 horas por seguridad. 
+                                                        ⏰ <strong>Nota:</strong> El bloqueo es por 24 horas por seguridad.
                                                         Si necesitas ayuda, contacta con soporte.
                                                     </p>
                                                 </div>
@@ -265,15 +254,15 @@ function LoginPage() {
 
                         {/* 🔥 ENLACE PARA RECUPERAR CONTRASEÑA */}
                         <div className="text-center">
-                            <Link 
-                                to="/forgot-password" 
+                            <Link
+                                to="/forgot-password"
                                 className="text-sm text-green-600 hover:text-green-500 transition-colors duration-200 font-medium"
                             >
                                 ¿Olvidaste tu contraseña?
                             </Link>
                         </div>
                     </form>
-                    
+
                     <div className="text-center border-t pt-4">
                         <p className="text-gray-600">
                             ¿No tienes una cuenta?{' '}
@@ -303,7 +292,7 @@ function LoginPage() {
                             <li>Prioridad de renderizacion: Tus productos tienen prioridad de muestra.</li>
                         </ul>
                     </div>
-                    <Link 
+                    <Link
                         to="/premium-upsell"
                         className="w-full bg-white text-yellow-700 hover:bg-yellow-100 py-3 px-6 rounded-lg text-lg font-bold shadow-md transition-all duration-300 transform hover:-translate-y-1"
                     >
@@ -312,9 +301,9 @@ function LoginPage() {
                 </div>
 
                 {/* Componente reCAPTCHA con callback de ready */}
-                <ReCaptcha 
-                    onTokenChange={setRecaptchaToken} 
-                    action="login" 
+                <ReCaptcha
+                    onTokenChange={setRecaptchaToken}
+                    action="login"
                     onReady={handleRecaptchaReady}
                     ref={recaptchaRef}
                 />
