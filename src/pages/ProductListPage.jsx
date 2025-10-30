@@ -1,744 +1,473 @@
-// frontend/src/pages/ProductListPage.jsx
-import React, { useState, useEffect, useContext } from "react";
-import { useLocation, Link, useNavigate } from "react-router-dom";
-import { AuthContext } from "../context/AuthContext";
+import React, { useState, useContext, useCallback } from "react";
+import { useNavigate, Link } from "react-router-dom";
+// ⭐ Importa la instancia de api (Axios) ⭐
 import api from "../services/api";
-import {
-  FiSearch,
-  FiFilter,
-  FiStar,
-  FiShoppingCart,
-  FiRefreshCw,
-  FiHeart,
-  FiShield,
-  FiAward,
-} from "react-icons/fi";
-import { FaLeaf, FaExchangeAlt, FaCrown } from "react-icons/fa";
+import { AuthContext } from "../context/AuthContext";
+import LocationInput from "../components/LocationInput";
+import ReCaptcha from "../components/ReCaptcha";
 
-function ProductListPage() {
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(searchTerm);
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [isTradableFilter, setIsTradableFilter] = useState(false);
-  const [showFilters, setShowFilters] = useState(false);
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [locationFilter, setLocationFilter] = useState("all");
-  const { user, token, isAuthenticated, addToCart } = useContext(AuthContext);
-  const navigate = useNavigate();
-  const [addedToCartMessages, setAddedToCartMessages] = useState({});
-  const location = useLocation();
-  const isMyProductsPage = location.pathname === "/my-products";
+function RegisterPage() {
+    const [name, setName] = useState("");
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [confirmPassword, setConfirmPassword] = useState("");
+    // const [profilePicture, setProfilePicture] = useState(null); // Eliminado por ahora, la ruta /api/auth/register no maneja imagen
+    const [phoneNumber, setPhoneNumber] = useState("");
+    const [showPhoneNumber, setShowPhoneNumber] = useState(false);
+    const [location, setLocation] = useState(null); // Asegúrate que LocationInput devuelva el objeto esperado por el backend
+    const [loading, setLoading] = useState(false);
+    const [errors, setErrors] = useState([]);
+    const [successMessage, setSuccessMessage] = useState(''); // Estado para mensaje de éxito
+    const [acceptedTerms, setAcceptedTerms] = useState(false);
 
-  // Debug: monitorear cambios en products
-  useEffect(() => {
-    console.log("🔄 Products state updated:", products);
-    console.log("📋 Products type:", typeof products);
-    console.log(
-      "🔢 Products length:",
-      Array.isArray(products) ? products.length : "Not array"
-    );
-  }, [products]);
+    const navigate = useNavigate();
+    // const { register } = useContext(AuthContext); // No hacemos login inmediato
 
-  // Filtrar productos según selección de ubicación
-  const filteredProducts = Array.isArray(products)
-    ? products.filter((product) => {
-        if (!product) return false;
-        if (locationFilter === "all") return true;
-        if (locationFilter === "nearby" && product.distance <= 50) return true;
-        if (
-          locationFilter === "city" &&
-          product.location?.city === user?.location?.city
-        )
-          return true;
-        if (
-          locationFilter === "other" &&
-          product.location?.city !== user?.location?.city
-        )
-          return true;
-        return false;
-      })
-    : [];
-
-  // Separate premium and regular products
-  const premiumProducts = Array.isArray(filteredProducts)
-    ? filteredProducts.filter((product) => product && product.user?.isPremium)
-    : [];
-
-  const regularProducts = Array.isArray(filteredProducts)
-    ? filteredProducts.filter((product) => product && !product.user?.isPremium)
-    : [];
-
-  // Scroll effect for header
-  useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
+    const handleLocationSelected = (selectedLocation) => {
+        setLocation(selectedLocation);
+        console.log("📍 Ubicación seleccionada:", selectedLocation); // Log para verificar formato
     };
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
-  // Debounce effect for search term
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500);
-    return () => {
-      clearTimeout(handler);
-    };
-  }, [searchTerm]);
-
-  useEffect(() => {
-    const fetchProducts = async () => {
-      setLoading(true);
-      setError(null);
-
-      console.log("🔐 Token actual:", token);
-      console.log("👤 User actual:", user);
-      console.log("🔐 Is authenticated:", isAuthenticated);
-
-      let url = "https://grupo-agro-backend.onrender.com/api/products";
-      const params = new URLSearchParams();
-
-      // Agregar parámetros de ubicación
-      if (
-        user &&
-        user.location &&
-        user.location.coordinates &&
-        !isMyProductsPage
-      ) {
-        params.append("latitude", user.location.coordinates[1]);
-        params.append("longitude", user.location.coordinates[0]);
-        params.append("maxDistance", 50);
-      }
-
-      if (isMyProductsPage) {
-        url =
-          "https://grupo-agro-backend.onrender.com/api/products/my-products";
-        if (!isAuthenticated || !token) {
-          setError("Debes iniciar sesión para ver tus productos.");
-          setLoading(false);
-          return;
+    // La lógica de reCAPTCHA sigue igual
+    const handleGetRecaptchaToken = useCallback(async () => {
+        if (window.grecaptcha) {
+            try {
+                const token = await window.grecaptcha.execute(
+                    import.meta.env.VITE_RECAPTCHA_SITE_KEY,
+                    { action: 'register' }
+                );
+                return token;
+            } catch (error) {
+                console.error('Error al obtener token reCAPTCHA:', error);
+                setErrors(['Error de verificación de seguridad. Por favor, recarga la página.']);
+                return null;
+            }
         }
-      } else {
-        if (debouncedSearchTerm) params.append("search", debouncedSearchTerm);
-        if (selectedCategory) params.append("category", selectedCategory);
-        if (isTradableFilter) params.append("isTradable", "true");
-      }
+        return null;
+    }, []);
 
-      const queryString = params.toString();
-      if (queryString) url = `${url}?${queryString}`;
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setErrors([]);
+        setSuccessMessage(''); // Limpia mensaje de éxito
 
-      try {
-        const headers = {};
-        if (token) headers["Authorization"] = `Bearer ${token}`;
+        // Validaciones (iguales)
+        if (password !== confirmPassword) {
+            setErrors(["Las contraseñas no coinciden."]);
+            setLoading(false);
+            return;
+        }
+        if (phoneNumber && !/^\d+$/.test(phoneNumber)) {
+             setErrors(["El número de teléfono solo debe contener dígitos."]);
+             setLoading(false);
+             return;
+         }
+        if (!location || !location.city || !location.address || !location.coordinates || location.coordinates.length !== 2) {
+            setErrors(["Por favor, selecciona una ubicación válida (ciudad, dirección y coordenadas)."]);
+            setLoading(false);
+            return;
+        }
+        if (!acceptedTerms) {
+            setErrors(["Debes aceptar los términos y condiciones y política de privacidad."]);
+            setLoading(false);
+            return;
+        }
 
-        console.log("🌐 Fetching from URL:", url);
-        const response = await api.get(url, { headers });
+        // Obtener token reCAPTCHA (igual)
+        const token = await handleGetRecaptchaToken();
+        if (!token) {
+            setLoading(false);
+            return;
+        }
 
-        console.log("🔍 ProductListPage - Response:", response);
-        console.log("📊 ProductListPage - Response data:", response.data);
+        try {
+            // ⭐ CAMBIO CLAVE: Usar api.post, la ruta /api/auth/register y enviar JSON ⭐
+            const response = await api.post('/api/auth/register', {
+                name,
+                email,
+                password,
+                phoneNumber,
+                showPhoneNumber,
+                location: { // Asegúrate que el objeto location coincida con el modelo User
+                    city: location.city,
+                    address: location.address,
+                    coordinates: location.coordinates // [longitud, latitud]
+                },
+                recaptchaToken: token, // Si tu backend lo valida en /api/auth/register
+                // profilePicture no se envía a esta ruta por ahora
+            });
 
-        // ✅ MANEJO ESPECÍFICO PARA MY-PRODUCTS
-        if (isMyProductsPage) {
-          console.log("🛒 Fetching MY PRODUCTS endpoint");
+            console.log("✅ Respuesta del registro:", response.data);
 
-          if (response.data && response.data.success === true) {
-            console.log("✅ Formato correcto para my-products");
-
-            if (Array.isArray(response.data.data)) {
-              setProducts(response.data.data);
-              console.log("📦 Productos cargados:", response.data.data.length);
+            if (response.data.success) {
+                // Muestra mensaje de éxito y limpia el formulario
+                setSuccessMessage(response.data.message || '¡Registro exitoso! Revisa tu email para verificar.');
+                setName("");
+                setEmail("");
+                setPassword("");
+                setConfirmPassword("");
+                setPhoneNumber("");
+                setShowPhoneNumber(false);
+                setLocation(null);
+                // setProfilePicture(null);
+                setAcceptedTerms(false);
+                // No redirigir inmediatamente, esperar verificación
+                // navigate("/profile");
             } else {
-              console.error(
-                "❌ response.data.data no es array:",
-                response.data.data
-              );
-              setProducts([]);
+                 // Si success es false pero la respuesta es 2xx
+                 setErrors([response.data.message || "Ocurrió un error inesperado."]);
             }
-          } else if (Array.isArray(response.data)) {
-            // Por si acaso el endpoint devuelve array directamente
-            console.log("⚠️  Respuesta es array directo (formato antiguo)");
-            setProducts(response.data);
-          } else {
-            console.error(
-              "❌ Formato inesperado para my-products:",
-              response.data
-            );
-            setError("Formato de respuesta inesperado del servidor");
-            setProducts([]);
-          }
-        } else {
-          // ✅ MANEJO PARA PRODUCTOS NORMALES
-          let productsData = [];
 
-          if (Array.isArray(response.data)) {
-            productsData = response.data;
-            console.log("✅ Caso 1 - Array directo");
-          } else if (response.data && Array.isArray(response.data.data)) {
-            productsData = response.data.data;
-            console.log("✅ Caso 2 - response.data.data");
-          } else if (response.data && Array.isArray(response.data.products)) {
-            productsData = response.data.products;
-            console.log("✅ Caso 3 - response.data.products");
-          } else {
-            console.error("❌ Formato inválido:", response.data);
-            productsData = [];
-          }
-
-          setProducts(productsData);
+        } catch (err) {
+            console.error("❌ Error de registro:", err.response?.data || err.message);
+            // Extraer mensajes de error del backend (si los hay)
+            const backendErrors = err.response?.data?.errors;
+            if (backendErrors && Array.isArray(backendErrors)) {
+                setErrors(backendErrors.map(e => e.msg));
+            } else {
+                 setErrors([err.response?.data?.message || "Error de conexión. Inténtalo de nuevo."]);
+            }
+        } finally {
+            setLoading(false);
         }
-      } catch (err) {
-        console.error("Error al cargar productos:", err);
-        console.error("Error details:", err.response?.data);
-
-        if (err.response?.data?.message) {
-          setError(err.response.data.message);
-        } else {
-          setError("Error desconocido al cargar los productos.");
-        }
-        setProducts([]);
-      } finally {
-        setLoading(false);
-      }
     };
 
-    fetchProducts();
-  }, [
-    isMyProductsPage,
-    isAuthenticated,
-    token,
-    debouncedSearchTerm,
-    selectedCategory,
-    isTradableFilter,
-    user,
-  ]);
-
-  const handleAddToCart = (product) => {
-    if (!isAuthenticated) {
-      alert("Debes iniciar sesión para añadir productos al carrito.");
-      navigate("/login");
-      return;
-    }
-    if (product.stock === 0) {
-      setAddedToCartMessages((prevMessages) => ({
-        ...prevMessages,
-        [product._id]: "❌ ¡Producto agotado!",
-      }));
-      setTimeout(() => {
-        setAddedToCartMessages((prevMessages) => ({
-          ...prevMessages,
-          [product._id]: "",
-        }));
-      }, 2000);
-      return;
-    }
-    addToCart(product);
-    setAddedToCartMessages((prevMessages) => ({
-      ...prevMessages,
-      [product._id]: "✔️ ¡Añadido al carrito!",
-    }));
-    setTimeout(() => {
-      setAddedToCartMessages((prevMessages) => ({
-        ...prevMessages,
-        [product._id]: "",
-      }));
-    }, 2000);
-  };
-
-  const handleDeleteProduct = async (productId) => {
-    if (
-      window.confirm("¿Estás seguro de que quieres eliminar este producto?")
-    ) {
-      try {
-        await api.delete(`/api/products/${productId}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        setProducts(products.filter((p) => p._id !== productId));
-        alert("Producto eliminado con éxito.");
-      } catch (err) {
-        console.error("Error eliminando producto:", err);
-        alert("Error al eliminar el producto.");
-      }
-    }
-  };
-
-  const categories = [
-    "Frutas",
-    "Verduras",
-    "Granos",
-    "Lácteos",
-    "Carnes",
-    "Cereales",
-    "Legumbres",
-    "Pescados",
-    "Huevos",
-    "Miel",
-    "Plantas",
-    "Semillas",
-    "Fitosanitarios",
-    "Fertilizantes",
-    "Maquinaria",
-    "Otros",
-  ];
-
-  // Render product card with validation
-  const renderProductCard = (product, isPremium = false) => {
-    if (!product || !product._id) {
-      console.warn("Producto inválido:", product);
-      return null;
-    }
-
+    // El JSX del return permanece mayormente igual, solo se elimina el input de profilePicture si decides quitarlo
     return (
-      <div
-        key={product._id}
-        className={`relative rounded-xl overflow-hidden flex flex-col transition-all duration-300 transform hover:scale-[1.02] group ${
-          isPremium
-            ? "bg-gradient-to-br from-yellow-50 to-amber-50 border-2 border-amber-300 shadow-xl"
-            : "bg-white border border-gray-200 shadow-md hover:shadow-lg"
-        }`}
-      >
-        {/* Premium badge */}
-        {isPremium && (
-          <div className="absolute top-3 left-3 z-10">
-            <div className="flex items-center bg-gradient-to-r from-amber-500 to-yellow-400 text-white text-xs font-bold px-3 py-1 rounded-full shadow-lg">
-              <FaCrown className="mr-1" /> PREMIUM
-            </div>
-          </div>
-        )}
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-emerald-100 py-8 px-4 sm:px-6 lg:px-8">
+            <div className="max-w-2xl w-full space-y-6 p-6 sm:p-8 bg-white rounded-2xl shadow-2xl border border-green-100 transition-all duration-300">
+                {/* Header */}
+                <div className="text-center">
+                    {/* ... (código del header igual) ... */}
+                     <div className="flex justify-center items-center space-x-4 mb-4">
+            <img
+              className="h-16 w-36 sm:h-20 sm:w-40"
+              src="/images/CampoBit-logo.png"
+              alt="CampoBit Logo"
+            />
+            <div>
+              <h2 className="text-2xl sm:text-4xl font-bold text-green-800 leading-tight">
+                Únete a CampoBit
+              </h2>
+              <p className="text-sm sm:text-base text-gray-600 mt-1">
+                Tu comunidad agrícola de confianza
+              </p>
+            </div>
+          </div>
+          
+          <div className="flex justify-center space-x-4 text-sm text-gray-600">
+            <span>Compra y vende productos</span>
+            <span>Trueques seguros</span>
+            <span>Comercio local</span>
+          </div>
+                </div>
 
-        {/* Product image */}
-        <div className="relative w-full h-48 overflow-hidden">
-          <img
-            src={
-              product.imageUrl ||
-              "https://via.placeholder.com/400x300?text=Producto+Agro"
-            }
-            alt={product.name}
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
-            onError={(e) => {
-              e.target.onerror = null;
-              e.target.src =
-                "https://via.placeholder.com/400x300?text=Imagen+No+Disponible";
-            }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent" />
-        </div>
+                 {/* Mensaje de Éxito */}
+                 {successMessage && (
+                   <div className="bg-green-50 border border-green-200 rounded-xl p-4 text-center" role="alert">
+                     <p className="text-sm font-medium text-green-800">{successMessage}</p>
+                     <p className="text-xs text-green-600 mt-1">Puedes cerrar esta ventana.</p>
+                   </div>
+                 )}
 
-        {/* Product details */}
-        <div className="p-5 flex flex-col flex-grow">
-          <div className="flex justify-between items-start mb-2">
-            <h2 className="text-xl font-bold text-gray-900 leading-tight">
-              {product.name}
-            </h2>
-            {product.isTradable ? (
-              <span className="flex items-center bg-purple-100 text-purple-800 px-2 py-1 rounded-full text-xs font-semibold">
-                <FaExchangeAlt className="mr-1" /> TRUEQUE
-              </span>
-            ) : (
-              <span className="text-xl font-extrabold text-green-700">
-                ${product.price ? product.price.toFixed(2) : "N/A"}
-              </span>
-            )}
-          </div>
-
-          <p className="text-gray-600 text-sm mb-4 flex-grow line-clamp-2">
-            {product.description}
-          </p>
-
-          <div className="flex justify-between items-center mb-3 text-xs">
-            <span className="bg-green-100 text-green-800 px-2 py-1 rounded">
-              {product.category}
-            </span>
-            <span
-              className={`px-2 py-1 rounded ${
-                product.stock === 0
-                  ? "bg-red-100 text-red-800"
-                  : "bg-blue-100 text-blue-800"
-              }`}
-            >
-              {product.stock === 0
-                ? "AGOTADO"
-                : `STOCK: ${product.stock} ${product.unit}`}
-            </span>
-          </div>
-
-          {product.user && (
-            <div className="flex items-center text-xs text-gray-500 mb-4">
-              <span className="font-medium text-gray-700">
-                Vendedor: {product.user.name || "Anónimo"}
-              </span>
-              {product.user.isPremium && (
-                <FiStar className="ml-1 text-yellow-500" />
-              )}
-            </div>
-          )}
-
-          {product.distance && (
-            <div className="flex items-center text-xs text-gray-600 mb-2">
-              <FiHeart className="mr-1 text-red-500" />A{" "}
-              {product.distance.toFixed(1)} km de ti
-            </div>
-          )}
-
-          {product.location?.city && (
-            <div className="flex items-center text-xs text-gray-600 mb-4">
-              <FiShield className="mr-1 text-blue-500" />
-              {product.location.city}
-            </div>
-          )}
-
-          <div className="mt-auto flex flex-col space-y-2 w-full">
-            <Link
-              to={`/products/${product._id}`}
-              className={`text-center py-2 px-4 rounded-lg transition duration-300 text-sm font-semibold ${
-                isPremium
-                  ? "bg-amber-600 hover:bg-amber-700 text-white"
-                  : "bg-blue-600 hover:bg-blue-700 text-white"
-              }`}
-            >
-              Ver Detalles
-            </Link>
-
-            {isAuthenticated && user && (
-              <>
-                {isMyProductsPage ? (
-                  <>
-                    <Link
-                      to={`/edit-product/${product._id}`}
-                      className="bg-yellow-500 hover:bg-yellow-600 text-white text-sm font-semibold py-2 px-4 rounded-lg text-center transition duration-300"
-                    >
-                      Editar Producto
-                    </Link>
-                    <button
-                      onClick={() => handleDeleteProduct(product._id)}
-                      className="bg-red-500 hover:bg-red-600 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
-                    >
-                      Eliminar Producto
-                    </button>
-                  </>
-                ) : (
-                  product.user &&
-                  user &&
-                  product.user._id !== user._id && (
-                    <>
-                      {product.stock > 0 ? (
-                        <button
-                          onClick={() => handleAddToCart(product)}
-                          className="flex items-center justify-center bg-green-600 hover:bg-green-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
-                        >
-                          <FiShoppingCart className="mr-2" /> Añadir al Carrito
-                        </button>
-                      ) : (
-                        <button
-                          className="bg-gray-400 text-white text-sm font-semibold py-2 px-4 rounded-lg cursor-not-allowed"
-                          disabled
-                        >
-                          Producto Agotado
-                        </button>
-                      )}
-
-                      {addedToCartMessages[product._id] && (
-                        <p
-                          className={`text-center text-xs font-semibold mt-1 animate-pulse ${
-                            addedToCartMessages[product._id].includes("❌")
-                              ? "text-red-600"
-                              : "text-green-600"
-                          }`}
-                        >
-                          {addedToCartMessages[product._id]}
-                        </p>
-                      )}
-
-                      {product.isTradable && (
-                        <Link
-                          to={`/create-barter-proposal/${product._id}`}
-                          className="flex items-center justify-center bg-purple-600 hover:bg-purple-700 text-white text-sm font-semibold py-2 px-4 rounded-lg transition duration-300"
-                        >
-                          <FaExchangeAlt className="mr-2" /> Proponer Trueque
-                        </Link>
-                      )}
-                    </>
-                  )
-                )}
-              </>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
-
-  return (
-    <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">
-      {/* Hero Section */}
-      <div
-        className={`relative bg-gradient-to-r from-green-600 to-emerald-700 text-white pt-24 pb-16 px-4 sm:px-6 lg:px-8 transition-all duration-300 ${
-          isScrolled ? "pt-16" : ""
-        }`}
-      >
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4 text-center drop-shadow-md">
-            {isMyProductsPage ? "Mis Productos" : "Mercado Agrícola Premium"}
-          </h1>
-          <p className="text-xl text-center text-green-100 max-w-3xl mx-auto mb-8">
-            {isMyProductsPage
-              ? "Administra tus productos publicados"
-              : "Productos frescos directamente del productor"}
-          </p>
-
-          {/* Search Bar */}
-          {!isMyProductsPage && (
-            <div className="max-w-3xl mx-auto relative">
-              <div className="relative">
-                <FiSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-xl" />
-                <input
-                  type="text"
-                  placeholder="Buscar productos (ej. tomates orgánicos, miel pura...)"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-12 pr-6 py-4 rounded-full border-none focus:ring-4 focus:ring-green-300 focus:outline-none text-gray-800 shadow-lg"
-                />
-                <button
-                  onClick={() => setShowFilters(!showFilters)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-green-500 hover:bg-green-600 text-white p-2 rounded-full flex items-center justify-center"
-                >
-                  <FiFilter className="text-lg" />
-                </button>
-              </div>
-
-              {/* Filters Panel */}
-              {showFilters && (
-                <div className="mt-4 bg-white rounded-xl shadow-xl p-6 animate-fadeIn">
-                  <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center">
-                    <FiFilter className="mr-2" /> Filtros Avanzados
-                  </h3>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Categoría
-                      </label>
-                      <select
-                        value={selectedCategory}
-                        onChange={(e) => setSelectedCategory(e.target.value)}
-                        className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                      >
-                        <option value="">Todas las categorías</option>
-                        {categories.map((cat) => (
-                          <option key={cat} value={cat}>
-                            {cat}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                    <div className="flex items-center justify-between pt-6">
-                      <label className="flex items-center space-x-3 cursor-pointer">
-                        <div className="relative">
-                          <input
-                            type="checkbox"
-                            className="sr-only"
-                            checked={isTradableFilter}
-                            onChange={(e) =>
-                              setIsTradableFilter(e.target.checked)
-                            }
-                          />
-                          <div
-                            className={`block w-14 h-8 rounded-full transition ${
-                              isTradableFilter ? "bg-purple-600" : "bg-gray-300"
-                            }`}
-                          ></div>
-                          <div
-                            className={`dot absolute left-1 top-1 bg-white w-6 h-6 rounded-full transition transform ${
-                              isTradableFilter ? "translate-x-6" : ""
-                            }`}
-                          ></div>
+                <form className="space-y-6" onSubmit={handleSubmit}>
+                    {/* Grid de Campos */}
+                    <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                         {/* Nombre Completo */}
+            <div className="space-y-2">
+              <label htmlFor="name" className="block text-sm font-semibold text-gray-700">
+                Nombre Completo *
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                autoComplete="name"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                placeholder="Ej: Juan Esteban García"
+                value={name}
+                onChange={(e) => setName(e.target.value)} // Corregido: onChange usa e.target.value
+              />
+            </div>
+                         {/* Email */}
+                        <div className="space-y-2">
+                            {/* ... (código del input email igual) ... */}
+                             <label htmlFor="email-address" className="block text-sm font-semibold text-gray-700">
+                Email *
+              </label>
+              <input
+                id="email-address"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                placeholder="email@ejemplo.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
                         </div>
-                        <span className="text-gray-700 font-medium">
-                          Solo truequeables
-                        </span>
-                      </label>
-                      <button
-                        onClick={() => {
-                          setSelectedCategory("");
-                          setIsTradableFilter(false);
-                          setLocationFilter("all");
-                        }}
-                        className="text-sm text-green-600 hover:text-green-800 flex items-center"
-                      >
-                        <FiRefreshCw className="mr-1" /> Limpiar filtros
-                      </button>
+                         {/* Contraseña */}
+                        <div className="space-y-2">
+                             {/* ... (código del input password igual) ... */}
+                             <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+                Contraseña *
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="new-password"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                placeholder="Mínimo 6 caracteres"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+                        </div>
+                         {/* Confirmar Contraseña */}
+                        <div className="space-y-2">
+                            {/* ... (código del input confirm password igual) ... */}
+                            <label htmlFor="confirm-password" className="block text-sm font-semibold text-gray-700">
+                Confirmar Contraseña *
+              </label>
+              <input
+                id="confirm-password"
+                name="confirm-password"
+                type="password"
+                autoComplete="new-password"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                placeholder="Repite tu contraseña"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+                        </div>
+                         {/* WhatsApp (Full Width) */}
+                         <div className="sm:col-span-2 space-y-2">
+                            {/* ... (código del input WhatsApp igual) ... */}
+                            <label htmlFor="phoneNumber" className="block text-sm font-semibold text-gray-700">
+                Número de WhatsApp
+              </label>
+              <input
+                id="phoneNumber"
+                name="phoneNumber"
+                type="tel"
+                autoComplete="tel"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                placeholder="Ej: 3001234567"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Este número podría ser visible para otros usuarios si decides compartirlo
+              </p>
+                        </div>
                     </div>
-                  </div>
 
-                  {/* Filtros de ubicación */}
-                  <div className="mt-6 pt-6 border-t border-gray-200">
-                    <label className="block text-sm font-medium text-gray-700 mb-3">
-                      Ubicación
-                    </label>
-                    <div className="flex flex-wrap gap-2">
-                      <button
-                        onClick={() => setLocationFilter("all")}
-                        className={`px-3 py-2 rounded-full text-sm font-medium ${
-                          locationFilter === "all"
-                            ? "bg-green-600 text-white"
-                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                        }`}
-                      >
-                        🌎 Todos
-                      </button>
-                      <button
-                        onClick={() => setLocationFilter("nearby")}
-                        className={`px-3 py-2 rounded-full text-sm font-medium ${
-                          locationFilter === "nearby"
-                            ? "bg-blue-600 text-white"
-                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                        }`}
-                      >
-                        📍 Cercanos (50km)
-                      </button>
-                      <button
-                        onClick={() => setLocationFilter("city")}
-                        className={`px-3 py-2 rounded-full text-sm font-medium ${
-                          locationFilter === "city"
-                            ? "bg-purple-600 text-white"
-                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                        }`}
-                      >
-                        🏙️ Mi ciudad
-                      </button>
-                      <button
-                        onClick={() => setLocationFilter("other")}
-                        className={`px-3 py-2 rounded-full text-sm font-medium ${
-                          locationFilter === "other"
-                            ? "bg-orange-600 text-white"
-                            : "bg-gray-200 text-gray-700 hover:bg-gray-300"
-                        }`}
-                      >
-                        🗺️ Otras ciudades
-                      </button>
+                    {/* Checkbox de Compartir WhatsApp */}
+                    <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+                         {/* ... (código del checkbox igual) ... */}
+                         <div className="flex items-start space-x-3">
+              <input
+                id="showPhoneNumber"
+                name="showPhoneNumber"
+                type="checkbox"
+                className="mt-1 focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300 rounded"
+                checked={showPhoneNumber}
+                onChange={(e) => setShowPhoneNumber(e.target.checked)}
+              />
+              <div>
+                <label htmlFor="showPhoneNumber" className="block text-sm font-medium text-gray-700 cursor-pointer">
+                  Compartir mi número de WhatsApp
+                </label>
+                <p className="text-sm text-gray-500 mt-1">
+                  Recomendado para facilitar la comunicación en servicios y rentas. Otros usuarios podrán ver tu número en tu perfil.
+                </p>
+              </div>
+            </div>
                     </div>
-                  </div>
-                </div>
-              )}
+
+                    {/* Ubicación */}
+                    <div className="space-y-2">
+                        {/* ... (código de LocationInput igual) ... */}
+                        <label className="block text-sm font-semibold text-gray-700">
+              Tu Ubicación Principal *
+            </label>
+            <LocationInput onLocationSelected={handleLocationSelected} />
+            <p className="text-xs text-gray-500">
+              Esto nos ayudará a mostrarte productos y servicios cercanos a tu ubicación
+            </p>
+            {location && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-2">
+                <p className="text-sm text-green-700 font-medium">
+                  ✅ Ubicación seleccionada:{" "}
+                  <span className="text-gray-800">{location.address}</span>
+                </p>
+              </div>
+            )}
+                    </div>
+
+                    {/* Foto de Perfil (eliminada temporalmente) */}
+                    {/*
+                    <div className="space-y-2">
+                       ... (código del input de foto de perfil) ...
+                    </div>
+                    */}
+
+                    {/* Mostrar Errores */}
+                    {errors.length > 0 && (
+                       <div className="bg-red-50 border border-red-200 rounded-xl p-4" role="alert">
+                           {/* ... (código de errores igual) ... */}
+                            <div className="flex items-center space-x-2 text-red-800 mb-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <strong className="font-semibold">Por favor corrige los siguientes errores:</strong>
+              </div>
+              <ul className="space-y-1">
+                {errors.map((msg, index) => (
+                  <li key={index} className="text-sm text-red-700 flex items-center space-x-2">
+                    <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                    <span>{msg}</span>
+                  </li>
+                ))}
+              </ul>
+                       </div>
+                    )}
+
+                    {/* Sección de Términos */}
+                    <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-xl p-6 shadow-lg">
+                        {/* ... (código de términos igual) ... */}
+                         <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-amber-800 mb-2">
+                  Antes de registrarte, es importante que conozcas:
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-amber-100">
+                    <svg className="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-sm font-medium text-amber-700">Términos y Condiciones</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-amber-100">
+                    <svg className="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-sm font-medium text-amber-700">Política de Privacidad</span>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0">
+                  <Link 
+                    to="/terms" 
+                    className="inline-flex items-center px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors duration-200"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Leer Términos
+                  </Link>
+                  <Link 
+                    to="/privacy" 
+                    className="inline-flex items-center px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors duration-200"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Leer Política
+                  </Link>
+                </div>
+              </div>
+            </div>
+                    </div>
+
+                    {/* Checkbox de Aceptación */}
+                    <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+                        {/* ... (código del checkbox aceptación igual) ... */}
+                        <div className="flex items-start space-x-3">
+              <input
+                id="acceptTerms"
+                name="acceptTerms"
+                type="checkbox"
+                required
+                className="mt-1 focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+              />
+              <label htmlFor="acceptTerms" className="text-sm text-blue-800 cursor-pointer">
+                He leído y acepto los{" "}
+                <Link to="/terms" className="font-semibold text-blue-600 hover:text-blue-800 underline">
+                  Términos y Condiciones
+                </Link>{" "}
+                y la{" "}
+                <Link to="/privacy" className="font-semibold text-blue-600 hover:text-blue-800 underline">
+                  Política de Privacidad
+                </Link>{" "}
+                de CampoBit
+              </label>
+            </div>
+                    </div>
+
+                    {/* Botón de Registro */}
+                    <div>
+                        {/* ... (código del botón igual) ... */}
+                        <button
+              type="submit"
+              className="w-full flex justify-center items-center py-4 px-6 border border-transparent text-lg font-semibold rounded-xl text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none shadow-lg hover:shadow-xl"
+              disabled={loading}
+            >
+              {loading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Creando tu cuenta...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
+                  Crear mi cuenta
+                </>
+              )}
+            </button>
+                    </div>
+
+                    {/* Enlace a Login */}
+                    <div className="text-center pt-4 border-t border-gray-200">
+                        {/* ... (código del enlace a login igual) ... */}
+                        <p className="text-sm text-gray-600">
+              ¿Ya tienes una cuenta?{" "}
+              <Link
+                to="/login"
+                className="font-semibold text-green-600 hover:text-green-700 transition-colors duration-200 underline"
+              >
+                Inicia sesión aquí
+              </Link>
+            </p>
+                    </div>
+                </form>
+
+                {/* Componente reCAPTCHA */}
+                <ReCaptcha
+                  // No necesitamos onTokenChange aquí si lo obtenemos en handleSubmit
+                  action="register"
+                />
             </div>
-          )}
         </div>
-      </div>
-
-      {/* Main Content */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {loading ? (
-          <div className="flex flex-col items-center justify-center py-20">
-            <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500 mb-4"></div>
-            <p className="text-gray-700 text-lg">Cargando productos...</p>
-          </div>
-        ) : error ? (
-          <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg
-                  className="h-5 w-5 text-red-500"
-                  viewBox="0 0 20 20"
-                  fill="CurrentColor"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-              </div>
-              <div className="ml-3">
-                <p className="text-sm text-red-700 font-medium">
-                  Error: {error}
-                </p>
-              </div>
-            </div>
-          </div>
-        ) : filteredProducts.length === 0 ? (
-          <div className="text-center py-16">
-            <div className="mx-auto h-24 w-24 text-gray-400 mb-4">
-              <FaLeaf className="w-full h-full" />
-            </div>
-            <h3 className="text-lg font-medium text-gray-900 mb-2">
-              No se encontraron productos
-            </h3>
-            <p className="text-gray-500 mb-6">
-              No hay productos que coincidan con tu búsqueda.
-            </p>
-            {!isMyProductsPage && (
-              <Link
-                to="/create-product"
-                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
-              >
-                Publicar un nuevo producto
-              </Link>
-            )}
-          </div>
-        ) : (
-          <>
-            {/* VIP Premium Section */}
-            {!isMyProductsPage && premiumProducts.length > 0 && (
-              <div className="mb-12">
-                <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-2xl font-bold text-gray-900 flex items-center">
-                    <FiAward className="text-yellow-500 mr-2" /> Productos
-                    Premium
-                  </h2>
-                  <div className="flex items-center bg-yellow-100 text-yellow-800 px-3 py-1 rounded-full text-sm font-medium">
-                    <FiShield className="mr-1" /> Calidad Verificada
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {premiumProducts.map((product) =>
-                    renderProductCard(product, true)
-                  )}
-                </div>
-              </div>
-            )}
-
-            {/* Regular Products Section */}
-            {regularProducts.length > 0 && (
-              <div>
-                <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
-                  <FaLeaf className="text-green-500 mr-2" />
-                  {isMyProductsPage
-                    ? "Todos mis productos"
-                    : "Todos los productos"}
-                </h2>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {regularProducts.map((product) => renderProductCard(product))}
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-      {/* Call to Action */}
-      {!isMyProductsPage && (
-        <div className="bg-gradient-to-r from-green-700 to-emerald-800 text-white py-12 px-4 sm:px-6 lg:px-8">
-          <div className="max-w-4xl mx-auto text-center">
-            <h2 className="text-3xl font-bold mb-4">
-              ¿Eres productor agrícola?
-            </h2>
-            <p className="text-xl text-green-100 mb-8">
-              Únete a nuestra comunidad premium y destaca tus productos con
-              beneficios exclusivos.
-            </p>
-            <Link
-              to="/premium"
-              className="inline-flex items-center px-8 py-3 border border-transparent text-lg font-bold rounded-full shadow-sm text-green-900 bg-yellow-400 hover:bg-yellow-300 transition duration-300 transform hover:scale-105"
-            >
-              <FaCrown className="mr-2" /> Conviértete en Premium
-            </Link>
-          </div>
-        </div>
-      )}
-    </div>
-  );
+    );
 }
 
-export default ProductListPage;
+export default RegisterPage;
