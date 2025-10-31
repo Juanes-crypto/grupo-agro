@@ -51,6 +51,8 @@ import PaymentSuccessPage from './pages/PaymentSuccessPage';
 import PaymentFailurePage from './pages/PaymentFailurePage';
 import PaymentPendingPage from './pages/PaymentPendingPage';
 import PayoutSettingsPage from './pages/PayoutSettingsPage';
+import ForgotPasswordPage from './pages/ForgotPasswordPage';
+import ResetPasswordPage from './pages/ResetPasswordPage';
 function App() {
     const [isNavbarOpen, setIsNavbarOpen] = useState(false);
 
@@ -91,6 +93,8 @@ function App() {
                             <Route path="/payment-success" element={<PaymentSuccessPage />} />
                             <Route path="/payment-failure" element={<PaymentFailurePage />} />
                             <Route path="/payment-pending" element={<PaymentPendingPage />} />
+                            <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+                            <Route path="/reset-password/:token" element={<ResetPasswordPage />} />
                             
                             {/* Rutas Privadas */}
                             <Route element={<PrivateRoute />}>

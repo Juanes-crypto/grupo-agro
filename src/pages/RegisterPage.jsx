@@ -17,7 +17,6 @@ function RegisterPage() {
   const [errors, setErrors] = useState([]);
   const [recaptchaToken, setRecaptchaToken] = useState("");
   const [acceptedTerms, setAcceptedTerms] = useState(false);
-  const [activeStep, setActiveStep] = useState(1);
 
   const navigate = useNavigate();
   const { register } = useContext(AuthContext);
@@ -26,7 +25,7 @@ function RegisterPage() {
     setLocation(selectedLocation);
   };
 
-  // Función para obtener token de reCAPTCHA
+  // Función para obtener token de reCAPTCHA - CORREGIDA para Vite
   const handleGetRecaptchaToken = useCallback(async () => {
     if (window.grecaptcha) {
       try {
@@ -139,450 +138,337 @@ function RegisterPage() {
     }
   };
 
-  const nextStep = () => setActiveStep(prev => Math.min(prev + 1, 3));
-  const prevStep = () => setActiveStep(prev => Math.max(prev - 1, 1));
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-900 via-emerald-800 to-teal-900 py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Elementos de fondo futuristas */}
-      <div className="absolute inset-0 overflow-hidden">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-green-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse"></div>
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-emerald-500 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-pulse delay-1000"></div>
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-teal-500 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-pulse delay-500"></div>
-        
-        {/* Patrón de hexágonos */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="grid grid-cols-12 gap-4 transform rotate-12 scale-150">
-            {[...Array(60)].map((_, i) => (
-              <div key={i} className="w-4 h-4 border border-green-300 rounded-lg transform rotate-45"></div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Contenedor principal con diseño de "terminal agrícola" */}
-      <div className="max-w-4xl w-full space-y-8 p-6 sm:p-8 bg-gray-900/80 backdrop-blur-xl rounded-3xl border border-green-500/30 shadow-2xl transition-all duration-500 relative overflow-hidden">
-        
-        {/* Efecto de borde luminoso */}
-        <div className="absolute inset-0 bg-gradient-to-r from-green-500/10 to-emerald-500/10 rounded-3xl pointer-events-none"></div>
-        
-        {/* Header con diseño de HUD */}
-        <div className="text-center relative z-10">
-          <div className="flex flex-col sm:flex-row justify-center items-center space-y-4 sm:space-y-0 sm:space-x-6 mb-6">
-            <div className="relative">
-              <img
-                className="h-20 w-44 sm:h-24 sm:w-48 filter drop-shadow-lg"
-                src="/images/CampoBit-logo.png"
-                alt="CampoBit Logo"
-              />
-              <div className="absolute inset-0 bg-green-500/20 rounded-lg blur-sm"></div>
-            </div>
-            <div className="text-center sm:text-left">
-              <h2 className="text-3xl sm:text-5xl font-black text-transparent bg-clip-text bg-gradient-to-r from-green-400 to-emerald-300 leading-tight drop-shadow-lg">
-                INICIO DE SESIÓN
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-white to-emerald-100 py-8 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-2xl w-full space-y-6 p-6 sm:p-8 bg-white rounded-2xl shadow-2xl border border-green-100 transition-all duration-300">
+        {/* Header Mejorado */}
+        <div className="text-center">
+          <div className="flex justify-center items-center space-x-4 mb-4">
+            <img
+              className="h-16 w-36 sm:h-20 sm:w-40"
+              src="/images/CampoBit-logo.png"
+              alt="CampoBit Logo"
+            />
+            <div>
+              <h2 className="text-2xl sm:text-4xl font-bold text-green-800 leading-tight">
+                Únete a CampoBit
               </h2>
-              <p className="text-sm sm:text-base text-green-300/80 font-mono mt-2 tracking-wider">
-                {">"} SISTEMA_AGRICOLA_DIGITAL_V2.0
+              <p className="text-sm sm:text-base text-gray-600 mt-1">
+                Tu comunidad agrícola de confianza
               </p>
             </div>
           </div>
           
-          {/* Indicadores de estado */}
-          <div className="flex justify-center space-x-6 text-xs font-mono text-green-400/70">
-            <span className="flex items-center">
-              <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
-              CONEXIÓN_ACTIVA
-            </span>
-            <span className="flex items-center">
-              <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-              SEGURO_SSL
-            </span>
-            <span className="flex items-center">
-              <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-              ENCRYPTED
-            </span>
+          <div className="flex justify-center space-x-4 text-sm text-gray-600">
+            <span>Compra y vende productos</span>
+            <span>Trueques seguros</span>
+            <span>Comercio local</span>
           </div>
         </div>
 
-        {/* Navegación por pasos */}
-        <div className="flex justify-center space-x-4 mb-8 relative z-10">
-          {[1, 2, 3].map((step) => (
-            <div key={step} className="flex items-center">
-              <div className={`flex items-center justify-center w-10 h-10 rounded-full border-2 font-mono font-bold text-sm ${
-                step === activeStep 
-                  ? 'bg-green-500 border-green-400 text-gray-900 shadow-lg shadow-green-500/50' 
-                  : step < activeStep
-                  ? 'bg-emerald-400 border-emerald-300 text-gray-900'
-                  : 'bg-gray-700 border-green-700 text-green-300'
-              }`}>
-                {step < activeStep ? '✓' : step}
-              </div>
-              {step < 3 && (
-                <div className={`w-12 h-1 mx-2 ${
-                  step < activeStep ? 'bg-emerald-400' : 'bg-gray-600'
-                }`}></div>
-              )}
+        <form className="space-y-6" onSubmit={handleSubmit}>
+          {/* Grid de Campos del Formulario Mejorado */}
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
+            {/* Nombre Completo */}
+            <div className="space-y-2">
+              <label htmlFor="name" className="block text-sm font-semibold text-gray-700">
+                Nombre Completo *
+              </label>
+              <input
+                id="name"
+                name="name"
+                type="text"
+                autoComplete="name"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                placeholder="Ej: Juan Esteban García"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+              />
             </div>
-          ))}
-        </div>
 
-        <form className="space-y-8 relative z-10" onSubmit={handleSubmit}>
-          {/* Paso 1: Información Básica */}
-          {activeStep === 1 && (
-            <div className="space-y-6 animate-fadeIn">
-              <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-                {/* Nombre Completo */}
-                <div className="space-y-3">
-                  <label htmlFor="name" className="block text-sm font-bold text-green-400 font-mono uppercase tracking-wider">
-                    [NOMBRE_COMPLETO] *
-                  </label>
-                  <div className="relative group">
-                    <input
-                      id="name"
-                      name="name"
-                      type="text"
-                      autoComplete="name"
-                      required
-                      className="w-full px-6 py-4 bg-gray-800/80 border-2 border-green-700/50 rounded-2xl focus:outline-none focus:border-green-400 focus:ring-4 focus:ring-green-400/20 text-white placeholder-green-300/40 font-mono transition-all duration-300 group-hover:border-green-500/70"
-                      placeholder="Ej: Juan Esteban García"
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                    />
-                    <div className="absolute inset-y-0 right-4 flex items-center">
-                      <span className="text-green-500/60">✓</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Email */}
-                <div className="space-y-3">
-                  <label htmlFor="email-address" className="block text-sm font-bold text-green-400 font-mono uppercase tracking-wider">
-                    [EMAIL_PRINCIPAL] *
-                  </label>
-                  <div className="relative group">
-                    <input
-                      id="email-address"
-                      name="email"
-                      type="email"
-                      autoComplete="email"
-                      required
-                      className="w-full px-6 py-4 bg-gray-800/80 border-2 border-green-700/50 rounded-2xl focus:outline-none focus:border-green-400 focus:ring-4 focus:ring-green-400/20 text-white placeholder-green-300/40 font-mono transition-all duration-300 group-hover:border-green-500/70"
-                      placeholder="usuario@dominio.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                    <div className="absolute inset-y-0 right-4 flex items-center">
-                      <span className="text-green-500/60">@</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Contraseña */}
-                <div className="space-y-3">
-                  <label htmlFor="password" className="block text-sm font-bold text-green-400 font-mono uppercase tracking-wider">
-                    [CONTRASEÑA_SEGURA] *
-                  </label>
-                  <div className="relative group">
-                    <input
-                      id="password"
-                      name="password"
-                      type="password"
-                      autoComplete="new-password"
-                      required
-                      className="w-full px-6 py-4 bg-gray-800/80 border-2 border-green-700/50 rounded-2xl focus:outline-none focus:border-green-400 focus:ring-4 focus:ring-green-400/20 text-white placeholder-green-300/40 font-mono transition-all duration-300 group-hover:border-green-500/70"
-                      placeholder="••••••••••"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                    <div className="absolute inset-y-0 right-4 flex items-center">
-                      <span className="text-green-500/60">🔒</span>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Confirmar Contraseña */}
-                <div className="space-y-3">
-                  <label htmlFor="confirm-password" className="block text-sm font-bold text-green-400 font-mono uppercase tracking-wider">
-                    [CONFIRMAR_CONTRASEÑA] *
-                  </label>
-                  <div className="relative group">
-                    <input
-                      id="confirm-password"
-                      name="confirm-password"
-                      type="password"
-                      autoComplete="new-password"
-                      required
-                      className="w-full px-6 py-4 bg-gray-800/80 border-2 border-green-700/50 rounded-2xl focus:outline-none focus:border-green-400 focus:ring-4 focus:ring-green-400/20 text-white placeholder-green-300/40 font-mono transition-all duration-300 group-hover:border-green-500/70"
-                      placeholder="••••••••••"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                    />
-                    <div className="absolute inset-y-0 right-4 flex items-center">
-                      <span className="text-green-500/60">🔐</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Botón siguiente */}
-              <div className="flex justify-end pt-4">
-                <button
-                  type="button"
-                  onClick={nextStep}
-                  className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-500 hover:to-emerald-400 text-white font-mono font-bold rounded-2xl border-2 border-green-400/50 hover:border-green-300 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-green-500/30"
-                >
-                  SIGUIENTE [→]
-                </button>
-              </div>
+            {/* Email */}
+            <div className="space-y-2">
+              <label htmlFor="email-address" className="block text-sm font-semibold text-gray-700">
+                Email *
+              </label>
+              <input
+                id="email-address"
+                name="email"
+                type="email"
+                autoComplete="email"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                placeholder="email@ejemplo.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
             </div>
-          )}
 
-          {/* Paso 2: Contacto y Ubicación */}
-          {activeStep === 2 && (
-            <div className="space-y-6 animate-fadeIn">
-              {/* WhatsApp */}
-              <div className="space-y-3">
-                <label htmlFor="phoneNumber" className="block text-sm font-bold text-green-400 font-mono uppercase tracking-wider">
-                  [WHATSAPP_OPCIONAL]
+            {/* Contraseña */}
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm font-semibold text-gray-700">
+                Contraseña *
+              </label>
+              <input
+                id="password"
+                name="password"
+                type="password"
+                autoComplete="new-password"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                placeholder="Mínimo 6 caracteres"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+              />
+            </div>
+
+            {/* Confirmar Contraseña */}
+            <div className="space-y-2">
+              <label htmlFor="confirm-password" className="block text-sm font-semibold text-gray-700">
+                Confirmar Contraseña *
+              </label>
+              <input
+                id="confirm-password"
+                name="confirm-password"
+                type="password"
+                autoComplete="new-password"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                placeholder="Repite tu contraseña"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+              />
+            </div>
+
+            {/* WhatsApp (Full Width) */}
+            <div className="sm:col-span-2 space-y-2">
+              <label htmlFor="phoneNumber" className="block text-sm font-semibold text-gray-700">
+                Número de WhatsApp
+              </label>
+              <input
+                id="phoneNumber"
+                name="phoneNumber"
+                type="tel"
+                autoComplete="tel"
+                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 placeholder-gray-400"
+                placeholder="Ej: 3001234567"
+                value={phoneNumber}
+                onChange={(e) => setPhoneNumber(e.target.value)}
+              />
+              <p className="text-xs text-gray-500 mt-1">
+                Este número podría ser visible para otros usuarios si decides compartirlo
+              </p>
+            </div>
+          </div>
+
+          {/* Checkbox de Compartir WhatsApp */}
+          <div className="bg-gray-50 rounded-xl p-4 border border-gray-200">
+            <div className="flex items-start space-x-3">
+              <input
+                id="showPhoneNumber"
+                name="showPhoneNumber"
+                type="checkbox"
+                className="mt-1 focus:ring-green-500 h-4 w-4 text-green-600 border-gray-300 rounded"
+                checked={showPhoneNumber}
+                onChange={(e) => setShowPhoneNumber(e.target.checked)}
+              />
+              <div>
+                <label htmlFor="showPhoneNumber" className="block text-sm font-medium text-gray-700 cursor-pointer">
+                  Compartir mi número de WhatsApp
                 </label>
-                <div className="relative group">
-                  <input
-                    id="phoneNumber"
-                    name="phoneNumber"
-                    type="tel"
-                    autoComplete="tel"
-                    className="w-full px-6 py-4 bg-gray-800/80 border-2 border-green-700/50 rounded-2xl focus:outline-none focus:border-green-400 focus:ring-4 focus:ring-green-400/20 text-white placeholder-green-300/40 font-mono transition-all duration-300 group-hover:border-green-500/70"
-                    placeholder="Ej: 3001234567"
-                    value={phoneNumber}
-                    onChange={(e) => setPhoneNumber(e.target.value)}
-                  />
-                  <div className="absolute inset-y-0 right-4 flex items-center">
-                    <span className="text-green-500/60">📱</span>
-                  </div>
-                </div>
-                <p className="text-xs text-green-300/60 font-mono">
-                  {">"} OPCIONAL: Para comunicación directa en servicios agrícolas
+                <p className="text-sm text-gray-500 mt-1">
+                  Recomendado para facilitar la comunicación en servicios y rentas. Otros usuarios podrán ver tu número en tu perfil.
                 </p>
               </div>
-
-              {/* Checkbox de Compartir WhatsApp */}
-              <div className="bg-gray-800/60 rounded-2xl p-6 border-2 border-green-700/30">
-                <div className="flex items-start space-x-4">
-                  <input
-                    id="showPhoneNumber"
-                    name="showPhoneNumber"
-                    type="checkbox"
-                    className="mt-1 focus:ring-green-500 h-5 w-5 text-green-600 bg-gray-700 border-green-600 rounded-lg"
-                    checked={showPhoneNumber}
-                    onChange={(e) => setShowPhoneNumber(e.target.checked)}
-                  />
-                  <div>
-                    <label htmlFor="showPhoneNumber" className="block text-sm font-bold text-green-300 font-mono cursor-pointer">
-                      [COMPARTIR_WHATSAPP_PUBLICAMENTE]
-                    </label>
-                    <p className="text-sm text-green-300/60 font-mono mt-1">
-                      {">"} RECOMENDADO: Facilita comunicación en trueques y servicios locales
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Ubicación */}
-              <div className="space-y-3">
-                <label className="block text-sm font-bold text-green-400 font-mono uppercase tracking-wider">
-                  [UBICACIÓN_PRINCIPAL] *
-                </label>
-                <LocationInput onLocationSelected={handleLocationSelected} />
-                <p className="text-xs text-green-300/60 font-mono">
-                  {">"} CRÍTICO: Para conectar con agricultores y productos de tu zona
-                </p>
-                {location && (
-                  <div className="bg-green-900/40 border-2 border-green-500/50 rounded-2xl p-4 mt-3">
-                    <p className="text-sm text-green-300 font-mono font-bold">
-                      ✅ UBICACIÓN_CONFIRMADA:{" "}
-                      <span className="text-white">{location.address}</span>
-                    </p>
-                  </div>
-                )}
-              </div>
-
-              {/* Navegación entre pasos */}
-              <div className="flex justify-between pt-4">
-                <button
-                  type="button"
-                  onClick={prevStep}
-                  className="px-8 py-4 bg-gray-700 hover:bg-gray-600 text-green-300 font-mono font-bold rounded-2xl border-2 border-green-700/50 hover:border-green-600 transition-all duration-300 transform hover:scale-105"
-                >
-                  [←] ANTERIOR
-                </button>
-                <button
-                  type="button"
-                  onClick={nextStep}
-                  className="px-8 py-4 bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-500 hover:to-emerald-400 text-white font-mono font-bold rounded-2xl border-2 border-green-400/50 hover:border-green-300 transition-all duration-300 transform hover:scale-105 shadow-lg shadow-green-500/30"
-                >
-                  SIGUIENTE [→]
-                </button>
-              </div>
             </div>
-          )}
+          </div>
 
-          {/* Paso 3: Finalización */}
-          {activeStep === 3 && (
-            <div className="space-y-6 animate-fadeIn">
-              {/* Foto de Perfil */}
-              <div className="space-y-3">
-                <label htmlFor="profilePicture" className="block text-sm font-bold text-green-400 font-mono uppercase tracking-wider">
-                  [FOTO_PERFIL_OPCIONAL]
-                </label>
-                <div className="flex items-center space-x-4">
-                  <input
-                    type="file"
-                    id="profilePicture"
-                    className="flex-1 text-sm text-green-300 file:mr-4 file:py-3 file:px-6 file:rounded-2xl file:border-0 file:text-sm file:font-bold file:bg-green-600 file:text-white hover:file:bg-green-500 cursor-pointer transition-colors duration-200 font-mono bg-gray-800/80 rounded-2xl"
-                    accept="image/*"
-                    onChange={(e) => setProfilePicture(e.target.files[0])}
-                  />
-                  {profilePicture && (
-                    <div className="flex-shrink-0">
-                      <span className="inline-flex items-center px-4 py-2 rounded-full text-xs font-bold bg-green-600 text-white font-mono">
-                        ✅ {profilePicture.name}
-                      </span>
-                    </div>
-                  )}
-                </div>
+          {/* Ubicación */}
+          <div className="space-y-2">
+            <label className="block text-sm font-semibold text-gray-700">
+              Tu Ubicación Principal *
+            </label>
+            <LocationInput onLocationSelected={handleLocationSelected} />
+            <p className="text-xs text-gray-500">
+              Esto nos ayudará a mostrarte productos y servicios cercanos a tu ubicación
+            </p>
+            {location && (
+              <div className="bg-green-50 border border-green-200 rounded-lg p-3 mt-2">
+                <p className="text-sm text-green-700 font-medium">
+                  ✅ Ubicación seleccionada:{" "}
+                  <span className="text-gray-800">{location.address}</span>
+                </p>
               </div>
+            )}
+          </div>
 
-              {/* Términos y Condiciones */}
-              <div className="bg-gradient-to-r from-amber-900/30 to-yellow-900/30 border-2 border-amber-600/30 rounded-2xl p-6">
-                <div className="flex items-start space-x-4">
-                  <div className="flex-shrink-0">
-                    <div className="w-12 h-12 bg-amber-600 rounded-2xl flex items-center justify-center">
-                      <span className="text-white font-mono text-lg">!</span>
-                    </div>
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-black text-amber-400 font-mono mb-3">
-                      [ATENCIÓN_LEGAL_REQUERIDA]
-                    </h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                      <div className="flex items-center space-x-3 p-3 bg-amber-900/20 rounded-2xl border border-amber-600/30">
-                        <span className="text-amber-400 text-lg">⚖️</span>
-                        <span className="text-sm font-bold text-amber-300 font-mono">TÉRMINOS_CONDICIONES</span>
-                      </div>
-                      <div className="flex items-center space-x-3 p-3 bg-amber-900/20 rounded-2xl border border-amber-600/30">
-                        <span className="text-amber-400 text-lg">🔒</span>
-                        <span className="text-sm font-bold text-amber-300 font-mono">POLÍTICA_PRIVACIDAD</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Checkbox de Aceptación */}
-              <div className="bg-blue-900/30 border-2 border-blue-600/30 rounded-2xl p-6">
-                <div className="flex items-start space-x-4">
-                  <input
-                    id="acceptTerms"
-                    name="acceptTerms"
-                    type="checkbox"
-                    required
-                    className="mt-1 focus:ring-blue-500 h-5 w-5 text-blue-600 bg-gray-700 border-blue-600 rounded-lg"
-                    checked={acceptedTerms}
-                    onChange={(e) => setAcceptedTerms(e.target.checked)}
-                  />
-                  <label htmlFor="acceptTerms" className="text-sm text-blue-300 font-mono cursor-pointer">
-                    CONFIRMO_LECTURA_Y_ACEPTO_LOS{" "}
-                    <Link to="/terms" className="font-black text-blue-400 hover:text-blue-300 underline">
-                      TÉRMINOS_CONDICIONES
-                    </Link>{" "}
-                    Y_LA{" "}
-                    <Link to="/privacy" className="font-black text-blue-400 hover:text-blue-300 underline">
-                      POLÍTICA_PRIVACIDAD
-                    </Link>
-                  </label>
-                </div>
-              </div>
-
-              {/* Mostrar Errores */}
-              {errors.length > 0 && (
-                <div className="bg-red-900/50 border-2 border-red-600/50 rounded-2xl p-6" role="alert">
-                  <div className="flex items-center space-x-3 text-red-400 mb-3">
-                    <span className="text-lg">⚠️</span>
-                    <strong className="font-mono font-bold text-sm">ERROR_DE_SISTEMA:</strong>
-                  </div>
-                  <ul className="space-y-2">
-                    {errors.map((msg, index) => (
-                      <li key={index} className="text-sm text-red-300 font-mono flex items-center space-x-3">
-                        <span className="w-2 h-2 bg-red-500 rounded-full"></span>
-                        <span>{msg}</span>
-                      </li>
-                    ))}
-                  </ul>
+          {/* Foto de Perfil */}
+          <div className="space-y-2">
+            <label htmlFor="profilePicture" className="block text-sm font-semibold text-gray-700">
+              Foto de Perfil (Opcional)
+            </label>
+            <div className="flex items-center space-x-4">
+              <input
+                type="file"
+                id="profilePicture"
+                className="flex-1 text-sm text-gray-700 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-sm file:font-semibold file:bg-green-50 file:text-green-700 hover:file:bg-green-100 cursor-pointer transition-colors duration-200"
+                accept="image/*"
+                onChange={(e) => setProfilePicture(e.target.files[0])}
+              />
+              {profilePicture && (
+                <div className="flex-shrink-0">
+                  <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                    ✅ {profilePicture.name}
+                  </span>
                 </div>
               )}
+            </div>
+          </div>
 
-              {/* Navegación final */}
-              <div className="flex justify-between pt-4">
-                <button
-                  type="button"
-                  onClick={prevStep}
-                  className="px-8 py-4 bg-gray-700 hover:bg-gray-600 text-green-300 font-mono font-bold rounded-2xl border-2 border-green-700/50 hover:border-green-600 transition-all duration-300 transform hover:scale-105"
-                >
-                  [←] ANTERIOR
-                </button>
-                <button
-                  type="submit"
-                  className="px-12 py-4 bg-gradient-to-r from-green-600 to-emerald-500 hover:from-green-500 hover:to-emerald-400 text-white font-mono font-black rounded-2xl border-2 border-green-400/50 hover:border-green-300 transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-green-500/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none"
-                  disabled={loading}
-                >
-                  {loading ? (
-                    <span className="flex items-center">
-                      <span className="animate-spin mr-3">⟳</span>
-                      PROCESANDO_REGISTRO...
-                    </span>
-                  ) : (
-                    "🚀 ACTIVAR_CUENTA_NOW"
-                  )}
-                </button>
+          {/* Mostrar Errores */}
+          {errors.length > 0 && (
+            <div className="bg-red-50 border border-red-200 rounded-xl p-4" role="alert">
+              <div className="flex items-center space-x-2 text-red-800 mb-2">
+                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <strong className="font-semibold">Por favor corrige los siguientes errores:</strong>
               </div>
+              <ul className="space-y-1">
+                {errors.map((msg, index) => (
+                  <li key={index} className="text-sm text-red-700 flex items-center space-x-2">
+                    <span className="w-1 h-1 bg-red-500 rounded-full"></span>
+                    <span>{msg}</span>
+                  </li>
+                ))}
+              </ul>
             </div>
           )}
-        </form>
 
-        {/* Enlace a Login */}
-        <div className="text-center pt-6 border-t border-green-700/30 relative z-10">
-          <p className="text-sm text-green-300/70 font-mono">
-            ¿TIENES_UNA_CUENTA?{" "}
-            <Link
-              to="/login"
-              className="font-black text-green-400 hover:text-green-300 transition-colors duration-200 underline"
+          {/* Sección de Términos y Condiciones - MOVIDA ARRIBA DEL BOTÓN */}
+          <div className="bg-gradient-to-r from-amber-50 to-yellow-50 border border-amber-200 rounded-xl p-6 shadow-lg">
+            <div className="flex items-start space-x-4">
+              <div className="flex-shrink-0">
+                <div className="w-10 h-10 bg-amber-500 rounded-full flex items-center justify-center">
+                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                  </svg>
+                </div>
+              </div>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-amber-800 mb-2">
+                  Antes de registrarte, es importante que conozcas:
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                  <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-amber-100">
+                    <svg className="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-sm font-medium text-amber-700">Términos y Condiciones</span>
+                  </div>
+                  <div className="flex items-center space-x-3 p-3 bg-white rounded-lg border border-amber-100">
+                    <svg className="w-5 h-5 text-amber-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    <span className="text-sm font-medium text-amber-700">Política de Privacidad</span>
+                  </div>
+                </div>
+                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-4 space-y-2 sm:space-y-0">
+                  <Link 
+                    to="/terms" 
+                    className="inline-flex items-center px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors duration-200"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Leer Términos
+                  </Link>
+                  <Link 
+                    to="/privacy" 
+                    className="inline-flex items-center px-4 py-2 bg-amber-600 text-white text-sm font-medium rounded-lg hover:bg-amber-700 transition-colors duration-200"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                    </svg>
+                    Leer Política
+                  </Link>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Checkbox de Aceptación */}
+          <div className="bg-blue-50 border border-blue-200 rounded-xl p-4">
+            <div className="flex items-start space-x-3">
+              <input
+                id="acceptTerms"
+                name="acceptTerms"
+                type="checkbox"
+                required
+                className="mt-1 focus:ring-blue-500 h-4 w-4 text-blue-600 border-gray-300 rounded"
+                checked={acceptedTerms}
+                onChange={(e) => setAcceptedTerms(e.target.checked)}
+              />
+              <label htmlFor="acceptTerms" className="text-sm text-blue-800 cursor-pointer">
+                He leído y acepto los{" "}
+                <Link to="/terms" className="font-semibold text-blue-600 hover:text-blue-800 underline">
+                  Términos y Condiciones
+                </Link>{" "}
+                y la{" "}
+                <Link to="/privacy" className="font-semibold text-blue-600 hover:text-blue-800 underline">
+                  Política de Privacidad
+                </Link>{" "}
+                de CampoBit
+              </label>
+            </div>
+          </div>
+
+          {/* Botón de Registro */}
+          <div>
+            <button
+              type="submit"
+              className="w-full flex justify-center items-center py-4 px-6 border border-transparent text-lg font-semibold rounded-xl text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 focus:outline-none focus:ring-4 focus:ring-green-500 focus:ring-opacity-50 transition-all duration-300 transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:transform-none shadow-lg hover:shadow-xl"
+              disabled={loading}
             >
-              INICIAR_SESION_AQUI
-            </Link>
-          </p>
-        </div>
+              {loading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-3 h-6 w-6 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Creando tu cuenta...
+                </>
+              ) : (
+                <>
+                  <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                  </svg>
+                  Crear mi cuenta
+                </>
+              )}
+            </button>
+          </div>
+
+          {/* Enlace a Login */}
+          <div className="text-center pt-4 border-t border-gray-200">
+            <p className="text-sm text-gray-600">
+              ¿Ya tienes una cuenta?{" "}
+              <Link
+                to="/login"
+                className="font-semibold text-green-600 hover:text-green-700 transition-colors duration-200 underline"
+              >
+                Inicia sesión aquí
+              </Link>
+            </p>
+          </div>
+        </form>
 
         {/* Componente reCAPTCHA invisible */}
         <ReCaptcha 
           onTokenChange={setRecaptchaToken} 
           action="register"
         />
-      </div>
-
-      {/* Efectos de partículas (simuladas) */}
-      <div className="absolute inset-0 pointer-events-none">
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-green-400 rounded-full animate-pulse"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 5}s`,
-              opacity: Math.random() * 0.5 + 0.2
-            }}
-          ></div>
-        ))}
       </div>
     </div>
   );
