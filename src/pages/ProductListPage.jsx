@@ -1,5 +1,5 @@
 // frontend/src/pages/ProductListPage.jsx
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback, memo } from "react";
 import { useLocation, Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../services/api";
@@ -216,7 +216,7 @@ function ProductListPage() {
     user,
   ]);
 
-  const handleAddToCart = (product) => {
+  const handleAddToCart = useCallback((product) => {
     if (!isAuthenticated) {
       alert("Debes iniciar sesión para añadir productos al carrito.");
       navigate("/login");
@@ -246,7 +246,7 @@ function ProductListPage() {
         [product._id]: "",
       }));
     }, 2000);
-  };
+  }, [isAuthenticated, navigate, addToCart]);
 
   const handleDeleteProduct = async (productId) => {
     if (
@@ -285,7 +285,7 @@ function ProductListPage() {
   ];
 
   // Render product card with validation
-  const renderProductCard = (product, isPremium = false) => {
+  const renderProductCard = useCallback((product, isPremium = false) => {
     if (!product || !product._id) {
       console.warn("Producto inválido:", product);
       return null;
@@ -469,7 +469,7 @@ function ProductListPage() {
         </div>
       </div>
     );
-  };
+  }, [isAuthenticated, user, isMyProductsPage, handleAddToCart, handleDeleteProduct, navigate, addedToCartMessages]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-green-50 to-white">

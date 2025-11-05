@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, Suspense, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -7,52 +7,60 @@ import Navbar from './components/Navbar';
 import PrivateRoute from './components/PrivateRoute';
 import PremiumRoute from './components/PremiumRoute';
 import Footer from './components/Footer';
-// Páginas
-import HomePage from './pages/HomePage';
-import RegisterPage from './pages/RegisterPage';
-import LoginPage from './pages/LoginPage';
-import ProductListPage from './pages/ProductListPage';
-import ProductDetailsPage from './pages/ProductDetailsPage';
-import CartPage from './pages/CartPage';
-import CheckoutPage from './pages/CheckoutPage';
-import CreateProductPage from './pages/CreateProductPage';
-import DashboardPage from './pages/DashboardPage';
-import EditProductPage from './pages/EditProductPage';
-import MyOrdersPage from './pages/MyOrdersPage';
-import NotificationsPage from './pages/NotificationsPage';
-import OrderDetailsPage from './pages/OrderDetailsPage';
-import PremiumInventoryPage from './pages/PremiumInventoryPage';
-import PremiumUpsellPage from './pages/PremiumUpsellPage';
-import WelcomePage from './pages/WelcomePage';
-import BarterDetailsPage from './pages/BarterDetailsPage';
-import CreateBarterProposalPage from './pages/CreateBarterProposalPage';
-import CreateCounterProposalPage from './pages/CreateCounterProposalPage';
-import MyBarterProposalsPage from './pages/MyBarterProposalsPage';
-import CreateRentalPage from './pages/CreateRentalPage';
-import RentalListPage from './pages/RentalListPage';
-import CreateServicePage from './pages/CreateServicePage';
-import ServiceListPage from './pages/ServiceListPage';
-import ServiceDetailsPage from './pages/ServiceDetailsPage';
-import RentalDetailsPage from './pages/RentalDetailsPage';
-import BarterProposalPage from './pages/BarterProposalPage';
-import SubscriptionPlansPage from './pages/SubscriptionPlansPage';
-import NotFoundPage from './pages/NotFoundPage';
-import TermsPage from './pages/TermsPage';
-import PrivacyPage from './pages/PrivacyPage';
-import CookiesPage from './pages/CookiesPage';
-import ProfilePage from './pages/ProfilePage';
-import MyServicesPage from './pages/MyServicesPage'; 
-import MyRentalsPage from './pages/MyRentalsPage'; 
-import EditServicePage from './pages/EditServicePage'; 
-import EditRentalPage from './pages/EditRentalPage'; 
-import AboutUsPage from './pages/AboutUsPage';
-import NewsletterPage from './pages/NewsletterPage';
-import PaymentSuccessPage from './pages/PaymentSuccessPage';
-import PaymentFailurePage from './pages/PaymentFailurePage';
-import PaymentPendingPage from './pages/PaymentPendingPage';
-import PayoutSettingsPage from './pages/PayoutSettingsPage';
-import ForgotPasswordPage from './pages/ForgotPasswordPage';
-import ResetPasswordPage from './pages/ResetPasswordPage';
+
+// Lazy loading de páginas para mejorar rendimiento
+const HomePage = lazy(() => import('./pages/HomePage'));
+const RegisterPage = lazy(() => import('./pages/RegisterPage'));
+const LoginPage = lazy(() => import('./pages/LoginPage'));
+const ProductListPage = lazy(() => import('./pages/ProductListPage'));
+const ProductDetailsPage = lazy(() => import('./pages/ProductDetailsPage'));
+const CartPage = lazy(() => import('./pages/CartPage'));
+const CheckoutPage = lazy(() => import('./pages/CheckoutPage'));
+const CreateProductPage = lazy(() => import('./pages/CreateProductPage'));
+const DashboardPage = lazy(() => import('./pages/DashboardPage'));
+const EditProductPage = lazy(() => import('./pages/EditProductPage'));
+const MyOrdersPage = lazy(() => import('./pages/MyOrdersPage'));
+const NotificationsPage = lazy(() => import('./pages/NotificationsPage'));
+const OrderDetailsPage = lazy(() => import('./pages/OrderDetailsPage'));
+const PremiumInventoryPage = lazy(() => import('./pages/PremiumInventoryPage'));
+const PremiumUpsellPage = lazy(() => import('./pages/PremiumUpsellPage'));
+const WelcomePage = lazy(() => import('./pages/WelcomePage'));
+const BarterDetailsPage = lazy(() => import('./pages/BarterDetailsPage'));
+const CreateBarterProposalPage = lazy(() => import('./pages/CreateBarterProposalPage'));
+const CreateCounterProposalPage = lazy(() => import('./pages/CreateCounterProposalPage'));
+const MyBarterProposalsPage = lazy(() => import('./pages/MyBarterProposalsPage'));
+const CreateRentalPage = lazy(() => import('./pages/CreateRentalPage'));
+const RentalListPage = lazy(() => import('./pages/RentalListPage'));
+const CreateServicePage = lazy(() => import('./pages/CreateServicePage'));
+const ServiceListPage = lazy(() => import('./pages/ServiceListPage'));
+const ServiceDetailsPage = lazy(() => import('./pages/ServiceDetailsPage'));
+const RentalDetailsPage = lazy(() => import('./pages/RentalDetailsPage'));
+const BarterProposalPage = lazy(() => import('./pages/BarterProposalPage'));
+const SubscriptionPlansPage = lazy(() => import('./pages/SubscriptionPlansPage'));
+const NotFoundPage = lazy(() => import('./pages/NotFoundPage'));
+const TermsPage = lazy(() => import('./pages/TermsPage'));
+const PrivacyPage = lazy(() => import('./pages/PrivacyPage'));
+const CookiesPage = lazy(() => import('./pages/CookiesPage'));
+const ProfilePage = lazy(() => import('./pages/ProfilePage'));
+const MyServicesPage = lazy(() => import('./pages/MyServicesPage'));
+const MyRentalsPage = lazy(() => import('./pages/MyRentalsPage'));
+const EditServicePage = lazy(() => import('./pages/EditServicePage'));
+const EditRentalPage = lazy(() => import('./pages/EditRentalPage'));
+const AboutUsPage = lazy(() => import('./pages/AboutUsPage'));
+const NewsletterPage = lazy(() => import('./pages/NewsletterPage'));
+const PaymentSuccessPage = lazy(() => import('./pages/PaymentSuccessPage'));
+const PaymentFailurePage = lazy(() => import('./pages/PaymentFailurePage'));
+const PaymentPendingPage = lazy(() => import('./pages/PaymentPendingPage'));
+const PayoutSettingsPage = lazy(() => import('./pages/PayoutSettingsPage'));
+const ForgotPasswordPage = lazy(() => import('./pages/ForgotPasswordPage'));
+const ResetPasswordPage = lazy(() => import('./pages/ResetPasswordPage'));
+
+// Componente de loading para Suspense
+const LoadingSpinner = () => (
+    <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-green-500"></div>
+    </div>
+);
 function App() {
     const [isNavbarOpen, setIsNavbarOpen] = useState(false);
 
@@ -71,7 +79,8 @@ function App() {
                 {/* Contenido Dinámico */}
                 <main className="flex-1 p-8 pt-16 overflow-y-auto">
                     <div className="max-w-7xl mx-auto">
-                        <Routes>
+                        <Suspense fallback={<LoadingSpinner />}>
+                            <Routes>
                             {/* Rutas Públicas */}
                             <Route path="/" element={<HomePage />} />
                             <Route path="/register" element={<RegisterPage />} />
@@ -131,7 +140,8 @@ function App() {
                             
                             {/* Ruta 404 */}
                             <Route path="*" element={<NotFoundPage />} />
-                        </Routes>
+                            </Routes>
+                        </Suspense>
                     </div>
                 </main>
 
