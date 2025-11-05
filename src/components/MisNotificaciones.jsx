@@ -1,100 +1,46 @@
-// src/components/MisNotificaciones.jsx
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react'; // Volvemos a añadir useEffect
 import { AuthContext } from '../context/AuthContext';
 import { BellAlertIcon, TrashIcon } from '@heroicons/react/24/outline';
 import moment from 'moment';
 import api from '../services/api';
 import { toast } from 'react-toastify';
 
-const MisNotificaciones = ({ token }) => {
+// ⭐ AHORA RECIBE PROPS: notificaciones, token, loading ⭐
+const MisNotificaciones = ({ notificaciones: initialNotificaciones, token, loading }) => {
     const { user } = useContext(AuthContext);
-    const [notificaciones, setNotificaciones] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
 
+    // Estado local para manejar borrados y "marcar como leído"
+    const [notificaciones, setNotificaciones] = useState(initialNotificaciones || []);
+
+    // Sincronizar estado local cuando las props cambien
     useEffect(() => {
-        const fetchNotificaciones = async () => {
-            try {
-                if (!user || !token) {
-                    setLoading(false);
-                    return;
-                }
+        setNotificaciones(initialNotificaciones || []);
+    }, [initialNotificaciones]);
 
-                console.log('🔍 Obteniendo notificaciones de /api/notifications/my');
-                const response = await api.get('/api/notifications/my', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
+    // --- ELIMINAMOS EL useEffect DE FETCHING ---
 
-                console.log('🔔 Notificaciones response:', response.data);
-
-                // Extraer datos según la estructura de tu API
-                let notificacionesData = [];
-                
-                // Basado en tu ruta, probablemente la estructura sea:
-                if (response.data && response.data.success === true && Array.isArray(response.data.data)) {
-                    notificacionesData = response.data.data;
-                } else if (Array.isArray(response.data)) {
-                    notificacionesData = response.data;
-                } else if (response.data && Array.isArray(response.data.notifications)) {
-                    notificacionesData = response.data.notifications;
-                } else {
-                    console.warn('Estructura inesperada de notificaciones:', response.data);
-                    // Usamos datos de ejemplo como fallback
-                    notificacionesData = getMockNotifications();
-                }
-
-                setNotificaciones(notificacionesData);
-                setLoading(false);
-
-            } catch (err) {
-                console.error("Error al obtener notificaciones:", err);
-                setError("Hubo un error al cargar tus notificaciones.");
-                setLoading(false);
-                
-                // Datos de ejemplo como fallback
-                setNotificaciones(getMockNotifications());
-            }
-        };
-
-        if (user) {
-            fetchNotificaciones();
-        }
-    }, [user, token]);
-
-    // Función para datos mock de notificaciones (solo como fallback)
-    const getMockNotifications = () => {
-        return [
-            {
-                _id: 'notif1',
-                message: 'Sistema: El endpoint de notificaciones está en desarrollo',
-                createdAt: new Date().toISOString(),
-                isRead: false,
-                type: 'system'
-            }
-        ];
-    };
-
+    // ... (Tus funciones handleMarkAsRead, handleDeleteNotification, markAllAsRead se quedan 100% IGUAL) ...
     const handleMarkAsRead = async (id) => {
         try {
             // Usamos PUT según tu ruta definida
             await api.put(`/api/notifications/${id}/read`, {}, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            
+
             // Actualizar estado local
             setNotificaciones(notificaciones.map(notif =>
                 notif._id === id ? { ...notif, isRead: true } : notif
             ));
-            
+
             toast.success("Notificación marcada como leída");
         } catch (err) {
             console.error("Error al marcar como leído:", err);
-            
+
             // Fallback: actualizar solo localmente
             setNotificaciones(notificaciones.map(notif =>
                 notif._id === id ? { ...notif, isRead: true } : notif
             ));
-            
+
             toast.info("Notificación marcada como leída (solo localmente)");
         }
     };
@@ -104,10 +50,10 @@ const MisNotificaciones = ({ token }) => {
             await api.delete(`/api/notifications/${id}`, {
                 headers: { Authorization: `Bearer ${token}` }
             });
-            
+
             // Actualizar estado local
             setNotificaciones(notificaciones.filter(notif => notif._id !== id));
-            
+
             toast.success("Notificación eliminada");
         } catch (err) {
             console.error("Error al eliminar notificación:", err);
@@ -119,29 +65,29 @@ const MisNotificaciones = ({ token }) => {
         try {
             // Marcar cada notificación no leída individualmente
             const unreadNotifications = notificaciones.filter(notif => !notif.isRead);
-            
+
             for (const notif of unreadNotifications) {
                 await api.put(`/api/notifications/${notif._id}/read`, {}, {
                     headers: { Authorization: `Bearer ${token}` }
                 });
             }
-            
+
             // Actualizar estado local
             setNotificaciones(notificaciones.map(notif => ({
                 ...notif,
                 isRead: true
             })));
-            
+
             toast.success("Todas las notificaciones marcadas como leídas");
         } catch (err) {
             console.error("Error al marcar todas como leídas:", err);
-            
+
             // Fallback local
             setNotificaciones(notificaciones.map(notif => ({
                 ...notif,
                 isRead: true
             })));
-            
+
             toast.info("Notificaciones marcadas como leídas (solo localmente)");
         }
     };
@@ -150,6 +96,7 @@ const MisNotificaciones = ({ token }) => {
         return <div className="p-6 bg-white rounded-lg shadow-sm">Inicia sesión para ver tus notificaciones.</div>;
     }
 
+    // Usamos el 'loading' que viene del padre
     if (loading) {
         return (
             <div className="p-6 bg-white rounded-lg shadow-sm">
@@ -161,16 +108,7 @@ const MisNotificaciones = ({ token }) => {
         );
     }
 
-    if (error) {
-        return (
-            <div className="p-6 bg-yellow-100 text-yellow-800 rounded-lg shadow-sm">
-                <p className="font-semibold">⚠️ Aviso:</p>
-                <p>{error}</p>
-                <p className="text-sm mt-2">Mostrando notificaciones de ejemplo...</p>
-            </div>
-        );
-    }
-
+    // ... (Tu JSX para renderizar la lista se queda 100% IGUAL) ...
     const unreadCount = notificaciones.filter(n => !n.isRead).length;
 
     return (
@@ -191,12 +129,12 @@ const MisNotificaciones = ({ token }) => {
                     )}
                 </div>
             </div>
-            
+
             {notificaciones.length > 0 ? (
                 <div className="space-y-4">
                     {notificaciones.map((notif) => (
-                        <div 
-                            key={notif._id} 
+                        <div
+                            key={notif._id}
                             className={`p-4 rounded-lg shadow-sm flex items-start space-x-4 transition duration-200 ${
                                 notif.isRead ? 'bg-gray-100 text-gray-500' : 'bg-green-50 text-gray-800 hover:bg-green-100'
                             }`}

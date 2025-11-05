@@ -1,105 +1,140 @@
-// src/pages/ProfilePage.jsx
-import React, { useState, useContext } from 'react';
+import React, { useState, useContext, useEffect } from 'react'; // Importar hooks
 import { Link } from 'react-router-dom';
 import { UserCircleIcon, Cog6ToothIcon, CreditCardIcon, BellIcon, HomeIcon, ShoppingCartIcon, TagIcon } from '@heroicons/react/24/outline';
 import { AuthContext } from '../context/AuthContext';
+import { toast } from 'react-toastify';
+import api from '../services/api'; // Importar api
+
+// Importar los componentes hijos
 import DashboardOverview from '../components/DashboardOverview';
 import MisPublicaciones from '../components/MisPublicaciones';
 import MisPedidos from '../components/MisPedidos';
 import MisNotificaciones from '../components/MisNotificaciones';
-import Configuracion from '../components/Configuracion'; // Nuevo componente para la configuración
-
-// Un componente de ejemplo para la sección de Mi Perfil
-const MiPerfil = () => {
-    const { user, setUser } = useContext(AuthContext);
-    const [formData, setFormData] = useState({
-        name: user?.name || '',
-        email: user?.email || '',
-    });
-    const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState('');
-
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setMessage('');
-
-        console.log("Datos a actualizar:", formData);
-
-        setTimeout(() => {
-            setMessage('¡Perfil actualizado con éxito!');
-            setUser({ ...user, ...formData });
-            setLoading(false);
-        }, 1000);
-    };
-
-    return (
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-            <h2 className="text-xl font-bold mb-4">Mi Perfil y Configuración</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-                <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700">Nombre</label>
-                    <input
-                        type="text"
-                        name="name"
-                        id="name"
-                        value={formData.name}
-                        onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                    />
-                </div>
-                <div>
-                    <label htmlFor="email" className="block text-sm font-medium text-gray-700">Email</label>
-                    <input
-                        type="email"
-                        name="email"
-                        id="email"
-                        value={formData.email}
-                        onChange={handleChange}
-                        className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-green-500 focus:ring-green-500"
-                    />
-                </div>
-                <button
-                    type="submit"
-                    className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
-                    disabled={loading}
-                >
-                    {loading ? 'Guardando...' : 'Guardar Cambios'}
-                </button>
-            </form>
-            {message && (
-                <div className="mt-4 p-3 rounded-md bg-green-100 text-green-700">
-                    {message}
-                </div>
-            )}
-        </div>
-    );
-};
+// ⭐ REEMPLAZO: Usar el componente externo en lugar del local
+import MyProfileSettings from '../components/MyProfileSettings'; 
 
 const ProfilePage = () => {
     const [activeSection, setActiveSection] = useState('overview');
-    const { user } = useContext(AuthContext);
+    const { user, token } = useContext(AuthContext);
+
+    // --- ⭐ INICIO: LÓGICA DE FETCHING CENTRALIZADA ⭐ ---
+    const [dashboardData, setDashboardData] = useState({
+        products: [],
+        services: [],
+        rentals: [],
+        barterProposals: [],
+        receivedOrders: [],
+        notifications: []
+    });
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            if (!user || !token) {
+                setLoading(false);
+                return;
+            }
+
+            try {
+                setLoading(true);
+                
+                // Tu lógica de Promise.allSettled, ahora en el padre
+                const [
+                    productsResponse,
+                    servicesResponse,
+                    rentalsResponse,
+                    barterResponse,
+                    ordersResponse,
+                    notificationsResponse // Añadimos notificaciones
+                ] = await Promise.allSettled([
+                    api.get('/api/products/my-products', { headers: { Authorization: `Bearer ${token}` } }),
+                    api.get('/api/services/my-services', { headers: { Authorization: `Bearer ${token}` } }),
+                    api.get('/api/rentals/my-rentals', { headers: { Authorization: `Bearer ${token}` } }),
+                    api.get('/api/barter/myproposals', { headers: { Authorization: `Bearer ${token}` } }),
+                    api.get('/api/orders/my-orders', { headers: { Authorization: `Bearer ${token}` } }),
+                    api.get('/api/notifications/my', { headers: { Authorization: `Bearer ${token}` } })
+                ]);
+
+                // Tu función extractData (¡perfecta!)
+                const extractData = (result) => {
+                    if (result.status === 'fulfilled') {
+                        const response = result.value;
+                        if (response.data && response.data.success === true && Array.isArray(response.data.data)) return response.data.data;
+                        if (response.data && Array.isArray(response.data.data)) return response.data.data;
+                        if (Array.isArray(response.data)) return response.data;
+                        if (response.data && typeof response.data === 'object') {
+                            for (const key in response.data) {
+                                if (Array.isArray(response.data[key])) return response.data[key];
+                            }
+                        }
+                    }
+                    console.warn('Fallo al extraer datos:', result.reason || 'Formato desconocido');
+                    return [];
+                };
+
+                const productsData = extractData(productsResponse);
+                const servicesData = extractData(servicesResponse);
+                const rentalsData = extractData(rentalsResponse);
+                const barterData = extractData(barterResponse);
+                const ordersData = extractData(ordersResponse);
+                const notificationsData = extractData(notificationsResponse);
+                
+                setDashboardData({
+                    products: productsData,
+                    services: servicesData,
+                    rentals: rentalsData,
+                    barterProposals: barterData,
+                    receivedOrders: ordersData,
+                    notifications: notificationsData
+                });
+
+            } catch (error) {
+                console.error("Error al obtener datos del dashboard:", error);
+                toast.error("Error al cargar tus datos del dashboard.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+    }, [user, token]);
+    // --- ⭐ FIN: LÓGICA DE FETCHING CENTRALIZADA ⭐ ---
+
 
     const renderContent = () => {
+        // Pasamos los datos y el estado de carga a todos los hijos
         switch (activeSection) {
             case 'overview':
-                return <DashboardOverview />;
+                return <DashboardOverview user={user} data={dashboardData} loading={loading} />;
             case 'profile':
-                return <MiPerfil />;
+                // ⭐ REEMPLAZO: Usamos el componente de settings
+                return <MyProfileSettings />; 
             case 'publications':
-                return <MisPublicaciones />;
+                // ⭐ FIX: Ahora pasamos las props y el crash desaparece
+                return <MisPublicaciones
+                    products={dashboardData.products}
+                    services={dashboardData.services}
+                    rentals={dashboardData.rentals}
+                    token={token}
+                />;
             case 'orders':
-                return <MisPedidos />;
+                return <MisPedidos
+                    pedidos={dashboardData.receivedOrders}
+                    token={token}
+                    loading={loading}
+                />;
             case 'notifications':
-                return <MisNotificaciones />;
+                return <MisNotificaciones
+                    notificaciones={dashboardData.notifications}
+                    token={token}
+                    loading={loading}
+                />;
             case 'settings':
-                return <Configuracion />; // Ahora renderiza el componente de configuración
+                // Puedes usar MyProfileSettings aquí también si "Configuración" y "Mi Perfil" son lo mismo
+                // O crear un componente <Configuracion> separado
+                return <MyProfileSettings />; // Usando MyProfileSettings para ambos
             default:
-                return <DashboardOverview />;
+                return <DashboardOverview user={user} data={dashboardData} loading={loading} />;
         }
     };
 
@@ -153,7 +188,7 @@ const ProfilePage = () => {
                         <BellIcon className="h-5 w-5 mr-2" />
                         Notificaciones
                     </button>
-                    <button
+                    {/* <button
                         onClick={() => setActiveSection('settings')}
                         className={`w-full text-left px-4 py-2 rounded-md transition duration-200 flex items-center ${
                             activeSection === 'settings' ? 'bg-green-100 text-green-700 font-semibold' : 'text-gray-600 hover:bg-gray-100'
@@ -161,24 +196,24 @@ const ProfilePage = () => {
                     >
                         <Cog6ToothIcon className="h-5 w-5 mr-2" />
                         Configuración
-                    </button>
-                    <Link
-                        to="/profile/payout-settings"
-                        className={`w-full text-left px-4 py-2 rounded-md transition duration-200 flex items-center ${
-                             // Usamos una clase simple para destacarlo o podemos usar activeSection si quieres
-                            'text-gray-600 hover:bg-gray-100 border-t border-gray-100 pt-3 mt-3' 
-                        }`}
-                    >
-                        <CreditCardIcon className="h-5 w-5 mr-2" />
-                        **Recibir Pagos (Mercado Pago)**
-                    </Link>
+                    </button> 
+                    */}
+                    
+                    {/* ⭐ ELIMINADO: Link a Recibir Pagos ⭐ */}
                 </nav>
             </aside>
 
             {/* Contenido principal del dashboard */}
             <main className="flex-1 p-8">
-                <h1 className="text-3xl font-bold text-gray-800 mb-6">Panel de Control</h1>
-                {renderContent()}
+                {/* <h1 className="text-3xl font-bold text-gray-800 mb-6">Panel de Control</h1> 
+                Quitamos el título duplicado, cada sección tendrá el suyo
+                */}
+                {loading ? (
+                    <div className="text-center p-12">
+                         <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-green-600 mx-auto mb-4"></div>
+                         <p className="text-lg text-gray-700">Cargando datos del panel...</p>
+                    </div>
+                ) : renderContent()}
             </main>
         </div>
     );

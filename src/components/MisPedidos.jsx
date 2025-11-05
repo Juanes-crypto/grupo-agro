@@ -1,54 +1,27 @@
-// src/components/MisPedidos.jsx
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useContext, useState, useEffect } from 'react'; // Volvemos a añadir useEffect
 import { AuthContext } from '../context/AuthContext';
 import { TruckIcon } from '@heroicons/react/24/outline';
 import moment from 'moment';
 import api from '../services/api';
 import { toast } from 'react-toastify';
+import { useNavigate } from 'react-router-dom'; // Importar useNavigate
 
-const MisPedidos = ({ token }) => {
+// ⭐ AHORA RECIBE PROPS: pedidos, token, loading ⭐
+const MisPedidos = ({ pedidos: initialPedidos, token, loading }) => {
     const { user } = useContext(AuthContext);
-    const [pedidos, setPedidos] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
-
+    const navigate = useNavigate(); // Hook para navegar
+    
+    // Estado local para manejar los pedidos recibidos
+    const [pedidos, setPedidos] = useState(initialPedidos || []);
+    
+    // Sincronizar estado local cuando las props cambien
     useEffect(() => {
-        const fetchPedidos = async () => {
-            try {
-                if (!user || !token) return;
-                
-                const response = await api.get('/api/orders/my-orders', {
-                    headers: { Authorization: `Bearer ${token}` }
-                });
-                
-                setPedidos(response.data.data || response.data.orders || response.data);
-                setLoading(false);
-            } catch (err) {
-                console.error("Error al obtener pedidos:", err);
-                setError("Hubo un error al cargar tus pedidos.");
-                setLoading(false);
-                
-                // Datos de ejemplo como fallback
-                const mockData = [
-                    {
-                        _id: 'ped01',
-                        items: [
-                            { name: '10kg de Tomates', quantity: 1 },
-                            { name: '5kg de Manzanas', quantity: 1 }
-                        ],
-                        total: 55000,
-                        createdAt: new Date(Date.now() - 5 * 24 * 3600000).toISOString(),
-                        status: 'delivered',
-                    },
-                    // ... más pedidos mock
-                ];
-                setPedidos(mockData);
-            }
-        };
+        setPedidos(initialPedidos || []);
+    }, [initialPedidos]);
 
-        fetchPedidos();
-    }, [user, token]);
+    // --- ELIMINAMOS EL useEffect DE FETCHING ---
 
+    // ... (Tus funciones getStatusText y getStatusClass se quedan IGUAL) ...
     const getStatusText = (status) => {
         const statusMap = {
             'pending': 'Pendiente',
@@ -71,7 +44,19 @@ const MisPedidos = ({ token }) => {
         return statusClass[status] || 'bg-gray-100 text-gray-800';
     };
 
-    // Resto del código modificado para usar la estructura real de pedidos
+    // Usamos el 'loading' que viene del padre
+    if (loading) {
+        return (
+            <div className="bg-white p-6 rounded-lg shadow-sm">
+                <div className="flex justify-center items-center py-4">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <span className="ml-3 text-gray-600">Cargando pedidos...</span>
+                </div>
+            </div>
+        );
+    }
+
+    // ... (Tu JSX para renderizar la lista se queda IGUAL, solo corregí el link) ...
     return (
         <div className="bg-white p-6 rounded-lg shadow-sm space-y-6">
             <h2 className="text-2xl font-bold text-gray-800">Mis Órdenes y Compras</h2>
@@ -102,7 +87,7 @@ const MisPedidos = ({ token }) => {
                                 </span>
                                 <button 
                                     className="text-gray-500 hover:text-green-600 transition-colors"
-                                    onClick={() => window.location.href = `/order-details/${pedido._id}`}
+                                    onClick={() => navigate(`/order-details/${pedido._id}`)} // ⭐ CORREGIDO: Usar navigate
                                 >
                                     Ver Detalles
                                 </button>
@@ -117,6 +102,6 @@ const MisPedidos = ({ token }) => {
             )}
         </div>
     );
-};
+}; 
 
 export default MisPedidos;
